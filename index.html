@@ -1,0 +1,96 @@
+<head>
+<title>VIU LAB | 3D-Detection</title>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+<script src="js/functions.js"></script>
+<script src="js/main.js"></script>
+<link rel="stylesheet" type="text/css" href="css/style.css">
+</head>
+<body>
+
+    <div id="form-container">
+        <img src="logoVIU.png" class="logo" width="300">
+        
+        <h1>3D-Detection</h1>
+        <p>Enter your name and click on Start.</p>
+        <p>Find the signal in the image, scroll by using the mouse wheel or dragging the scrollbar.</p>
+        <p>Press SPACEBAR to terminate the trial.</p>
+        <p>Press ESC to quit the experiment, data will be lost.</p>
+        <div class="credits">Developed by <a href="mailto:lago@psych.ucsb.edu">Miguel Lago</a>
+            <br>
+            <br>
+            version 0.1
+        </div> 
+        
+        <input id="name" type="text" placeholder="Name" value="ttt" /><br>
+        Screen size (<span class="question-mark">&#10067;</span>): <input id="width" type="text" placeholder="width" value="23" /> by <input id="height" type="text" placeholder="height" value="13" /> 
+        <select id="units">
+            <option>inches</option>
+            <option>cm</option>
+        </select>
+        
+        <br>
+        <input type="submit" id="start-experiment" value="Start!" />
+        
+        
+        <div class="form-box">
+            <h2>Options</h2>
+            <label># trials <input id="maxTrials" type="text" placeholder="# trials" style="font-size:20px; width:30%;text-align:center" value="50"/></label>
+            <br>
+            <label>% presence <input id="presence" type="text" placeholder="% presence" style="font-size:20px; width:30%;text-align:center" value="50"/>%</label>
+            <br>
+            <label># ratings <input id="ratings" type="text" placeholder="# ratings" style="font-size:20px; width:30%;text-align:center" value="8"/></label>
+        </div>
+            
+    </div>
+    <!--<div id="loading-bar">
+        <div id="loading-bar-progress"></div>
+    </div>-->
+
+    <div id="trial-container">
+        <div class="instructions">To scroll you can click and drag on the stimuli or use the mouse wheel</div>
+        <div id="stimulus-slice">Slice: 1</div>
+        <div id="stimulus-container">
+            <div id="stimulus">
+                <img src="stimuli/present/noise1/noise_1.jpg">
+            </div>
+            <div id="stimulus-scroll-bar">
+                <div id="stimulus-scroll-background"></div>
+                <div id="stimulus-scroll-position"></div>
+            </div>
+        </div>
+        <div class="instructions">Press SPACEBAR to continue</div>
+    </div>
+
+    <div id="response-container">
+        <div id="response-text"></div>
+        <div id="confidence-scale">
+            <div class="rating absent" num="1">1</div>
+            <div class="rating present" num="2">2</div>
+        </div>
+    </div>
+
+    <div id="finished-container">
+        <div class="instructions" style="margin-top:100px">
+            <p>You finished all the trials, your data has been uploaded!</p>
+            <p>Thanks for participating, <a href=".">click here to go back</a>.</p>
+        </div>
+    </div>
+
+    <div id="help" class="form-box">
+        <p id="resolution"></p>
+        <p id="monitor-size"></p>
+        <p id="image-size"></p>
+        <p id="image-real-size"></p>
+        <p id="distance-required"></p>
+    </div>
+
+    <div id="popup">
+        <p></p>
+        <img src="images/screen-measurement.png" height="300">
+        <p>Measure your screen in cm or inches.</p>
+        <p>Do not measure the screen border, only the interior of the display.</p>
+        <div id="close">&#10060;</div>
+    </div>
+</body>
