@@ -65,7 +65,7 @@ input[id="name"]{
     width:200px;
 }
 
-input[type="submit"]{
+input[type="submit"], .button{
 	border: 3px solid rgb(229, 72, 35);
 	background: rgb(57, 48, 42);
 	color:white;
@@ -74,7 +74,7 @@ input[type="submit"]{
     margin: 10px;
     cursor:hand;
 }
-input[type="submit"]:hover{
+input[type="submit"]:hover, .button:hover{
     background:rgb(229, 72, 35);
 }
 
@@ -209,32 +209,96 @@ input[type="submit"]:hover{
     line-height: 13px;
 }
 
-#popup{
-    width:50%;
+.popup{
+    width:75%;
     height:50%;
     position:fixed;
     top:25%;
-    left:25%;
+    left:12.5%;
     display:none;
     background-color: #39302a;
     border: 3px solid rgb(229, 72, 35);
     text-align: center;
 }
-#close{
+.close{
     position: absolute;
     top:10px;
     right:20px;
     
     cursor: pointer;
     color:white;
-    width:20px;
-    height: 20px;
+    width:15px;
+    height: 15px;
     text-align: center;
     font-weight: bold;
-    line-height: 20px;
-    font-size:2em;
+    line-height: 15px;
+    font-size:1.8em;
 }
 
 .question-mark{
     cursor: pointer;
+}
+
+#calibration .credit-card-slider{
+    width:40%;
+    height:5px;
+    background:white;
+    margin-left:30%;
+    position: relative;
+}
+#calibration .credit-card-slider-position{
+    height:20px;
+    width:5px;
+    background:white;
+    position: absolute;
+    left:50%;
+    top:-8px;
+    cursor: pointer;
+    border:1px solid white;
+}
+#calibration .credit-card-slider-position:hover{
+    border:1px solid rgb(229, 72, 35) !important;
+}
+
+#calibration .credit-card-outline{
+    /* 1.5857725083364208966283808818081 */
+    border:2px solid white;
+    border-radius: 4px;
+    width:250px;
+    height: 157px;
+    margin-top:20px;
+    margin-left:30%;
+}
+#calibration .button{
+    position: absolute;
+    bottom:5%;
+    right:5%;
+}
+
+#calibration .blind-spot-container{
+    position: relative;
+    width:50%;
+    height:40%;
+    background:black;
+    margin-right:50%;
+}
+
+#calibration .blind-spot-cross{
+    background-image:url(../images/cross.png);
+    width:50px;
+    height:50px;
+    position: absolute;
+    right: 20px;
+    top: 70px;
+    background-size:cover;
+}
+
+#calibration .blind-spot-dot{
+    background:white;
+    width:20px;
+    height:20px;
+    position: absolute;
+    right: 100px;
+    top: 85px;
+    border-radius: 20px;
 }

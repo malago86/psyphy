@@ -11,6 +11,13 @@ $( document ).ready(function() {
     var numSlices=100;
 
     var running=false;
+    
+    var calibrated=false;
+    var calibrating=false;
+    var blindSpotDistance=[];
+    var pixelsPerCM=0;
+    animCalibration=-1;
+    
 
     var maxTrials=20;
     var trialID=1;
@@ -25,7 +32,17 @@ $( document ).ready(function() {
     var degreesPerPixel=0.022;
     var monitorHeight,monitorWidth;
 
+    var ccWidthCM=8.560;
+    var blindSpotDegrees=15; //13.59
+
     $("#start-experiment").click(function(e){
+        if(!calibrated){
+            blindSpotDistance=[];
+            $("#calibration").toggle();
+            $(".background").css("filter","blur(4px)");
+            $(".background").css("opacity",".4");
+            return false;
+        }
 
         name = $("#name").val();
         maxTrials = Math.min(50,$("#maxTrials").val());
@@ -44,12 +61,8 @@ $( document ).ready(function() {
         currentSlice=1;
         
 
-		if(name=="" || monitorHeight=="" || monitorWidth==""){
+		if(name==""){
 			return;
-        }
-        if($("#units option:selected" ).text()=="inches"){
-            monitorHeight=monitorHeight*2.54;
-            monitorWidth=monitorWidth*2.54;
         }
 
         arr={config: {
@@ -58,13 +71,14 @@ $( document ).ready(function() {
                 presence: presence,
                 display:{
                     degreesPerPixel:degreesPerPixel,
-                    monitorHeight:monitorHeight,
-                    monitorWidth:monitorWidth,
                     stimulusHeight:null,
                     stimulusWidth:null,
                     distance:null,
                     windowWidth:window.innerWidth,
                     windowHeight:window.innerHeight,
+                    pixelsPerCM:pixelsPerCM,
+                    blindSpotDistance:blindSpotDistance,
+                    pixelsPerDegree:(mean(blindSpotDistance)/blindSpotDegrees),
                 }
             },
             startTime:Date.now(),
@@ -170,6 +184,45 @@ $( document ).ready(function() {
           }
     });
 
+    var currentSize=50;
+    var ccRatio=1.5857725083364208966283808818081;
+    $("#calibration .credit-card-slider-position").draggable({
+        start: function(e) {
+            parentOffset = $(this).parent().offset(); 
+            
+            relX = e.pageX - parentOffset.left;
+            relY = e.pageY - parentOffset.top;
+            currentSize=Math.round(100*relX/$(this).parent().width());
+            //console.log($(this).parent().width(),relX,currentSize);
+            currentSize=Math.max(0,Math.min(currentSize,100));
+            //$("#stimulus").attr("src","stimuli/noise1/noise1_"+currentSlice+".jpg");
+            $("#calibration .credit-card-slider-position").css("left",currentSize+"%");
+            $("#calibration .credit-card-outline").css("width",(100+(currentSize*300/100))+"px");
+            $("#calibration .credit-card-outline").css("height",((100+(currentSize*300/100))/ccRatio)+"px");
+
+            
+        },
+        drag: function(e) {
+            parentOffset = $(this).parent().offset(); 
+            relX = e.pageX - parentOffset.left;
+            relY = e.pageY - parentOffset.top;
+            currentSize=Math.round(100*relX/$(this).parent().width());
+            //console.log($(this).parent().width(),relX,currentSize);
+            currentSize=Math.max(0,Math.min(currentSize,100));
+            //$("#stimulus").attr("src","stimuli/noise1/noise1_"+currentSlice+".jpg");
+            $("#calibration .credit-card-slider-position").css("left",currentSize+"%");
+            $("#calibration .credit-card-outline").css("width",(100+(currentSize*300/100))+"px");
+            $("#calibration .credit-card-outline").css("height",((100+(currentSize*300/100))/ccRatio)+"px");
+            $("#calibration .credit-card-slider-position").css("border","1px solid rgb(229, 72, 35)");
+        },
+        stop: function(e) {
+            $("#calibration .credit-card-slider-position").css("border","1px solid white");
+        },
+        helper: function( event ) {
+            return $( "<div class='ui-widget-header' style='display:none'>I'm a custom helper</div>" );
+          }
+    });
+
     $(document).on( 
         'keydown', function(event) { 
             if(running){
@@ -190,6 +243,20 @@ $( document ).ready(function() {
                     $("#help").hide();
                 } else if(event.key=="h"){
                     $("#help").toggle();
+                }
+            }else if(calibrating && event.which==32){
+                r1=$("#calibration-step2 .blind-spot-dot").css("right");
+                r2=$("#calibration-step2 .blind-spot-cross").css("right");
+                w2=$("#calibration-step2 .blind-spot-cross").css("width");
+                r1=parseInt(r1.substr(0,r1.length-2));
+                r2=parseInt(r2.substr(0,r2.length-2));
+                w2=parseInt(w2.substr(0,w2.length-2))/2;
+                blindSpotDistance.push(r1-(r2-w2));
+                if(blindSpotDistance.length>10){
+                    $("#calibration-step2").toggle();
+                    $("#calibration-step3").toggle();
+                    calibrating=false;
+                    clearInterval(animCalibration);
                 }
             }
       }); 
@@ -253,10 +320,35 @@ $( document ).ready(function() {
 
 
     $(".question-mark").click(function(){
-        $("#popup").toggle();
+        $("#help-screen").toggle();
     });
-    $("#close").click(function(){
-        $("#popup").toggle();
+    $(".close").click(function(){
+        $(".popup").hide();
+        $(".background").css("filter","none");
+        $(".background").css("opacity","1");
+        $("#calibration-step1").show();
+        $("#calibration-step2").hide();
+        $("#calibration-step3").hide();
+        clearInterval(animCalibration);
     });
+    $("#calibration-step1 .button").click(function(){
+        left=$("#calibration .credit-card-outline").css("width");
+        $("#calibration-step1").toggle();
+        $("#calibration-step2").toggle();
+        left=parseInt(left.substr(0,left.length-2));
+        console.log(left);
+        pixelsPerCM=ccWidthCM/left;
+        animCalibration=calibrationMove($("#calibration-step2 .blind-spot-dot"));
+        calibrating=true;
+    });
+    $("#calibration-step3 .button").click(function(){
+        $(".background").css("filter","none");
+        $(".background").css("opacity","1");
+        $("#calibration-step1 .button").toggle();
+        $("#calibration-step3 .button").toggle();
+        $("#calibration").toggle();
+        calibrated=true;
+    });
+    
     
 });

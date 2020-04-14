@@ -91,22 +91,52 @@ function getDisplayParameters( display){
     var img = document.querySelector("#stimulus img");
 
     
-    $('#help #monitor-size').html("Monitor: "+parseInt(display.monitorWidth)+" by "+parseInt(display.monitorHeight) +" cm");
+    //$('#help #monitor-size').html("Monitor: "+parseInt(display.monitorWidth)+" by "+parseInt(display.monitorHeight) +" cm");
     $('#help #resolution').html("Resolution: "+screen.width+" by "+screen.height);
     $('#help #image-size').html("Stimulus: "+img.width+" by "+img.height);
     $('#help #image-real-size').html("Stimulus original: "+img.naturalWidth+" by "+img.naturalHeight);
 
-    
+    /*
     ratio=img.naturalWidth/img.width;
     //console.log(ratio);
     pixelsPerCM=screen.width/display.monitorWidth;
     distance=(1/display.degreesPerPixel)/Math.tan(1 * Math.PI/180)/pixelsPerCM/ratio;
 
     $('#help #distance-required').html("Distance required: "+parseInt(distance)+" cm");
+    */
 
+    distance=(display.pixelsPerDegree*display.pixelsPerCM/Math.tan(1 * Math.PI/180));
+
+    $('#help #distance-required').html("Distance: "+parseInt(distance)+" cm");
     display.stimulusWidth=img.width;
     display.stimulusHeight=img.height;
     display.distance=distance;
     
     return display;
+}
+
+function calibrationMove(elem) {
+    var pos = 100;
+    var direction=-20;
+    var id = setInterval(frame, 60, elem);
+    
+    function frame(elem) {
+        var maxDisplacement=$(elem).parent().width()-20;
+        if (pos >= maxDisplacement || pos <= 100) {
+            direction*=-1;
+        }
+        pos+=direction;
+        //console.log(pos);
+        $(elem).css("right",pos+"px");
+    }
+
+    return id;
+}
+
+function mean(numbers) {
+    var total = 0, i;
+    for (i = 0; i < numbers.length; i += 1) {
+        total += numbers[i];
+    }
+    return total / numbers.length;
 }
