@@ -1,19 +1,20 @@
 <head>
-<title>VIU LAB | 3D-Detection</title>
+<title>VIU LAB | PsychOnline</title>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 <script src="js/functions.js"></script>
 <script src="js/main.js"></script>
 <link rel="stylesheet" type="text/css" href="css/style.css">
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
 </head>
 <body>
     <div class="background">
         <div id="form-container">
             <img src="logoVIU.png" class="logo" width="300">
             
-            <h1>3D-Detection</h1>
-            <p>Enter your name and click on Start.</p>
+            <h1>PsychOnline</h1>
+            <p>Enter your name and click on Start. Calibration will start first.</p>
             <p>Find the signal in the image, scroll by using the mouse wheel or dragging the scrollbar.</p>
             <p>Press SPACEBAR to terminate the trial.</p>
             <p>Press ESC to quit the experiment, data will be lost.</p>
@@ -23,24 +24,43 @@
                 version 0.1
             </div> 
             
-            <input id="name" type="text" placeholder="Name" value="ttt" /><br>
+            <input id="name" type="text" placeholder="Name" value="" />
             <!--Screen size (<span class="question-mark">&#10067;</span>): <input id="width" type="text" placeholder="width" value="23" /> by <input id="height" type="text" placeholder="height" value="13" /> 
             <select id="units">
                 <option>inches</option>
                 <option>cm</option>
             </select>-->
             
-            <br>
+            
             <input type="submit" id="start-experiment" value="Start!" />
+            <br>
+            <label id="load-experiment-label" for="load-experiment">Load experiment file</label>
+            
+            <input type="file" id="load-experiment" value="Load experiment file" style="font-size:14px; height:17px;line-height: 0px;"/>
             
             
-            <div class="form-box">
-                <h2>Options</h2>
-                <label># trials <input id="maxTrials" type="text" placeholder="# trials" style="font-size:20px; width:30%;text-align:center" value="50"/></label>
-                <br>
-                <label>% presence <input id="presence" type="text" placeholder="% presence" style="font-size:20px; width:30%;text-align:center" value="50"/>%</label>
-                <br>
-                <label># ratings <input id="ratings" type="text" placeholder="# ratings" style="font-size:20px; width:30%;text-align:center" value="8"/></label>
+            
+            <div class="form-box" id="form-box">
+                <p style="font-weight: bold;">Create experiment file</p>
+                <table>
+                    <tr>
+                        <th>Title</th>
+                        <td><input id="experimentTitle" type="text" style="font-size:20px; width:100%;text-align:center" placeholder="Title"/></td>
+                    </tr>
+                    <tr>
+                        <th># trials</th>
+                        <td><input id="maxTrials" type="text" placeholder="# trials" style="font-size:20px; width:100%;text-align:center" value="50"/></td>
+                    </tr>
+                    <tr>
+                        <th>% presence</th>
+                        <td><input id="presence" type="text" placeholder="% presence" style="font-size:20px; width:100%;text-align:center" value="50"/></td>
+                    </tr>
+                    <tr>
+                        <th># ratings</th>
+                        <td><input id="ratings" type="text" placeholder="# ratings" style="font-size:20px; width:100%;text-align:center" value="8"/></td>
+                    </tr>
+                </table>
+                <input type="submit" id="create-experiment" value="Create experiment file" style="font-size:14px; height:17px;line-height: 0px;"/>
             </div>
                 
         </div>
@@ -100,6 +120,12 @@
         <div id="calibration-step1">
             <p>Place a credit card in the top left corner of the square.</p>
             <p>Adjust the slider to match the size of your credit card in the screen.</p>
+            <p style="font-size: 12px;
+            bottom: 0;
+            position: absolute;
+            left: 0;
+            width: 50%;
+            margin: 10px;">Li, Q., Joo, S.J., Yeatman, J.D. et al. Controlling for Participants' Viewing Distance in Large-Scale, Psychophysical Online Experiments Using a Virtual Chinrest. Sci Rep 10, 904 (2020). <a href="https://doi.org/10.1038/s41598-019-57204-1" target="_blank">doi:10.1038/s41598-019-57204-1</a></p>
             <div class="credit-card-slider">
                 <div class="credit-card-slider-position"></div>
             </div>
@@ -107,7 +133,7 @@
             <div class="button">Continue</div>
         </div>
         <div id="calibration-step2" style="display:none">
-            <p>Close your <strong style="color:aqua">RIGHT eye</strong> and look at the cross.</p>
+            <p>Close your <strong>RIGHT eye</strong> and look at the cross.</p>
             <p>Without moving your eyes, press SPACEBAR when the white dot dissapears from your sight.</p>
             <div class="blind-spot-container">
                 <div class="blind-spot-cross"></div>
@@ -115,9 +141,8 @@
             </div>
         </div>
         <div id="calibration-step3" style="display:none">
-            <h1 style="height: 100%;
-            line-height: 10;
-            vertical-align: middle;">Calibration succeded, you can start the experiment.</h1>
+            <h1>Calibration succeded, <strong>do not move your head</strong> or adjust your body position. <br>
+            You can start the experiment.</h1>
             <div class="button">Finish</div>
         </div>    
     </div>

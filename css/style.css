@@ -12,6 +12,10 @@ a:hover{
     color:#cccccc;
 }
 
+p strong, h1 strong{
+    color:#ff8a6e;
+}
+
 #form-container{
     margin:auto;
     width:fit-content;
@@ -42,8 +46,8 @@ a[id=download]{
     text-decoration: none;
 }
 
-a[id=download]:hover{
-    border:rgb(229, 72, 35) 3px solid;
+a[id=download]:hover, #load-experiment-label:hover{
+    /*border:rgb(229, 72, 35) 3px solid;*/
     background:rgb(229, 72, 35);
     color:white;
 
@@ -211,9 +215,9 @@ input[type="submit"]:hover, .button:hover{
 
 .popup{
     width:75%;
-    height:50%;
+    height:70%;
     position:fixed;
-    top:25%;
+    top:15%;
     left:12.5%;
     display:none;
     background-color: #39302a;
@@ -239,35 +243,43 @@ input[type="submit"]:hover, .button:hover{
     cursor: pointer;
 }
 
+#calibration h1{
+    position: absolute;
+    top: 50%;
+    left: 25%;
+    transform: translate(-18%, -50%);
+}
+
 #calibration .credit-card-slider{
-    width:40%;
+    width:60%;
     height:5px;
     background:white;
-    margin-left:30%;
+    margin-left:20%;
     position: relative;
 }
 #calibration .credit-card-slider-position{
     height:20px;
-    width:5px;
+    width:20px;
     background:white;
     position: absolute;
     left:50%;
-    top:-8px;
+    top:-10px;
     cursor: pointer;
-    border:1px solid white;
+    border:3px solid white;
+    margin-right:10px;
 }
 #calibration .credit-card-slider-position:hover{
-    border:1px solid rgb(229, 72, 35) !important;
+    border:3px solid rgb(229, 72, 35) !important;
 }
 
 #calibration .credit-card-outline{
     /* 1.5857725083364208966283808818081 */
     border:2px solid white;
     border-radius: 4px;
-    width:250px;
-    height: 157px;
+    width:350px;
+    height: 220px;
     margin-top:20px;
-    margin-left:30%;
+    margin-left:20%;
 }
 #calibration .button{
     position: absolute;
@@ -277,10 +289,11 @@ input[type="submit"]:hover, .button:hover{
 
 #calibration .blind-spot-container{
     position: relative;
-    width:50%;
-    height:40%;
+    width:80%;
+    height:140px;
     background:black;
-    margin-right:50%;
+    margin-right:20%;
+    margin-top:10%;
 }
 
 #calibration .blind-spot-cross{
@@ -289,7 +302,7 @@ input[type="submit"]:hover, .button:hover{
     height:50px;
     position: absolute;
     right: 20px;
-    top: 70px;
+    top: 45px;
     background-size:cover;
 }
 
@@ -299,6 +312,35 @@ input[type="submit"]:hover, .button:hover{
     height:20px;
     position: absolute;
     right: 100px;
-    top: 85px;
+    top: 60px;
     border-radius: 20px;
+}
+
+table{
+    width:100%;
+}
+table th{
+    text-align: right;
+    width:33%;
+}
+table td{
+    text-align: left;
+}
+
+.form-box input, .form-box p{
+    margin:0;
+    margin-bottom:2px;
+}
+.form-box #create-experiment{
+    margin-top:10px;
+}
+
+input[type="file"] {
+    display: none;
+}
+#load-experiment-label{
+    border: 2px solid rgb(229, 72, 35);
+    display: inline-block;
+    padding: 6px 12px;
+    cursor: pointer;
 }

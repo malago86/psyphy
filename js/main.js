@@ -16,7 +16,7 @@ $( document ).ready(function() {
     var calibrating=false;
     var blindSpotDistance=[];
     var pixelsPerCM=0;
-    animCalibration=-1;
+    var animCalibration=-1;
     
 
     var maxTrials=20;
@@ -33,12 +33,14 @@ $( document ).ready(function() {
     var monitorHeight,monitorWidth;
 
     var ccWidthCM=8.560;
-    var blindSpotDegrees=15; //13.59
+    var blindSpotDegrees=13; //13.59
 
     $("#start-experiment").click(function(e){
         if(!calibrated){
+            calibrating=true;
+            document.documentElement.requestFullscreen();
             blindSpotDistance=[];
-            $("#calibration").toggle();
+            $("#calibration").show();
             $(".background").css("filter","blur(4px)");
             $(".background").css("opacity",".4");
             return false;
@@ -62,7 +64,7 @@ $( document ).ready(function() {
         
 
 		if(name==""){
-			return;
+			name="Test Participant";
         }
 
         arr={config: {
@@ -85,7 +87,7 @@ $( document ).ready(function() {
             data:[]
         };
 
-        //document.documentElement.requestFullscreen();
+        document.documentElement.requestFullscreen();
 
         stimuli_name=(presenceSequence[trialID]?"present":"absent")+"/noise"+(trialID+1);
 
@@ -93,7 +95,7 @@ $( document ).ready(function() {
         $("#trial-container").hide();
         stimuli=load_stimuli(stimuli_name);
         numSlices=stimuli.slices;
-        console.log(stimuli);
+        //console.log(stimuli);
         $("#stimulus img").replaceWith(stimuli.img[currentSlice]);
         $("#loading-bar").hide();
         $("#trial-container").show();
@@ -194,7 +196,7 @@ $( document ).ready(function() {
             relY = e.pageY - parentOffset.top;
             currentSize=Math.round(100*relX/$(this).parent().width());
             //console.log($(this).parent().width(),relX,currentSize);
-            currentSize=Math.max(0,Math.min(currentSize,100));
+            currentSize=Math.max(-2,Math.min(currentSize,98));
             //$("#stimulus").attr("src","stimuli/noise1/noise1_"+currentSlice+".jpg");
             $("#calibration .credit-card-slider-position").css("left",currentSize+"%");
             $("#calibration .credit-card-outline").css("width",(100+(currentSize*300/100))+"px");
@@ -208,15 +210,15 @@ $( document ).ready(function() {
             relY = e.pageY - parentOffset.top;
             currentSize=Math.round(100*relX/$(this).parent().width());
             //console.log($(this).parent().width(),relX,currentSize);
-            currentSize=Math.max(0,Math.min(currentSize,100));
+            currentSize=Math.max(-2,Math.min(currentSize,98));
             //$("#stimulus").attr("src","stimuli/noise1/noise1_"+currentSlice+".jpg");
             $("#calibration .credit-card-slider-position").css("left",currentSize+"%");
-            $("#calibration .credit-card-outline").css("width",(100+(currentSize*300/100))+"px");
-            $("#calibration .credit-card-outline").css("height",((100+(currentSize*300/100))/ccRatio)+"px");
-            $("#calibration .credit-card-slider-position").css("border","1px solid rgb(229, 72, 35)");
+            $("#calibration .credit-card-outline").css("width",(200+(currentSize*300/100))+"px");
+            $("#calibration .credit-card-outline").css("height",((200+(currentSize*300/100))/ccRatio)+"px");
+            $("#calibration .credit-card-slider-position").css("border","3px solid rgb(229, 72, 35)");
         },
         stop: function(e) {
-            $("#calibration .credit-card-slider-position").css("border","1px solid white");
+            $("#calibration .credit-card-slider-position").css("border","3px solid white");
         },
         helper: function( event ) {
             return $( "<div class='ui-widget-header' style='display:none'>I'm a custom helper</div>" );
@@ -225,6 +227,7 @@ $( document ).ready(function() {
 
     $(document).on( 
         'keydown', function(event) { 
+            //console.log(running,calibrating);
             if(running){
                 getDisplayParameters(arr["config"]["display"]);
                 if(event.which==32){ //spacebar
@@ -234,29 +237,38 @@ $( document ).ready(function() {
                     $("#response-text").text("Trial: "+(arr.data.length+1));
                     $("#help").hide();
                 }else if (event.key == "Escape") { 
-                    running=false;
-                    $("#response-container").hide();
+                    /*$("#response-container").hide();
                     $("#trial-container").hide();
                     $("#form-container").show();
                     $("#name").val("");
                     $("body").css("background-color","#39302a");
-                    $("#help").hide();
+                    $("#help").hide();*/
+                    resetExperiment(running, calibrating, animCalibration);
                 } else if(event.key=="h"){
                     $("#help").toggle();
                 }
-            }else if(calibrating && event.which==32){
-                r1=$("#calibration-step2 .blind-spot-dot").css("right");
-                r2=$("#calibration-step2 .blind-spot-cross").css("right");
-                w2=$("#calibration-step2 .blind-spot-cross").css("width");
-                r1=parseInt(r1.substr(0,r1.length-2));
-                r2=parseInt(r2.substr(0,r2.length-2));
-                w2=parseInt(w2.substr(0,w2.length-2))/2;
-                blindSpotDistance.push(r1-(r2-w2));
-                if(blindSpotDistance.length>10){
-                    $("#calibration-step2").toggle();
-                    $("#calibration-step3").toggle();
-                    calibrating=false;
+            }else if(calibrating){
+                if(event.which==32 && $("#calibration-step2").is(":visible")){ //spacebar
+                    r1=$("#calibration-step2 .blind-spot-dot").css("right");
+                    r2=$("#calibration-step2 .blind-spot-cross").css("right");
+                    w2=$("#calibration-step2 .blind-spot-cross").css("width");
+                    r1=parseInt(r1.substr(0,r1.length-2));
+                    r2=parseInt(r2.substr(0,r2.length-2));
+                    w2=parseInt(w2.substr(0,w2.length-2))/2;
+                    blindSpotDistance.push(r1-(r2-w2));
+                    $("#calibration-step2 .blind-spot-dot").css("right","100px");
                     clearInterval(animCalibration);
+                    animCalibration=calibrationMove($("#calibration-step2 .blind-spot-dot"));
+                    if(blindSpotDistance.length>10){
+                        $("#calibration-step2").toggle();
+                        $("#calibration-step3").toggle();
+                        calibrated=true;
+                        clearInterval(animCalibration);
+                    }
+                    return false;
+                }else if(event.key=="Escape"){
+                    cancelPopup(animCalibration);
+                    calibrating=false;
                 }
             }
       }); 
@@ -266,12 +278,8 @@ $( document ).ready(function() {
             // fullscreen is activated
         } else {
             // fullscreen is cancelled
-            /*running=false;
-            $("#response-container").hide();
-            $("#trial-container").hide();
-            $("#form-container").show();
-            //$("#name").val("");
-            $("body").css("background-color","#39302a");*/
+            resetExperiment(running, calibrating, animCalibration);
+            calibrated=running=false;
         }
     });
 
@@ -313,9 +321,13 @@ $( document ).ready(function() {
     });
 
     $( window ).resize(function() {
-        display=getDisplayParameters(arr["config"]["display"]);
-        $("#stimulus").css("text-align","none");
-        $("#stimulus").css("text-align","center");
+        //display=getDisplayParameters(arr["config"]["display"]);
+        //$("#stimulus").css("text-align","none");
+        //$("#stimulus").css("text-align","center");
+        if (!document.fullscreenElement){
+            resetExperiment(running, calibrating, animCalibration);
+            calibrated=running=false;
+        }
     });
 
 
@@ -323,32 +335,66 @@ $( document ).ready(function() {
         $("#help-screen").toggle();
     });
     $(".close").click(function(){
-        $(".popup").hide();
-        $(".background").css("filter","none");
-        $(".background").css("opacity","1");
-        $("#calibration-step1").show();
-        $("#calibration-step2").hide();
-        $("#calibration-step3").hide();
-        clearInterval(animCalibration);
+        cancelPopup(animCalibration);
+        calibrating=false;
     });
     $("#calibration-step1 .button").click(function(){
         left=$("#calibration .credit-card-outline").css("width");
         $("#calibration-step1").toggle();
         $("#calibration-step2").toggle();
         left=parseInt(left.substr(0,left.length-2));
-        console.log(left);
+        //console.log(left);
         pixelsPerCM=ccWidthCM/left;
         animCalibration=calibrationMove($("#calibration-step2 .blind-spot-dot"));
-        calibrating=true;
     });
     $("#calibration-step3 .button").click(function(){
         $(".background").css("filter","none");
         $(".background").css("opacity","1");
-        $("#calibration-step1 .button").toggle();
-        $("#calibration-step3 .button").toggle();
+        $("#calibration-step1").toggle();
+        $("#calibration-step3").toggle();
         $("#calibration").toggle();
-        calibrated=true;
+        calibrating=false;
     });
     
+    $("#create-experiment").click(function(){
+        title=$("#experimentTitle").val();
+        if(title=="")
+            title="Experiment";
+
+        options={title:title,
+                 maxTrials:$("#maxTrials").val(),
+                 presence:$("#presence").val(),
+                 ratings:$("#ratings").val()
+                };
+
+        var hiddenElement = document.createElement('a');
+
+        hiddenElement.href = 'data:attachment/text,' + JSON.stringify(options);
+        hiddenElement.target = '_blank';
+        hiddenElement.id= 'download';
+        
+        hiddenElement.download = title+'.psychonline';
+
+        hiddenElement.text='You finished all the trials, click here to download the data';
+        hiddenElement.click();
+        //document.getElementById('form_container').prepend(document.createElement('br'));
+        //document.getElementById('download').replaceWith(hiddenElement);
+    });
+
+    $('#load-experiment').on('change', function () {
+        var fileReader = new FileReader();
+        var data;
+        fileReader.onload = function (e) {
+          data = JSON.parse(fileReader.result);  // data <-- in this var you have the file data in Base64 format
+          console.log(data["maxTrials"]);
+          $("#experimentTitle").val(data["title"]);
+          $("#maxTrials").val(data["maxTrials"]);
+          $("#presence").val(data["presence"]);
+          $("#ratings").val(data["ratings"]);
+          //console.log(e.target.result, JSON.parse(fileReader.result))
+        };
+        data=fileReader.readAsText($('#load-experiment').prop('files')[0]);
+        //console.log(data);
+    });
     
 });

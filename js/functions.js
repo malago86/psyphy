@@ -107,7 +107,7 @@ function getDisplayParameters( display){
 
     distance=(display.pixelsPerDegree*display.pixelsPerCM/Math.tan(1 * Math.PI/180));
 
-    $('#help #distance-required').html("Distance: "+parseInt(distance)+" cm");
+    $('#help #distance-required').html("Distance: "+parseInt(distance)+" cm ("+parseInt(distance*2.54)+" in)");
     display.stimulusWidth=img.width;
     display.stimulusHeight=img.height;
     display.distance=distance;
@@ -117,13 +117,14 @@ function getDisplayParameters( display){
 
 function calibrationMove(elem) {
     var pos = 100;
-    var direction=-20;
-    var id = setInterval(frame, 60, elem);
+    var direction=20;
+    var id = setInterval(frame, 100, elem);
     
     function frame(elem) {
         var maxDisplacement=$(elem).parent().width()-20;
-        if (pos >= maxDisplacement || pos <= 100) {
-            direction*=-1;
+        if (pos >= maxDisplacement) {
+            //direction*=-1;
+            pos=100;
         }
         pos+=direction;
         //console.log(pos);
@@ -139,4 +140,27 @@ function mean(numbers) {
         total += numbers[i];
     }
     return total / numbers.length;
+}
+
+function cancelPopup(animCalibration){
+    $(".popup").hide();
+    $(".background").css("filter","none");
+    $(".background").css("opacity","1");
+    $("#calibration-step1").show();
+    $("#calibration-step2").hide();
+    $("#calibration-step3").hide();
+    clearInterval(animCalibration);
+}
+
+function resetExperiment(running, calibrating, animCalibration){
+    if (running){
+        $("#response-container").hide();
+        $("#trial-container").hide();
+        $("#help").hide();
+        $("#form-container").show();
+        //$("#name").val("");
+        $("body").css("background-color","#39302a");
+    }else if(calibrating){
+        cancelPopup(animCalibration);
+    }
 }
