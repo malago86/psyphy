@@ -2,6 +2,8 @@
 var arr={};
 var count=0;
 arr={config: {name: ""}, data:[]};
+var stimuli=null;
+var calibrated=true;
 
 $( document ).ready(function() {
     var currentSlice=1;
@@ -12,7 +14,6 @@ $( document ).ready(function() {
 
     var running=false;
     
-    var calibrated=false;
     var calibrating=false;
     var blindSpotDistance=[];
     var pixelsPerCM=0;
@@ -21,8 +22,8 @@ $( document ).ready(function() {
 
     var maxTrials=20;
     var trialID=1;
-
-    var stimuli=null;
+    var folder="stimuli";
+    
     var stimuli_name="noise"+trialID;
 
     var trialSequence=null;
@@ -48,17 +49,21 @@ $( document ).ready(function() {
 
         name = $("#name").val();
         maxTrials = Math.min(50,$("#maxTrials").val());
-        presence = $("#presence").val();
+        presence = 50;
         ratings = $("#ratings").val();
+        folder = $("#folder").val();
+
         monitorHeight = $("#height").val();
         monitorWidth = $("#width").val();
         trialSequence= Array.from(Array(maxTrials).keys());
         //trialSequence.sort(function(a, b) {return 0.5 - Math.random()});
         presenceSequence=Array.from(Array(parseInt(maxTrials*presence/100)), () => 1);
         presenceSequence=presenceSequence.concat(Array.from(Array(parseInt(maxTrials*(1-presence/100))), () => 0));
-        //console.log(presenceSequence);
+        //TODO: CONDITION SEQUENCE PER NUMBER OF TRIALS
         
         trialID=trialSequence[arr.data.length];
+
+        
         
         currentSlice=1;
         
@@ -81,7 +86,8 @@ $( document ).ready(function() {
                     pixelsPerCM:pixelsPerCM,
                     blindSpotDistance:blindSpotDistance,
                     pixelsPerDegree:(mean(blindSpotDistance)/blindSpotDegrees),
-                }
+                },
+                conditions:arr.config.conditions
             },
             startTime:Date.now(),
             data:[]
@@ -89,16 +95,24 @@ $( document ).ready(function() {
 
         document.documentElement.requestFullscreen();
 
-        stimuli_name=(presenceSequence[trialID]?"present":"absent")+"/noise"+(trialID+1);
+        //
 
         $("#form-container").hide();
-        $("#trial-container").hide();
-        stimuli=load_stimuli(stimuli_name);
-        numSlices=stimuli.slices;
+        //$("#trial-container").hide();
+        
+        //stimuli=load_stimuli(stimuli_name);
+        if(!arr.config.conditions){
+            stimuli_name="stimuli/"+(presenceSequence[trialID]?"present":"absent")+"/noise"+(trialID+1);
+            stimuli=load_stimuli(stimuli_name);
+        }else
+            stimuli=load_stimuli_drive(arr.config.conditions[0].stimuli.stimulusFiles[trialID],arr.config.conditions[0].stimuli.locationFiles[trialID]);
         //console.log(stimuli);
+        //document.body.appendChild(stimuli.img[1]);
+        numSlices=stimuli.slices;
+        
         $("#stimulus img").replaceWith(stimuli.img[currentSlice]);
-        $("#loading-bar").hide();
-        $("#trial-container").show();
+        
+        //$("#trial-container").show();
         running=true;
         $("body").css("background-color","rgb(128,128,128)");
         stimulusOn=Date.now();
@@ -117,6 +131,12 @@ $( document ).ready(function() {
         currentSlice=Math.max(1,Math.min(numSlices,currentSlice));
         //$("#stimulus").attr("src","stimuli/noise1/noise1_"+currentSlice+".jpg");
         $("#stimulus img").replaceWith(stimuli.img[currentSlice]);
+        
+        /*var sp2 = document.getElementById("stimulus");
+        console.log(stimuli.img[currentSlice]);
+        sp2.replaceChild(stimuli.img[currentSlice], sp2.childNodes[0]);*/
+        //$("#stimulus #stimulus-img").attr("src",stimuli.img[currentSlice]);
+
         $("#stimulus-slice").text("Slice: "+currentSlice);
         $("#stimulus-scroll-position").css("height",100*currentSlice/numSlices+"%");
     });
@@ -289,10 +309,7 @@ $( document ).ready(function() {
         arr.data.push({
             trialID:trialID,
             rating:rating,
-            present:presenceSequence[trialID],
-            signalType:stimuli.info.signalSize<10?"MCALC":"MASS",
-            locations:stimuli.info.locations,
-            contrast:stimuli.info.contrast,
+            info:stimuli.info,
             stimulusOn:stimulusOn,
             stimulusOff:Date.now()
             });
@@ -308,10 +325,16 @@ $( document ).ready(function() {
         }else{
             trialID=trialSequence[arr.data.length];
             //console.log(trialSequence);
-            stimuli_name=(presenceSequence[trialID]?"present":"absent")+"/noise"+(trialID+1);
+            //stimuli_name=folder+"/"+(presenceSequence[trialID]?"present":"absent")+"/noise"+(trialID+1);
             $("#response-container").hide();
-            $("#trial-container").show();
-            stimuli=load_stimuli(stimuli_name);
+            //$("#trial-container").show();
+            //stimuli=load_stimuli(stimuli_name);
+            if(!arr.config.conditions){
+                stimuli_name="stimuli/"+(presenceSequence[trialID]?"present":"absent")+"/noise"+(trialID+1);
+                stimuli=load_stimuli(stimuli_name);
+            }else
+                stimuli=load_stimuli_drive(arr.config.conditions[0].stimuli.stimulusFiles[trialID],arr.config.conditions[0].stimuli.locationFiles[trialID]);
+            
             $("#stimulus img").replaceWith(stimuli.img[currentSlice]);
             $("#stimulus-slice").text("Slice: "+currentSlice);
             $("#stimulus-scroll-position").css("height",100*currentSlice/numSlices+"%");
@@ -364,7 +387,9 @@ $( document ).ready(function() {
         options={title:title,
                  maxTrials:$("#maxTrials").val(),
                  presence:$("#presence").val(),
-                 ratings:$("#ratings").val()
+                 ratings:$("#ratings").val(),
+                 folder:$("#folder").val(),
+                 conditions:arr.config.conditions
                 };
 
         var hiddenElement = document.createElement('a');
@@ -389,8 +414,9 @@ $( document ).ready(function() {
           console.log(data["maxTrials"]);
           $("#experimentTitle").val(data["title"]);
           $("#maxTrials").val(data["maxTrials"]);
-          $("#presence").val(data["presence"]);
           $("#ratings").val(data["ratings"]);
+          arr.config.conditions=data["conditions"];
+          //$("#folder").val(data["folder"]);
           //console.log(e.target.result, JSON.parse(fileReader.result))
         };
         data=fileReader.readAsText($('#load-experiment').prop('files')[0]);
