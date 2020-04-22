@@ -5,8 +5,10 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 <script src="js/functions.js"></script>
 <script src="js/main.js"></script>
+<script src="js/google_drive.js"></script>
 <link rel="stylesheet" type="text/css" href="css/style.css">
 <link rel="icon" href="favicon.ico" type="image/x-icon" />
+<link href="../fontawesome/css/all.css" rel="stylesheet"> 
 </head>
 <body>
     <div class="background">
@@ -21,7 +23,7 @@
             <div class="credits">Developed by <a href="mailto:lago@psych.ucsb.edu">Miguel Lago</a>
                 <br>
                 <br>
-                version 0.1
+                version <i>in development</i>
             </div> 
             
             <input id="name" type="text" placeholder="Name" value="" />
@@ -45,35 +47,34 @@
                 <table>
                     <tr>
                         <th>Title</th>
-                        <td><input id="experimentTitle" type="text" style="font-size:20px; width:100%;text-align:center" placeholder="Title"/></td>
+                        <td><input id="experimentTitle" type="text" style="font-size:20px; width:100%;text-align:center" placeholder="optional"/></td>
                     </tr>
                     <tr>
                         <th># trials</th>
                         <td><input id="maxTrials" type="text" placeholder="# trials" style="font-size:20px; width:100%;text-align:center" value="50"/></td>
                     </tr>
                     <tr>
-                        <th>% presence</th>
-                        <td><input id="presence" type="text" placeholder="% presence" style="font-size:20px; width:100%;text-align:center" value="50"/></td>
-                    </tr>
-                    <tr>
                         <th># ratings</th>
                         <td><input id="ratings" type="text" placeholder="# ratings" style="font-size:20px; width:100%;text-align:center" value="8"/></td>
                     </tr>
                 </table>
-                <input type="submit" id="create-experiment" value="Create experiment file" style="font-size:14px; height:17px;line-height: 0px;"/>
+                <input type="submit" id="google-drive-select" value="Find stimuli on Google Drive" style="font-size:14px; height:17px;line-height: 0px;"/>
+                <input type="submit" id="create-experiment" value="Download experiment config" style="font-size:14px; height:17px;line-height: 0px;"/>
             </div>
                 
         </div>
-        <!--<div id="loading-bar">
-            <div id="loading-bar-progress"></div>
-        </div>-->
+        <div id="loading-bar">
+            <div id="loading-bar-progress"><i class="fas fa-hourglass fa-spin" style="
+                top: 3px;
+                position: absolute;"></i></div>
+        </div>
 
         <div id="trial-container">
             <div class="instructions">To scroll you can click and drag on the stimuli or use the mouse wheel</div>
             <div id="stimulus-slice">Slice: 1</div>
             <div id="stimulus-container">
                 <div id="stimulus">
-                    <img src="stimuli/present/noise1/noise_1.jpg">
+                    <img id="stimulus-img">
                 </div>
                 <div id="stimulus-scroll-bar">
                     <div id="stimulus-scroll-background"></div>
@@ -145,5 +146,14 @@
             You can start the experiment.</h1>
             <div class="button">Finish</div>
         </div>    
+    </div>
+
+    <div class="popup" id="google-drive-dialog">
+        <div class="close">&#10060;</div>
+        <p>Introduce the Google Drive Folder ID: <input id="google-drive-url" type="text" placeholder="https://..." 
+            style="font-size:20px; width:90%;text-align:center" value="https://drive.google.com/drive/u/2/folders/1V4HE0d5cpIde595gTPj7qv4jseUjklsk"/>
+        <p><input type="submit" id="google-drive-submit" value="Find files" /></p>
+        <div id="google-drive-result"></div>
+        <div class="button">Finish</div>
     </div>
 </body>

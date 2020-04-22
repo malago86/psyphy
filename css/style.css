@@ -46,7 +46,7 @@ a[id=download]{
     text-decoration: none;
 }
 
-a[id=download]:hover, #load-experiment-label:hover{
+a[id=download]:hover, #load-experiment-label:hover, #google-drive-result ul li:hover{
     /*border:rgb(229, 72, 35) 3px solid;*/
     background:rgb(229, 72, 35);
     color:white;
@@ -142,18 +142,24 @@ input[type="submit"]:hover, .button:hover{
 }
 
 #loading-bar{
+    position: fixed;
     width:80%;
     height:30px;
     background:black;
     margin:auto;
     padding:5px;
-    margin-top:10px;
-    margin-bottom: 10px;
+    left:10%;
+    top:30%;
+    font-size: 23px;
+    color: gray;
+    text-align: center;
+    display:none;
 }
 #loading-bar-progress{
     width:0%;
     height:100%;
     background:white;
+    position:relative;
 }
 
 #response-container{
@@ -281,7 +287,7 @@ input[type="submit"]:hover, .button:hover{
     margin-top:20px;
     margin-left:20%;
 }
-#calibration .button{
+.popup .button{
     position: absolute;
     bottom:5%;
     right:5%;
@@ -321,7 +327,7 @@ table{
 }
 table th{
     text-align: right;
-    width:33%;
+    width:40%;
 }
 table td{
     text-align: left;
@@ -343,4 +349,24 @@ input[type="file"] {
     display: inline-block;
     padding: 6px 12px;
     cursor: pointer;
+}
+
+#google-drive-result ul{
+    list-style: none;
+    width: 50%;
+    margin: auto;
+    padding:0;
+}
+
+#google-drive-result ul li{
+    margin-top:5px;
+    padding:10px;
+    border: 1px solid rgb(229, 72, 35);
+    cursor: pointer;
+}
+
+#google-drive-result ul li .files-found{
+    float: right;
+    font-size: 10px;
+    line-height: 20px;
 }
