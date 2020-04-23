@@ -4,16 +4,15 @@ var count=0;
 arr={config: {name: ""}, data:[]};
 var stimuli=null;
 var calibrated=true;
+var running=false;
 
 $( document ).ready(function() {
-    var currentSlice=1;
+    var currentSlice=0;
     var parentOffset = null;
     var prevX,prevY,relX,relY;
     var scrollSpeed=8;
     var numSlices=100;
 
-    var running=false;
-    
     var calibrating=false;
     var blindSpotDistance=[];
     var pixelsPerCM=0;
@@ -22,7 +21,6 @@ $( document ).ready(function() {
 
     var maxTrials=20;
     var trialID=1;
-    var folder="stimuli";
     
     var stimuli_name="noise"+trialID;
 
@@ -48,10 +46,9 @@ $( document ).ready(function() {
         }
 
         name = $("#name").val();
-        maxTrials = Math.min(50,$("#maxTrials").val());
+        //maxTrials = Math.min(50,$("#maxTrials").val());
         presence = 50;
         ratings = $("#ratings").val();
-        folder = $("#folder").val();
 
         monitorHeight = $("#height").val();
         monitorWidth = $("#width").val();
@@ -65,7 +62,7 @@ $( document ).ready(function() {
 
         
         
-        currentSlice=1;
+        currentSlice=0;
         
 
 		if(name==""){
@@ -73,9 +70,7 @@ $( document ).ready(function() {
         }
 
         arr={config: {
-                name: name,
                 maxTrials: maxTrials,
-                presence: presence,
                 display:{
                     degreesPerPixel:degreesPerPixel,
                     stimulusHeight:null,
@@ -104,8 +99,29 @@ $( document ).ready(function() {
         if(!arr.config.conditions){
             stimuli_name="stimuli/"+(presenceSequence[trialID]?"present":"absent")+"/noise"+(trialID+1);
             stimuli=load_stimuli(stimuli_name);
-        }else
-            stimuli=load_stimuli_drive(arr.config.conditions[0].stimuli.stimulusFiles[trialID],arr.config.conditions[0].stimuli.locationFiles[trialID]);
+            arr.config.presence=presence;
+            arr.config.name=name;
+            arr.config.ratings=ratings;
+        }else{
+            conditionSequence=[];
+            trialSequence=[];
+            numConditions=arr.config.conditions.length;
+            for(i=0;i<numConditions;i++){
+                trialSequence=trialSequence.concat(Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>k));
+                conditionSequence=conditionSequence.concat(Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>i));
+            }
+
+            sortIndexes=Array.from({length:conditionSequence.length},(v,k)=>k);
+            sortIndexes.sort(function(a, b) {return 0.5 - Math.random()});
+
+            arr.sortIndexes=sortIndexes;
+            arr.trialSequence=trialSequence;
+            arr.conditionSequence=conditionSequence;
+            arr.config.maxTrials=sortIndexes.length;
+
+            stimuli=load_stimuli_drive(arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.stimulusFiles[trialSequence[sortIndexes[trialID]]],
+                arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.locationFiles[trialSequence[sortIndexes[trialID]]]);
+        }
         //console.log(stimuli);
         //document.body.appendChild(stimuli.img[1]);
         numSlices=stimuli.slices;
@@ -113,13 +129,14 @@ $( document ).ready(function() {
         $("#stimulus img").replaceWith(stimuli.img[currentSlice]);
         
         //$("#trial-container").show();
-        running=true;
+        //running=true;
         $("body").css("background-color","rgb(128,128,128)");
-        stimulusOn=Date.now();
+        
     });
 
-    $("#stimulus-scroll-position").css("height",100*currentSlice/numSlices+"%");
+    $("#stimulus-scroll-position").css("height",100*(currentSlice+1)/numSlices+"%");
     $(window).bind('mousewheel DOMMouseScroll', function(event){
+        if(!running) return;
         if (event.originalEvent.wheelDelta > 0 || event.originalEvent.detail < 0) {
             // scroll up
             currentSlice-=1;
@@ -128,7 +145,7 @@ $( document ).ready(function() {
             // scroll down
             currentSlice+=1;
         }
-        currentSlice=Math.max(1,Math.min(numSlices,currentSlice));
+        currentSlice=Math.max(0,Math.min(numSlices-1,currentSlice));
         //$("#stimulus").attr("src","stimuli/noise1/noise1_"+currentSlice+".jpg");
         $("#stimulus img").replaceWith(stimuli.img[currentSlice]);
         
@@ -137,12 +154,13 @@ $( document ).ready(function() {
         sp2.replaceChild(stimuli.img[currentSlice], sp2.childNodes[0]);*/
         //$("#stimulus #stimulus-img").attr("src",stimuli.img[currentSlice]);
 
-        $("#stimulus-slice").text("Slice: "+currentSlice);
-        $("#stimulus-scroll-position").css("height",100*currentSlice/numSlices+"%");
+        $("#stimulus-slice").text("Slice: "+(currentSlice+1));
+        $("#stimulus-scroll-position").css("height",100*(currentSlice+1)/numSlices+"%");
     });
 
     $("#stimulus").draggable({
         start: function(e) {
+            if(!running) return;
             parentOffset = $(this).offset(); 
             relX = e.pageX - parentOffset.left;
             relY = e.pageY - parentOffset.top;
@@ -150,6 +168,7 @@ $( document ).ready(function() {
             prevY=relY;
         },
         drag: function(e) {
+            if(!running) return;
             relX = e.pageX - parentOffset.left;
             relY = e.pageY - parentOffset.top;
             //console.log(relX,relY);
@@ -162,11 +181,11 @@ $( document ).ready(function() {
                 prevX=relX;
                 prevY=relY;
             }
-            currentSlice=Math.max(1,Math.min(numSlices,currentSlice));
+            currentSlice=Math.max(0,Math.min(numSlices-1,currentSlice));
             //$("#stimulus").attr("src","stimuli/noise1/noise1_"+currentSlice+".jpg");
             $("#stimulus img").replaceWith(stimuli.img[currentSlice]);
-            $("#stimulus-slice").text("Slice: "+currentSlice);
-            $("#stimulus-scroll-position").css("height",100*currentSlice/numSlices+"%");
+            $("#stimulus-slice").text("Slice: "+(currentSlice+1));
+            $("#stimulus-scroll-position").css("height",100*(currentSlice+1)/numSlices+"%");
         },
         stop: function(e) {
       
@@ -178,25 +197,27 @@ $( document ).ready(function() {
 
     $("#stimulus-scroll-bar").draggable({
         start: function(e) {
+            if(!running) return;
             parentOffset = $(this).offset(); 
             relX = e.pageX - parentOffset.left;
             relY = e.pageY - parentOffset.top;
             currentSlice=Math.round(numSlices*relY/$(this).height());
-            currentSlice=Math.max(1,Math.min(numSlices,currentSlice));
+            currentSlice=Math.max(0,Math.min(numSlices-1,currentSlice));
             //$("#stimulus").attr("src","stimuli/noise1/noise1_"+currentSlice+".jpg");
             $("#stimulus img").replaceWith(stimuli.img[currentSlice]);
-            $("#stimulus-slice").text("Slice: "+currentSlice);
-            $("#stimulus-scroll-position").css("height",100*currentSlice/numSlices+"%");
+            $("#stimulus-slice").text("Slice: "+(currentSlice+1));
+            $("#stimulus-scroll-position").css("height",100*(currentSlice+1)/numSlices+"%");
         },
         drag: function(e) {
+            if(!running) return;
             relX = e.pageX - parentOffset.left;
             relY = e.pageY - parentOffset.top;
             currentSlice=Math.round(numSlices*relY/$(this).height());
-            currentSlice=Math.max(1,Math.min(numSlices,currentSlice));
+            currentSlice=Math.max(0,Math.min(numSlices-1,currentSlice));
             //$("#stimulus").attr("src","stimuli/noise1/noise1_"+currentSlice+".jpg");
             $("#stimulus img").replaceWith(stimuli.img[currentSlice]);
-            $("#stimulus-slice").text("Slice: "+currentSlice);
-            $("#stimulus-scroll-position").css("height",100*currentSlice/numSlices+"%");
+            $("#stimulus-slice").text("Slice: "+(currentSlice+1));
+            $("#stimulus-scroll-position").css("height",100*(currentSlice+1)/numSlices+"%");
         },
         stop: function(e) {
       
@@ -307,14 +328,15 @@ $( document ).ready(function() {
         rating = $(this).attr("num");
         //console.log(stimuli.info);
         arr.data.push({
-            trialID:trialID,
+            trialID:trialSequence[sortIndexes[trialID]],
             rating:rating,
             info:stimuli.info,
             stimulusOn:stimulusOn,
-            stimulusOff:Date.now()
+            stimulusOff:Date.now(),
+            condition:conditionSequence[sortIndexes[trialID]],
             });
         //console.log(arr);
-        currentSlice=1;
+        currentSlice=0;
         if(arr.data.length==maxTrials){
             //finish
             arr.stopTime=Date.now();
@@ -325,20 +347,22 @@ $( document ).ready(function() {
         }else{
             trialID=trialSequence[arr.data.length];
             //console.log(trialSequence);
-            //stimuli_name=folder+"/"+(presenceSequence[trialID]?"present":"absent")+"/noise"+(trialID+1);
             $("#response-container").hide();
             //$("#trial-container").show();
             //stimuli=load_stimuli(stimuli_name);
             if(!arr.config.conditions){
                 stimuli_name="stimuli/"+(presenceSequence[trialID]?"present":"absent")+"/noise"+(trialID+1);
                 stimuli=load_stimuli(stimuli_name);
-            }else
-                stimuli=load_stimuli_drive(arr.config.conditions[0].stimuli.stimulusFiles[trialID],arr.config.conditions[0].stimuli.locationFiles[trialID]);
+            }else{
+                //stimuli=load_stimuli_drive(arr.config.conditions[0].stimuli.stimulusFiles[trialID],arr.config.conditions[0].stimuli.locationFiles[trialID]);
+                stimuli=load_stimuli_drive(arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.stimulusFiles[trialSequence[sortIndexes[trialID]]],
+                    arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.locationFiles[trialSequence[sortIndexes[trialID]]]);
+            }
             
             $("#stimulus img").replaceWith(stimuli.img[currentSlice]);
-            $("#stimulus-slice").text("Slice: "+currentSlice);
-            $("#stimulus-scroll-position").css("height",100*currentSlice/numSlices+"%");
-            stimulusOn=Date.now();
+            $("#stimulus-slice").text("Slice: "+(currentSlice+1));
+            $("#stimulus-scroll-position").css("height",100*(currentSlice+1)/numSlices+"%");
+            //stimulusOn=Date.now();
         }
         return false;
     });
@@ -385,10 +409,7 @@ $( document ).ready(function() {
             title="Experiment";
 
         options={title:title,
-                 maxTrials:$("#maxTrials").val(),
-                 presence:$("#presence").val(),
                  ratings:$("#ratings").val(),
-                 folder:$("#folder").val(),
                  conditions:arr.config.conditions
                 };
 
@@ -411,12 +432,13 @@ $( document ).ready(function() {
         var data;
         fileReader.onload = function (e) {
           data = JSON.parse(fileReader.result);  // data <-- in this var you have the file data in Base64 format
-          console.log(data["maxTrials"]);
-          $("#experimentTitle").val(data["title"]);
-          $("#maxTrials").val(data["maxTrials"]);
-          $("#ratings").val(data["ratings"]);
+          
+          //$("#experimentTitle").val(data["title"]);
+          //$("#ratings").val(data["ratings"]);
+          $("#form-box").html("<h3>Experiment \""+data["title"]+"\" loaded!</h3>");
+          arr.config.ratings=data["ratings"];
+          arr.config.name=data["title"];
           arr.config.conditions=data["conditions"];
-          //$("#folder").val(data["folder"]);
           //console.log(e.target.result, JSON.parse(fileReader.result))
         };
         data=fileReader.readAsText($('#load-experiment').prop('files')[0]);

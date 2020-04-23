@@ -4,6 +4,7 @@ function load_stimuli_drive(list,info){
     $("#loading-bar").show();
     $("#trial-container").hide();
     loaded=0;
+    running=false;
     var stimuli = {img:[],info:null};
     for(i=0;i<list.length;i++){
         stimuli.img[i]=new Image();
@@ -16,25 +17,25 @@ function load_stimuli_drive(list,info){
                 $("#loading-bar").hide();
                 $("#trial-container").show();
                 $("#loading-bar-progress").css("width","0%")
+                running=true;
+                stimulusOn=Date.now();
             }
             else
                 $("#loading-bar-progress").css("width",(100*(loaded+1)/list.length)+"%")
         }
 
-        stimuli.img[i].src = "php/getStimuli.php?file-id="+list[i].id;
+        stimuli.img[i].src = "php/getStimuli.php?file-id="+list[i].id+"&name="+list[i].name;
     }
 
-    stimuli.slices=i-1;
-    stimuli.info={
-        signalSize:0,
-        locations:[-1,-1,-1],
-        contrast:0,
-    };
-    $.getJSON("php/getStimuli.php?file-id="+info.id,function( data ) {
-        stimuli.info=data;
-    }).fail(function() {
-        
-    });
+    stimuli.slices=list.length;
+    stimuli.info={};
+    if(info){
+        $.getJSON("php/getStimuli.php?file-id="+info.id,function( data ) {
+            stimuli.info=data;
+        }).fail(function() {
+            
+        });
+    }
 
     return stimuli;
 }
