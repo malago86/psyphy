@@ -13,7 +13,7 @@ require_once("google-api-php-client-2.4.1/vendor/autoload.php");
 
 
 $client = new Google_Client();
-$client->setAuthConfig('credentials.json');
+$client->setAuthConfig('../credentials/credentials.json');
 $client->addScope('https://www.googleapis.com/auth/drive');
 
 $service = new Google_Service_Drive($client);
