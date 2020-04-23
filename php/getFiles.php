@@ -23,7 +23,8 @@ if(isset($_GET['drive-folder-id'])){
     $driveFolderId=explode("/",$driveFolderId);
     $driveFolderId=end($driveFolderId);
     $optParams = array(
-        'pageSize' => 100,
+        'pageSize' => 1000,
+        'orderBy' => 'name_natural',
         'fields' => 'nextPageToken, files(id, name, mimeType)',
         'q' => "'".$driveFolderId."' in parents",
     );
@@ -49,7 +50,8 @@ if(isset($_GET['drive-folder-id'])){
     $driveFolderId=explode("/",$driveFolderId);
     $driveFolderId=end($driveFolderId);
     $optParams = array(
-        'pageSize' => 100,
+        'pageSize' => 1000,
+        'orderBy' => 'name_natural',
         'fields' => 'nextPageToken, files(id, name, mimeType)',
         'q' => "'".$driveFolderId."' in parents",
     );
