@@ -55,7 +55,7 @@ $( document ).ready(function() {
         var count=0;
         for(i=0;i<arr.config.conditions.length;i++)
             count+=arr.config.conditions[i].stimuli.stimulusFiles.length;
-        $("#maxTrials").val(count);
+        $("#create-experiment").removeClass("disabled");
     });
 });
 

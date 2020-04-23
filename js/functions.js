@@ -1,5 +1,17 @@
 
 var loaded=0;
+function moveLoadingBar(loaded, max){
+    loaded++;
+    if(loaded==max){
+        $("#loading-bar").hide();
+        $("#trial-container").show();
+        $("#loading-bar-progress").css("width","0%")
+        running=true;
+        stimulusOn=Date.now();
+    }
+    else
+        $("#loading-bar-progress").css("width",(100*(loaded+1)/max)+"%");
+}
 function load_stimuli_drive(list,info){
     $("#loading-bar").show();
     $("#trial-container").hide();
@@ -7,9 +19,16 @@ function load_stimuli_drive(list,info){
     running=false;
     var stimuli = {img:[],info:null};
     for(i=0;i<list.length;i++){
-        stimuli.img[i]=new Image();
-        stimuli.img[i].stimId=i;
-        stimuli.img[i].stimMax=list.length;
+        if(list[i].name.includes("mp4")){
+            stimuli.img[i]=document.createElement("video");
+            //stimuli.img[i].setAttribute("controls","controls");
+            moveLoadingBar(loaded,list.length);
+        }else{
+            stimuli.img[i]=new Image();
+            stimuli.img[i].stimId=i;
+            stimuli.img[i].stimMax=list.length;
+        }
+        stimuli.img[i].id="stimulus-img";
         
         stimuli.img[i].onload = function() { 
             loaded++;
@@ -21,7 +40,7 @@ function load_stimuli_drive(list,info){
                 stimulusOn=Date.now();
             }
             else
-                $("#loading-bar-progress").css("width",(100*(loaded+1)/list.length)+"%")
+                $("#loading-bar-progress").css("width",(100*(loaded+1)/list.length)+"%");
         }
 
         stimuli.img[i].src = "php/getStimuli.php?file-id="+list[i].id+"&name="+list[i].name;
@@ -189,7 +208,7 @@ function finishExperiment(arr){
     
     $.ajax({
         type: "POST",
-        url: "https://people.psych.ucsb.edu/lago/miguel/3d-detection/upload.php",
+        url: "upload.php",
         data: results,
         dataType: "json",
         success: function(data){
@@ -204,7 +223,7 @@ function finishExperiment(arr){
 }
 
 function getDisplayParameters( display){
-    var img = document.querySelector("#stimulus img");
+    var img = document.querySelector("#stimulus #stimulus-img");
 
     
     //$('#help #monitor-size').html("Monitor: "+parseInt(display.monitorWidth)+" by "+parseInt(display.monitorHeight) +" cm");

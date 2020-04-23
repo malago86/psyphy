@@ -63,6 +63,13 @@ input[type="text"]{
     text-align: center;
 }
 
+#form-box input[type="text"]{
+    border-width: 1px;
+}
+#form-box input[type="submit"]{
+    border-width:2px;
+}
+
 input[id="name"]{
     padding: 10px;
     font-size: 1.5em;
@@ -80,6 +87,13 @@ input[type="submit"], .button{
 }
 input[type="submit"]:hover, .button:hover{
     background:rgb(229, 72, 35);
+}
+input[type="submit"].disabled{
+    color: #a2a2a2;
+    border-color: #a2a2a2;
+}
+input[type="submit"].disabled:hover{
+    background:inherit;
 }
 
 .instructions{

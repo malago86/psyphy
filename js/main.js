@@ -82,7 +82,8 @@ $( document ).ready(function() {
                     blindSpotDistance:blindSpotDistance,
                     pixelsPerDegree:(mean(blindSpotDistance)/blindSpotDegrees),
                 },
-                conditions:arr.config.conditions
+                conditions:arr.config.conditions,
+                ratings:arr.config.ratings,
             },
             startTime:Date.now(),
             data:[]
@@ -126,7 +127,7 @@ $( document ).ready(function() {
         //document.body.appendChild(stimuli.img[1]);
         numSlices=stimuli.slices;
         
-        $("#stimulus img").replaceWith(stimuli.img[currentSlice]);
+        $("#stimulus #stimulus-img").replaceWith(stimuli.img[currentSlice]);
         
         //$("#trial-container").show();
         //running=true;
@@ -147,7 +148,7 @@ $( document ).ready(function() {
         }
         currentSlice=Math.max(0,Math.min(numSlices-1,currentSlice));
         //$("#stimulus").attr("src","stimuli/noise1/noise1_"+currentSlice+".jpg");
-        $("#stimulus img").replaceWith(stimuli.img[currentSlice]);
+        $("#stimulus #stimulus-img").replaceWith(stimuli.img[currentSlice]);
         
         /*var sp2 = document.getElementById("stimulus");
         console.log(stimuli.img[currentSlice]);
@@ -183,7 +184,7 @@ $( document ).ready(function() {
             }
             currentSlice=Math.max(0,Math.min(numSlices-1,currentSlice));
             //$("#stimulus").attr("src","stimuli/noise1/noise1_"+currentSlice+".jpg");
-            $("#stimulus img").replaceWith(stimuli.img[currentSlice]);
+            $("#stimulus #stimulus-img").replaceWith(stimuli.img[currentSlice]);
             $("#stimulus-slice").text("Slice: "+(currentSlice+1));
             $("#stimulus-scroll-position").css("height",100*(currentSlice+1)/numSlices+"%");
         },
@@ -204,7 +205,7 @@ $( document ).ready(function() {
             currentSlice=Math.round(numSlices*relY/$(this).height());
             currentSlice=Math.max(0,Math.min(numSlices-1,currentSlice));
             //$("#stimulus").attr("src","stimuli/noise1/noise1_"+currentSlice+".jpg");
-            $("#stimulus img").replaceWith(stimuli.img[currentSlice]);
+            $("#stimulus #stimulus-i1mg").replaceWith(stimuli.img[currentSlice]);
             $("#stimulus-slice").text("Slice: "+(currentSlice+1));
             $("#stimulus-scroll-position").css("height",100*(currentSlice+1)/numSlices+"%");
         },
@@ -215,7 +216,7 @@ $( document ).ready(function() {
             currentSlice=Math.round(numSlices*relY/$(this).height());
             currentSlice=Math.max(0,Math.min(numSlices-1,currentSlice));
             //$("#stimulus").attr("src","stimuli/noise1/noise1_"+currentSlice+".jpg");
-            $("#stimulus img").replaceWith(stimuli.img[currentSlice]);
+            $("#stimulus #stimulus-img").replaceWith(stimuli.img[currentSlice]);
             $("#stimulus-slice").text("Slice: "+(currentSlice+1));
             $("#stimulus-scroll-position").css("height",100*(currentSlice+1)/numSlices+"%");
         },
@@ -273,10 +274,14 @@ $( document ).ready(function() {
                 getDisplayParameters(arr["config"]["display"]);
                 if(event.which==32){ //spacebar
                     $("#trial-container").hide();
-                    show_confidence_ratings(ratings);
+                    show_confidence_ratings(arr.config.ratings);
                     $("#response-container").show();
                     $("#response-text").text("Trial: "+(arr.data.length+1));
                     $("#help").hide();
+                }else if(event.key=="Enter"){
+                    if($("#stimulus #stimulus-img").is("video")){
+                        $("#stimulus #stimulus-img").trigger( $("#stimulus #stimulus-img").prop('paused') ? 'play' : 'pause');
+                    }
                 }else if (event.key == "Escape") { 
                     /*$("#response-container").hide();
                     $("#trial-container").hide();
@@ -337,7 +342,7 @@ $( document ).ready(function() {
             });
         //console.log(arr);
         currentSlice=0;
-        if(arr.data.length==maxTrials){
+        if(arr.data.length==arr.config.maxTrials){
             //finish
             arr.stopTime=Date.now();
             running=false;
@@ -359,7 +364,7 @@ $( document ).ready(function() {
                     arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.locationFiles[trialSequence[sortIndexes[trialID]]]);
             }
             
-            $("#stimulus img").replaceWith(stimuli.img[currentSlice]);
+            $("#stimulus #stimulus-img").replaceWith(stimuli.img[currentSlice]);
             $("#stimulus-slice").text("Slice: "+(currentSlice+1));
             $("#stimulus-scroll-position").css("height",100*(currentSlice+1)/numSlices+"%");
             //stimulusOn=Date.now();
@@ -404,6 +409,7 @@ $( document ).ready(function() {
     });
     
     $("#create-experiment").click(function(){
+        if($(this).hasClass("disabled")) return false;
         title=$("#experimentTitle").val();
         if(title=="")
             title="Experiment";
@@ -435,7 +441,7 @@ $( document ).ready(function() {
           
           //$("#experimentTitle").val(data["title"]);
           //$("#ratings").val(data["ratings"]);
-          $("#form-box").html("<h3>Experiment \""+data["title"]+"\" loaded!</h3>");
+          $("#form-box").html("<h3>Experiment \""+data["title"]+"\" loaded!</h3><a href='.'>Reset</a>");
           arr.config.ratings=data["ratings"];
           arr.config.name=data["title"];
           arr.config.conditions=data["conditions"];
