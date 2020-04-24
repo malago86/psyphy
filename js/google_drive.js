@@ -38,7 +38,7 @@ $( document ).ready(function() {
 
                     folder_ids.push({name:folderName,
                         id:thisElement.attr("google-folder-id"),
-                        stimuli:{locationFiles:[],stimulusFiles:[]}
+                        stimuli:{infoFiles:[],stimulusFiles:[]}
                     });
                     //thisElement.css("background-color","green");
                     loading=true;
@@ -66,7 +66,7 @@ function getStimuli(data, id, thisElement){
                 stimulusImages=[];
                 for(j=0;j<dataIn.length;j++){
                     if(dataIn[j].name.includes(".json"))
-                        folder_ids[id].stimuli.locationFiles.push(dataIn[j]);
+                        folder_ids[id].stimuli.infoFiles.push(dataIn[j]);
                     else
                         stimulusImages.push(dataIn[j]);
                 }

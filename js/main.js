@@ -1,13 +1,17 @@
 
 var arr={};
 var count=0;
-arr={config: {name: ""}, data:[]};
+arr={name: "",config: {options:{}}, data:[]};
 var stimuli=null;
 var calibrated=true;
 var running=false;
 
+var stimulusOn=null;
+var stimulusOff=null;
+var currentSlice=0;
+
 $( document ).ready(function() {
-    var currentSlice=0;
+    
     var parentOffset = null;
     var prevX,prevY,relX,relY;
     var scrollSpeed=8;
@@ -26,13 +30,15 @@ $( document ).ready(function() {
 
     var trialSequence=null;
     var presenceSequence=null;
-    var stimulusOn=null;
+    
     var display=null;
     var degreesPerPixel=0.022;
     var monitorHeight,monitorWidth;
 
     var ccWidthCM=8.560;
     var blindSpotDegrees=13; //13.59
+
+    var marks=[];
 
     $("#start-experiment").click(function(e){
         if(!calibrated){
@@ -83,7 +89,7 @@ $( document ).ready(function() {
                     pixelsPerDegree:(mean(blindSpotDistance)/blindSpotDegrees),
                 },
                 conditions:arr.config.conditions,
-                ratings:arr.config.ratings,
+                options:arr.config.options,
             },
             startTime:Date.now(),
             data:[]
@@ -92,6 +98,8 @@ $( document ).ready(function() {
         document.documentElement.requestFullscreen();
 
         //
+        marks=[];
+        $(".mark").remove();
 
         $("#form-container").hide();
         //$("#trial-container").hide();
@@ -100,9 +108,10 @@ $( document ).ready(function() {
         if(!arr.config.conditions){
             stimuli_name="stimuli/"+(presenceSequence[trialID]?"present":"absent")+"/noise"+(trialID+1);
             stimuli=load_stimuli(stimuli_name);
-            arr.config.presence=presence;
-            arr.config.name=name;
-            arr.config.ratings=ratings;
+            arr.name=name;
+            arr.config.options.ratings=ratings;
+            sortIndexes=trialSequence;
+            conditionSequence=presenceSequence;
         }else{
             conditionSequence=[];
             trialSequence=[];
@@ -115,13 +124,14 @@ $( document ).ready(function() {
             sortIndexes=Array.from({length:conditionSequence.length},(v,k)=>k);
             sortIndexes.sort(function(a, b) {return 0.5 - Math.random()});
 
+            arr.name=name;
             arr.sortIndexes=sortIndexes;
             arr.trialSequence=trialSequence;
             arr.conditionSequence=conditionSequence;
             arr.config.maxTrials=sortIndexes.length;
 
             stimuli=load_stimuli_drive(arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.stimulusFiles[trialSequence[sortIndexes[trialID]]],
-                arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.locationFiles[trialSequence[sortIndexes[trialID]]]);
+                arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.infoFiles[trialSequence[sortIndexes[trialID]]]);
         }
         //console.log(stimuli);
         //document.body.appendChild(stimuli.img[1]);
@@ -273,8 +283,9 @@ $( document ).ready(function() {
             if(running){
                 getDisplayParameters(arr["config"]["display"]);
                 if(event.which==32){ //spacebar
+                    stimulusOff=Date.now();
                     $("#trial-container").hide();
-                    show_confidence_ratings(arr.config.ratings);
+                    show_confidence_ratings(arr.config.options.ratings);
                     $("#response-container").show();
                     $("#response-text").text("Trial: "+(arr.data.length+1));
                     $("#help").hide();
@@ -317,7 +328,48 @@ $( document ).ready(function() {
                     calibrating=false;
                 }
             }
-      }); 
+    }); 
+
+    $("#stimulus").dblclick(function(event){ //double click event
+        //console.log(event.target, event.offsetX,event.offsetY);
+        if(arr.config.options.mark.localeCompare("true")==0){
+            et=$(event.target);
+            //console.log(et,"double");
+            if(et.is("circle") || et.is("svg")){
+                var parentOffset = $(this).parent().offset(); 
+                var relX = event.pageX - parentOffset.left;
+                var relY = event.pageY - parentOffset.top;
+            }else{
+                var relX=event.offsetX;
+                var relY=event.offsetY;
+            }
+            $(".mark").remove();
+        
+            found=false;
+            for(i=marks.length-1;i>=0;i--){
+                //console.log(i,relX,relY,marks[i][0],marks[i][1],Math.getDistance(relX,relY,marks[i][0],marks[i][1]));
+                if(Math.getDistance(relX,relY,marks[i][0],marks[i][1])<40){
+                    //delete mark
+                    marks.splice(i,1);
+                    found=true;
+                }
+            }
+            if(!found)
+                marks.push(Array(relX,relY, parseInt($("#stimulus #stimulus-img").attr("numImg"))));
+            //console.log(marks);
+            for(i=0;i<marks.length;i++){
+                newelement=$('<svg height="100" width="100"><circle cx="50" cy="50" r="40" stroke="white" stroke-width="4" fill="transparent" /></svg>');
+                newelement.addClass("mark");
+                newelement.appendTo($(this));
+                newelement.css({
+                    "left":marks[i][0]-newelement.width()/2+"px",
+                    "top" :marks[i][1]-newelement.height()/2+"px"
+                });
+            }
+        }
+
+    
+    });
 
     document.addEventListener("fullscreenchange", function (event) {
         if (document.fullscreenElement) {
@@ -329,7 +381,7 @@ $( document ).ready(function() {
         }
     });
 
-      $('body').on('click', '.rating',function(e) { 
+    $('body').on('click', '.rating',function(e) { 
         rating = $(this).attr("num");
         //console.log(stimuli.info);
         arr.data.push({
@@ -337,8 +389,9 @@ $( document ).ready(function() {
             rating:rating,
             info:stimuli.info,
             stimulusOn:stimulusOn,
-            stimulusOff:Date.now(),
+            stimulusOff:stimulusOff,
             condition:conditionSequence[sortIndexes[trialID]],
+            marks:marks,
             });
         //console.log(arr);
         currentSlice=0;
@@ -351,6 +404,8 @@ $( document ).ready(function() {
             finishExperiment(arr);
         }else{
             trialID=trialSequence[arr.data.length];
+            marks=[];
+            $(".mark").remove();
             //console.log(trialSequence);
             $("#response-container").hide();
             //$("#trial-container").show();
@@ -359,9 +414,8 @@ $( document ).ready(function() {
                 stimuli_name="stimuli/"+(presenceSequence[trialID]?"present":"absent")+"/noise"+(trialID+1);
                 stimuli=load_stimuli(stimuli_name);
             }else{
-                //stimuli=load_stimuli_drive(arr.config.conditions[0].stimuli.stimulusFiles[trialID],arr.config.conditions[0].stimuli.locationFiles[trialID]);
                 stimuli=load_stimuli_drive(arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.stimulusFiles[trialSequence[sortIndexes[trialID]]],
-                    arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.locationFiles[trialSequence[sortIndexes[trialID]]]);
+                    arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.infoFiles[trialSequence[sortIndexes[trialID]]]);
             }
             
             $("#stimulus #stimulus-img").replaceWith(stimuli.img[currentSlice]);
@@ -410,22 +464,29 @@ $( document ).ready(function() {
     
     $("#create-experiment").click(function(){
         if($(this).hasClass("disabled")) return false;
-        title=$("#experimentTitle").val();
-        if(title=="")
-            title="Experiment";
+        
+        fields=$("#form-box").find("input");
+        options={};
+        for(f=0;f<fields.length;f++){
+            if(fields[f].type.localeCompare("button")!=0){
+                name=$(fields[f]).attr("id");
+                options[name]=$(fields[f]).val();
+            }
+        }
 
-        options={title:title,
-                 ratings:$("#ratings").val(),
-                 conditions:arr.config.conditions
-                };
+        if($("#title").val()=="")
+            options["title"]="Experiment";
+
+        download={options:options,
+                 conditions:arr.config.conditions};
 
         var hiddenElement = document.createElement('a');
 
-        hiddenElement.href = 'data:attachment/text,' + JSON.stringify(options);
+        hiddenElement.href = 'data:attachment/text,' + JSON.stringify(download);
         hiddenElement.target = '_blank';
         hiddenElement.id= 'download';
         
-        hiddenElement.download = title+'.psychonline';
+        hiddenElement.download = options["title"]+'.pso';
 
         hiddenElement.text='You finished all the trials, click here to download the data';
         hiddenElement.click();
@@ -441,9 +502,14 @@ $( document ).ready(function() {
           
           //$("#experimentTitle").val(data["title"]);
           //$("#ratings").val(data["ratings"]);
-          $("#form-box").html("<h3>Experiment \""+data["title"]+"\" loaded!</h3><a href='.'>Reset</a>");
-          arr.config.ratings=data["ratings"];
-          arr.config.name=data["title"];
+          arr.config.options={};
+          $("#form-box").html("<h3>Experiment \""+data["options"]["title"]+"\" loaded!</h3><a href='.'>Reset</a>");
+          for(key in data.options){
+              //console.log(key);
+              arr.config.options[key]=data.options[key];
+          }
+          //arr.config.ratings=data["ratings"];
+          //arr.config.name=data["title"];
           arr.config.conditions=data["conditions"];
           //console.log(e.target.result, JSON.parse(fileReader.result))
         };

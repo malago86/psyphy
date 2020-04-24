@@ -66,7 +66,7 @@ input[type="text"]{
 #form-box input[type="text"]{
     border-width: 1px;
 }
-#form-box input[type="submit"]{
+#form-box input[type="button"]{
     border-width:2px;
 }
 
@@ -76,7 +76,7 @@ input[id="name"]{
     width:200px;
 }
 
-input[type="submit"], .button{
+input[type="button"], .button{
 	border: 3px solid rgb(229, 72, 35);
 	background: rgb(57, 48, 42);
 	color:white;
@@ -85,10 +85,10 @@ input[type="submit"], .button{
     margin: 10px;
     cursor:hand;
 }
-input[type="submit"]:hover, .button:hover{
+input[type="button"]:hover, .button:hover{
     background:rgb(229, 72, 35);
 }
-input[type="submit"].disabled{
+input[type="button"].disabled{
     color: #a2a2a2;
     border-color: #a2a2a2;
 }
@@ -123,10 +123,12 @@ input[type="submit"].disabled:hover{
     /*height: 85%;*/
     width:100%;
     text-align:center;
+    position:relative;
 }
 
-#stimulus img{
+#stimulus-img{
     /*height:100%;*/
+    
 }
 
 #stimulus-scroll-bar{
@@ -355,6 +357,14 @@ table td{
     margin-top:10px;
 }
 
+.form-box input[type="checkbox"]{
+    height: 25px;
+    width: 25px;
+    background-color: rgb(57, 48, 42);
+    border: rgb(229, 72, 35) 3px solid;
+    cursor: pointer;
+  }
+
 input[type="file"] {
     display: none;
 }
@@ -384,3 +394,12 @@ input[type="file"] {
     font-size: 10px;
     line-height: 20px;
 }
+
+.mark {
+    /*height: 100px;
+    width: 100px;
+    background-color: #bbb;
+    border-radius: 50%;
+    display: inline-block;*/
+    position: absolute;
+  }

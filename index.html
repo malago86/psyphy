@@ -34,29 +34,33 @@
             </select>-->
             
             
-            <input type="submit" id="start-experiment" value="Start!" />
+            <input type="button" id="start-experiment" value="Start!" />
             <br>
             <label id="load-experiment-label" for="load-experiment">Upload experiment file</label>
             
-            <input type="file" id="load-experiment" value="Upload experiment file" style="font-size:14px; height:17px;line-height: 0px;"/>
+            <input type="file" accept=".pso" id="load-experiment" value="Upload experiment file" style="font-size:14px; height:17px;line-height: 0px;"/>
             
             
             
-            <div class="form-box" id="form-box">
+            <form class="form-box" id="form-box">
                 <p style="font-weight: bold;">Create experiment file</p>
                 <table>
                     <tr>
                         <th>Title</th>
-                        <td><input id="experimentTitle" type="text" style="font-size:20px; width:100%;text-align:center" placeholder="optional"/></td>
+                        <td><input id="title" type="text" style="font-size:20px; width:100%;text-align:center" placeholder="optional"/></td>
                     </tr>
                     <tr>
                         <th># ratings</th>
                         <td><input id="ratings" type="text" placeholder="# ratings" style="font-size:20px; width:100%;text-align:center" value="8"/></td>
                     </tr>
+                    <tr>
+                        <th>Marks</th>
+                        <td><input id="mark" type="checkbox" style="font-size:20px; width:100%;text-align:center" value="false"/></td>
+                    </tr>
                 </table>
-                <input type="submit" id="google-drive-select" value="Find stimuli on Google Drive" style="font-size:14px; height:17px;line-height: 0px;"/>
-                <input type="submit" id="create-experiment" value="Download experiment config" style="font-size:14px; height:17px;line-height: 0px;" class="disabled"/>
-            </div>
+                <input type="button" id="google-drive-select" value="Find stimuli on Google Drive" style="font-size:14px; height:17px;line-height: 0px;"/>
+                <input type="button" id="create-experiment" value="Download experiment config" style="font-size:14px; height:17px;line-height: 0px;" class="disabled"/>
+            </form>
                 
         </div>
         <div id="loading-bar">
@@ -148,7 +152,7 @@
         <div class="close">&#10060;</div>
         <p>Introduce the Google Drive Folder ID: <input id="google-drive-url" type="text" placeholder="https://..." 
             style="font-size:20px; width:90%;text-align:center" value="https://drive.google.com/drive/u/2/folders/1V4HE0d5cpIde595gTPj7qv4jseUjklsk"/>
-        <p><input type="submit" id="google-drive-submit" value="Find files" /></p>
+        <p><input type="button" id="google-drive-submit" value="Find files" /></p>
         <div id="google-drive-result"></div>
         <div class="button">Finish</div>
     </div>

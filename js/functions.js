@@ -29,6 +29,7 @@ function load_stimuli_drive(list,info){
             stimuli.img[i].stimMax=list.length;
         }
         stimuli.img[i].id="stimulus-img";
+        stimuli.img[i].setAttribute("numImg",i+1);
         
         stimuli.img[i].onload = function() { 
             loaded++;
@@ -36,6 +37,7 @@ function load_stimuli_drive(list,info){
                 $("#loading-bar").hide();
                 $("#trial-container").show();
                 $("#loading-bar-progress").css("width","0%")
+                $("#stimulus-scroll-position").css("height",100*(currentSlice+1)/list.length+"%");
                 running=true;
                 stimulusOn=Date.now();
             }
@@ -56,28 +58,38 @@ function load_stimuli_drive(list,info){
         });
     }
 
+    if(list.length>1)
+        $("#stimulus-scroll-bar").show();
+    else
+        $("#stimulus-scroll-bar").hide();
+
     return stimuli;
 }
 
 function load_stimuli(name){
     var stimuli = {img:[],info:null};
+    running=false;
     loaded=0;
     var exists=true;
-    var i=1;
+    var i=0;
     while(exists){
-        if(imageExists(name+"/noise_"+i+".jpg")){
+        if(imageExists(name+"/noise_"+(i+1)+".jpg")){
             stimuli.img[i]=new Image();
             stimuli.img[i].onload = function() { 
                 loaded++;
                 if(loaded==50){
                     $("#loading-bar").hide();
                     $("#trial-container").show();
-                    $("#loading-bar-progress").css("width","0%")
+                    $("#loading-bar-progress").css("width","0%");
+                    $("#stimulus-scroll-position").css("height",100*(currentSlice+1)/loaded+"%");
+                    stimulusOn=Date.now();
                 }
                 else
                     $("#loading-bar-progress").css("width",(100*(loaded+1)/50)+"%")
             }
-            stimuli.img[i].src = name+"/noise_"+i+".jpg";   
+            stimuli.img[i].src = name+"/noise_"+(i+1)+".jpg";   
+            stimuli.img[i].id="stimulus-img";
+            stimuli.img[i].setAttribute("numImg",i+1);
             i+=1;
         }else{
             exists=false;
@@ -87,7 +99,7 @@ function load_stimuli(name){
         }
     }
 
-    stimuli.slices=i-1;
+    stimuli.slices=stimuli.img.length;
     stimuli.info={
         signalSize:0,
         locations:[-1,-1,-1],
@@ -98,6 +110,7 @@ function load_stimuli(name){
     }).fail(function() {
         
     });
+    running=true;
 
     return stimuli;
 }
@@ -329,3 +342,14 @@ function selectStimuli(files) {
       reader.readAsDataURL(f);
     }
   }
+
+  Math.getDistance = function( x1, y1, x2, y2 ) {
+	
+	var 	xs = x2 - x1,
+		ys = y2 - y1;		
+	
+	xs *= xs;
+	ys *= ys;
+	 
+	return Math.sqrt( xs + ys );
+};
