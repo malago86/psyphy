@@ -5,9 +5,17 @@ function moveLoadingBar(loaded, max){
     if(loaded==max){
         $("#loading-bar").hide();
         $("#trial-container").show();
-        $("#loading-bar-progress").css("width","0%")
+        $("#loading-bar-progress").css("width","0%");
         running=true;
         stimulusOn=Date.now();
+        if(arr.config.options.timeout>0){
+            setTimeout(
+                showConfidenceRatings,
+                arr.config.options.timeout,
+                arr.config.options.ratings,
+                arr.data.length+1
+                );
+        }
     }
     else
         $("#loading-bar-progress").css("width",(100*(loaded+1)/max)+"%");
@@ -21,8 +29,11 @@ function load_stimuli_drive(list,info){
     for(i=0;i<list.length;i++){
         if(list[i].name.includes("mp4")){
             stimuli.img[i]=document.createElement("video");
+            stimuli.img[i].autoplay = true;
             //stimuli.img[i].setAttribute("controls","controls");
-            moveLoadingBar(loaded,list.length);
+            stimuli.img[i].onloadeddata = function() {
+                moveLoadingBar(loaded,list.length);
+            };
         }else{
             stimuli.img[i]=new Image();
             stimuli.img[i].stimId=i;
@@ -53,15 +64,23 @@ function load_stimuli_drive(list,info){
     if(info){
         $.getJSON("php/getStimuli.php?file-id="+info.id,function( data ) {
             stimuli.info=data;
+            if(stimuli.info.text && preparation==false){
+                $("#trial-container .text").show();
+                $("#trial-container .text span").html(stimuli.info.text);
+                preparation=true;
+            }
         }).fail(function() {
             
         });
     }
 
-    if(list.length>1)
+    if(list.length>1){
         $("#stimulus-scroll-bar").show();
-    else
+        $("#stimulus-slice").show();
+    }else{
         $("#stimulus-scroll-bar").hide();
+        $("#stimulus-slice").hide();
+    }
 
     return stimuli;
 }
@@ -200,7 +219,9 @@ function imageExists(image_url){
  
 }
 
-function show_confidence_ratings(ratings){
+function showConfidenceRatings(ratings, trialNumber){
+    stimulusOff=Date.now();
+    $("#trial-container").hide();
     $("#confidence-scale").text("");
     for(i=0;i<ratings;i++){
         if(i<ratings/2) divclass="absent";
@@ -213,7 +234,9 @@ function show_confidence_ratings(ratings){
             text: i+1
         }).appendTo('#confidence-scale');
     }
-
+    $("#response-container").show();
+    $("#response-text").text("Trial: "+trialNumber);
+    $("#help").hide();
 }
   
 function finishExperiment(arr){
@@ -353,3 +376,25 @@ function selectStimuli(files) {
 	 
 	return Math.sqrt( xs + ys );
 };
+
+function nextTrial(stimulus, currentSlice, numSlices){
+    $("#stimulus #stimulus-img").replaceWith(stimulus);
+    $("#stimulus-slice").text("Slice: "+(currentSlice+1));
+    $("#stimulus-scroll-position").css("height",100*(currentSlice+1)/numSlices+"%");
+}
+
+function validURL(str) {
+    var pattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
+      '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|'+ // domain name
+      '((\\d{1,3}\\.){3}\\d{1,3}))'+ // OR ip (v4) address
+      '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+ // port and path
+      '(\\?[;&a-z\\d%_.~+=-]*)?'+ // query string
+      '(\\#[-a-z\\d_]*)?$','i'); // fragment locator
+    return !!pattern.test(str);
+  }
+
+  function popupWindow(url, title, win, w, h) {
+    const y = win.top.outerHeight / 2 + win.top.screenY - ( h / 2);
+    const x = win.top.outerWidth / 2 + win.top.screenX - ( w / 2);
+    return win.open(url, title, `toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width=${w}, height=${h}, top=${y}, left=${x}`);
+}

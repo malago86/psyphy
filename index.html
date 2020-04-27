@@ -50,6 +50,10 @@
                         <td><input id="title" type="text" style="font-size:20px; width:100%;text-align:center" placeholder="optional"/></td>
                     </tr>
                     <tr>
+                        <th>Instructions URL</th>
+                        <td><input id="instructions" type="text" placeholder="optional" style="font-size:20px; width:100%;text-align:center"/></td>
+                    </tr>
+                    <tr>
                         <th># ratings</th>
                         <td><input id="ratings" type="text" placeholder="# ratings" style="font-size:20px; width:100%;text-align:center" value="8"/></td>
                     </tr>
@@ -57,20 +61,23 @@
                         <th>Marks</th>
                         <td><input id="mark" type="checkbox" style="font-size:20px; width:100%;text-align:center" value="false"/></td>
                     </tr>
+                    <tr>
+                        <th>Trial timeout (<abbr title="milliseconds, set to empty or 0 to disable">ms</abbr>)</th>
+                        <td><input id="timeout" type="text" placeholder="optional" style="font-size:20px; width:100%;text-align:center"/></td>
+                    </tr>
                 </table>
-                <input type="button" id="google-drive-select" value="Find stimuli on Google Drive" style="font-size:14px; height:17px;line-height: 0px;"/>
+                <br><input type="button" id="google-drive-select" value="Find stimuli on Google Drive" style="font-size:14px; height:17px;line-height: 0px;"/><br>
                 <input type="button" id="create-experiment" value="Download experiment config" style="font-size:14px; height:17px;line-height: 0px;" class="disabled"/>
             </form>
                 
         </div>
         <div id="loading-bar">
-            <div id="loading-bar-progress"><i class="fas fa-spinner fa-spin" style="
-                top: 3px;
-                position: absolute;"></i></div>
+            <div id="loading-bar-text">Loading... <i class="fas fa-spinner fa-spin"></i></div>
+            <div id="loading-bar-progress"></div>
         </div>
 
         <div id="trial-container">
-            <div class="instructions">To scroll you can click and drag on the stimuli or use the mouse wheel</div>
+            <div class="text"><span>To scroll you can click and drag on the stimuli or use the mouse wheel</span></div>
             <div id="stimulus-slice">Slice: 1</div>
             <div id="stimulus-container">
                 <div id="stimulus">

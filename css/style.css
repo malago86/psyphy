@@ -12,7 +12,7 @@ a:hover{
     color:#cccccc;
 }
 
-p strong, h1 strong{
+strong{
     color:#ff8a6e;
 }
 
@@ -24,7 +24,7 @@ p strong, h1 strong{
 
 .form-box{
     display:block;
-    width:50%;
+    width:60%;
     border: 3px solid rgb(229, 72, 35);
     background: rgb(57, 48, 42);
     color: white;
@@ -91,13 +91,29 @@ input[type="button"]:hover, .button:hover{
 input[type="button"].disabled{
     color: #a2a2a2;
     border-color: #a2a2a2;
-}
-input[type="submit"].disabled:hover{
+    cursor:unset;
     background:inherit;
 }
 
-.instructions{
+.text{
     text-align: center;
+    background: gray;
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;   
+    z-index: 1;
+}
+
+.text span{
+    top: 50%;
+    position: relative;
+    text-align: center;
+    font-size: 24px;
+}
+.instructions{
+    text-align:center;
 }
 
 #trial-container{
@@ -116,6 +132,7 @@ input[type="submit"].disabled:hover{
     margin:auto;
     width: fit-content;
     position: relative;
+    margin-top: 80px;
 }
 
 #stimulus{
@@ -124,11 +141,6 @@ input[type="submit"].disabled:hover{
     width:100%;
     text-align:center;
     position:relative;
-}
-
-#stimulus-img{
-    /*height:100%;*/
-    
 }
 
 #stimulus-scroll-bar{
@@ -172,10 +184,13 @@ input[type="submit"].disabled:hover{
     display:none;
 }
 #loading-bar-progress{
+    max-width:99%;
     width:0%;
-    height:100%;
+    height:80%;
     background:white;
-    position:relative;
+    position: absolute;
+    top: 10%;
+    z-index: -1;
 }
 
 #response-container{
@@ -343,7 +358,7 @@ table{
 }
 table th{
     text-align: right;
-    width:40%;
+    width:42%;
 }
 table td{
     text-align: left;

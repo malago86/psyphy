@@ -5,6 +5,7 @@ arr={name: "",config: {options:{}}, data:[]};
 var stimuli=null;
 var calibrated=true;
 var running=false;
+var preparation=false;
 
 var stimulusOn=null;
 var stimulusOff=null;
@@ -136,8 +137,9 @@ $( document ).ready(function() {
         //console.log(stimuli);
         //document.body.appendChild(stimuli.img[1]);
         numSlices=stimuli.slices;
-        
-        $("#stimulus #stimulus-img").replaceWith(stimuli.img[currentSlice]);
+
+
+        nextTrial(stimuli.img[currentSlice], currentSlice, numSlices);
         
         //$("#trial-container").show();
         //running=true;
@@ -283,12 +285,14 @@ $( document ).ready(function() {
             if(running){
                 getDisplayParameters(arr["config"]["display"]);
                 if(event.which==32){ //spacebar
-                    stimulusOff=Date.now();
-                    $("#trial-container").hide();
-                    show_confidence_ratings(arr.config.options.ratings);
-                    $("#response-container").show();
-                    $("#response-text").text("Trial: "+(arr.data.length+1));
-                    $("#help").hide();
+                    if(preparation){
+                        preparation=false;
+                        stimulusOn=Date.now();
+                        $("#trial-container .text").hide();
+                        //nextTrial(currentSlice,numSlices);
+                        return;
+                    }
+                    showConfidenceRatings(arr.config.options.ratings,arr.data.length+1);
                 }else if(event.key=="Enter"){
                     if($("#stimulus #stimulus-img").is("video")){
                         $("#stimulus #stimulus-img").trigger( $("#stimulus #stimulus-img").prop('paused') ? 'play' : 'pause');
@@ -417,11 +421,8 @@ $( document ).ready(function() {
                 stimuli=load_stimuli_drive(arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.stimulusFiles[trialSequence[sortIndexes[trialID]]],
                     arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.infoFiles[trialSequence[sortIndexes[trialID]]]);
             }
-            
-            $("#stimulus #stimulus-img").replaceWith(stimuli.img[currentSlice]);
-            $("#stimulus-slice").text("Slice: "+(currentSlice+1));
-            $("#stimulus-scroll-position").css("height",100*(currentSlice+1)/numSlices+"%");
-            //stimulusOn=Date.now();
+            nextTrial(stimuli.img[currentSlice], currentSlice, numSlices);
+
         }
         return false;
     });
@@ -503,11 +504,16 @@ $( document ).ready(function() {
           //$("#experimentTitle").val(data["title"]);
           //$("#ratings").val(data["ratings"]);
           arr.config.options={};
-          $("#form-box").html("<h3>Experiment \""+data["options"]["title"]+"\" loaded!</h3><a href='.'>Reset</a>");
           for(key in data.options){
               //console.log(key);
               arr.config.options[key]=data.options[key];
           }
+          instructions="";
+          if(validURL(arr.config.options.instructions)){
+              instructions="<h2><a href='"+arr.config.options.instructions+"' target='popup' onclick=\"popupWindow('"+arr.config.options.instructions+"', 'popup', window, 800, 800);\">Read instructions for this experiment</a></h2>"
+          }
+
+          $("#form-box").html("<h3>Experiment <strong>"+data["options"]["title"]+"</strong> loaded!</h3>"+instructions+"<p><a href='.'>Reset</a></p>");
           //arr.config.ratings=data["ratings"];
           //arr.config.name=data["title"];
           arr.config.conditions=data["conditions"];
