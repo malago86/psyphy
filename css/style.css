@@ -104,13 +104,14 @@ input[type="button"].disabled{
     top: 0;
     left: 0;   
     z-index: 1;
+    display:none;
 }
 
-.text span{
-    top: 50%;
-    position: relative;
+.text div{
     text-align: center;
     font-size: 24px;
+    display:table-cell;
+    vertical-align: middle;
 }
 .instructions{
     text-align:center;
@@ -132,7 +133,6 @@ input[type="button"].disabled{
     margin:auto;
     width: fit-content;
     position: relative;
-    margin-top: 80px;
 }
 
 #stimulus{
@@ -196,7 +196,17 @@ input[type="button"].disabled{
 #response-container{
     margin:auto;
     display:none;
-    margin-top:200px;
+    position: absolute;
+    height:100%;
+    width:100%;
+    top:0;
+    left:0;
+
+}
+#response-container span{
+    display:table-cell;
+    vertical-align: middle;
+    text-align:center;
 }
 
 .rating{
@@ -359,6 +369,8 @@ table{
 table th{
     text-align: right;
     width:42%;
+    padding-right: 10px;
+    height:25px;
 }
 table td{
     text-align: left;
@@ -373,11 +385,11 @@ table td{
 }
 
 .form-box input[type="checkbox"]{
-    height: 25px;
-    width: 25px;
+    height: 23px;
     background-color: rgb(57, 48, 42);
     border: rgb(229, 72, 35) 3px solid;
     cursor: pointer;
+    margin:0;
   }
 
 input[type="file"] {
@@ -417,4 +429,40 @@ input[type="file"] {
     border-radius: 50%;
     display: inline-block;*/
     position: absolute;
+  }
+#slider-value{
+    float: left;
+    text-align: center;
+    width: 15%;
+}
+.slider {
+    float:right;
+    -webkit-appearance: none;
+    width: 85%;
+    height: 5px;
+    border-radius: 5px;  
+    background: white;
+    outline: none;
+    opacity: 0.7;
+    margin-top: 6px !important;
+}
+.slider:hover {
+    opacity: 1; /* Fully shown on mouse-over */
+}
+
+  /* The slider handle (use -webkit- (Chrome, Opera, Safari, Edge) and -moz- (Firefox) to override default look) */
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none; /* Override default look */
+    appearance: none;
+    width: 25px; /* Set a specific slider handle width */
+    height: 15px; /* Slider handle height */
+    background: rgb(229, 72, 35); /* Green background */
+    cursor: pointer; /* Cursor on hover */
+  }
+  
+  .slider::-moz-range-thumb {
+    width: 25px; /* Set a specific slider handle width */
+    height: 15px; /* Slider handle height */
+    background: rgb(229, 72, 35); /* Green background */
+    cursor: pointer; /* Cursor on hover */
   }

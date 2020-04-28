@@ -65,8 +65,8 @@ function load_stimuli_drive(list,info){
         $.getJSON("php/getStimuli.php?file-id="+info.id,function( data ) {
             stimuli.info=data;
             if(stimuli.info.text && preparation==false){
-                $("#trial-container .text").show();
-                $("#trial-container .text span").html(stimuli.info.text);
+                $("#trial-container .text").css( "display", "table" );
+                $("#trial-container .text div").html(stimuli.info.text);
                 preparation=true;
             }
         }).fail(function() {
@@ -101,6 +101,9 @@ function load_stimuli(name){
                     $("#trial-container").show();
                     $("#loading-bar-progress").css("width","0%");
                     $("#stimulus-scroll-position").css("height",100*(currentSlice+1)/loaded+"%");
+                    $("#trial-container .text").css( "display", "table" );
+                    $("#trial-container .text div").html(stimuli.info.text);
+                    preparation=true;
                     stimulusOn=Date.now();
                 }
                 else
@@ -234,7 +237,7 @@ function showConfidenceRatings(ratings, trialNumber){
             text: i+1
         }).appendTo('#confidence-scale');
     }
-    $("#response-container").show();
+    $("#response-container").css("display","table");
     $("#response-text").text("Trial: "+trialNumber);
     $("#help").hide();
 }

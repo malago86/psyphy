@@ -1,17 +1,20 @@
 
-var arr={};
+var version="0.1";
+
+
 var count=0;
-arr={name: "",config: {options:{}}, data:[]};
+var arr={name: "",config: {options:{}}, data:[]};
 var stimuli=null;
 var calibrated=true;
 var running=false;
 var preparation=false;
-
+ 
 var stimulusOn=null;
 var stimulusOff=null;
 var currentSlice=0;
 
 $( document ).ready(function() {
+    $("#version").text(version);
     
     var parentOffset = null;
     var prevX,prevY,relX,relY;
@@ -91,6 +94,7 @@ $( document ).ready(function() {
                 },
                 conditions:arr.config.conditions,
                 options:arr.config.options,
+                version:version,
             },
             startTime:Date.now(),
             data:[]
@@ -521,6 +525,10 @@ $( document ).ready(function() {
         };
         data=fileReader.readAsText($('#load-experiment').prop('files')[0]);
         //console.log(data);
+    });
+
+    $("#ratings").on('mousemove',function(){
+        $("#slider-value").text($(this).val());  
     });
     
 });
