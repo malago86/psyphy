@@ -52,20 +52,30 @@
                     </tr>
                     <tr>
                         <th>Instructions URL</th>
-                        <td><input id="instructions" type="text" placeholder="optional" style="font-size:20px; width:100%;text-align:center"/></td>
+                        <td><input id="instructions" type="text" placeholder="optional" style="width:100%;text-align:center"/></td>
                     </tr>
                     <tr>
                         <th># ratings</th>
                         <td>
                             <div id="slider-value">8</div>
                             <div class="slidecontainer">
-                                <input type="range" min="2" max="10" value="8" class="slider" id="ratings">
+                                <input type="range" min="1" max="10" value="8" class="slider" id="ratings">
                             </div>
                         </td>
                     </tr>
                     <tr>
-                        <th>Marks</th>
+                        <th>Marks <abbr title="Allow double click to mark the stimulus">(?)</abbr></th>
                         <td><input id="mark" type="checkbox" style="font-size:20px; width:100%;text-align:center" value="false"/></td>
+                    </tr>
+                    <tr>
+                        <th>Multiple stimuli <abbr title="Behavior if several images are found in each stimulus folder">(?)</abbr></th>
+                        <td>
+                            <select id="multiple">
+                                <option value="first">Show first</option>
+                                <option value="MAFC">MAFC</option>
+                                <option value="3D">3D scroll</option>
+                            </select>
+                        </td>
                     </tr>
                     <tr>
                         <th>Trial timeout (<abbr title="milliseconds, set to empty or 0 to disable">ms</abbr>)</th>
@@ -83,20 +93,22 @@
         </div>
 
         <div id="trial-container">
-            <div class="text"><div>Find the signal in the image. Use the mouse wheel or drag the scrollbar to change the slice<br><br>
-            Press ESC to quit the experiment, data will be lost<br><br>
-            Press SPACEBAR to continue</div></div>
-            <div id="stimulus-slice">Slice: 1</div>
-            <div id="stimulus-container">
-                <div id="stimulus">
-                    <img id="stimulus-img">
+            <div class="cell">
+                <div class="text"><div>Find the signal in the image. Use the mouse wheel or drag the scrollbar to change the slice<br><br>
+                Press ESC to quit the experiment, data will be lost<br><br>
+                Press SPACEBAR to continue</div></div>
+                <div id="stimulus-slice">Slice: 1</div>
+                <div id="stimulus-container">
+                    <div id="stimulus">
+                        <img class="stimulus-img">
+                    </div>
+                    <div id="stimulus-scroll-bar">
+                        <div id="stimulus-scroll-background"></div>
+                        <div id="stimulus-scroll-position"></div>
+                    </div>
                 </div>
-                <div id="stimulus-scroll-bar">
-                    <div id="stimulus-scroll-background"></div>
-                    <div id="stimulus-scroll-position"></div>
-                </div>
+                <div class="instructions">Press SPACEBAR to continue</div>
             </div>
-            <div class="instructions">Press SPACEBAR to continue</div>
         </div>
 
         <div id="response-container">

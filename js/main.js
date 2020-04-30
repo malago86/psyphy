@@ -13,13 +13,18 @@ var stimulusOn=null;
 var stimulusOff=null;
 var currentSlice=0;
 
+var trialSequence=null;
+var trialID=1;
+var marks=[];
+var numSlices=100;
+
 $( document ).ready(function() {
     $("#version").text(version);
     
     var parentOffset = null;
     var prevX,prevY,relX,relY;
     var scrollSpeed=8;
-    var numSlices=100;
+    
 
     var calibrating=false;
     var blindSpotDistance=[];
@@ -28,11 +33,11 @@ $( document ).ready(function() {
     
 
     var maxTrials=20;
-    var trialID=1;
+    
     
     var stimuli_name="noise"+trialID;
 
-    var trialSequence=null;
+    
     var presenceSequence=null;
     
     var display=null;
@@ -42,7 +47,7 @@ $( document ).ready(function() {
     var ccWidthCM=8.560;
     var blindSpotDegrees=13; //13.59
 
-    var marks=[];
+    
 
     $("#start-experiment").click(function(e){
         if(!calibrated){
@@ -141,7 +146,11 @@ $( document ).ready(function() {
         //console.log(stimuli);
         //document.body.appendChild(stimuli.img[1]);
         numSlices=stimuli.slices;
-
+        if(arr.config.options.multiple.localeCompare("MAFC")==0){
+            $("#trial-container .instructions").text("Double click on the signal-present stimulus");
+        }else{
+            $("#trial-container .instructions").text("Press SPACEBAR to continue");
+        }
 
         nextTrial(stimuli.img[currentSlice], currentSlice, numSlices);
         
@@ -153,7 +162,7 @@ $( document ).ready(function() {
 
     $("#stimulus-scroll-position").css("height",100*(currentSlice+1)/numSlices+"%");
     $(window).bind('mousewheel DOMMouseScroll', function(event){
-        if(!running) return;
+        if(!running || numSlices==1) return;
         if (event.originalEvent.wheelDelta > 0 || event.originalEvent.detail < 0) {
             // scroll up
             currentSlice-=1;
@@ -164,7 +173,7 @@ $( document ).ready(function() {
         }
         currentSlice=Math.max(0,Math.min(numSlices-1,currentSlice));
         //$("#stimulus").attr("src","stimuli/noise1/noise1_"+currentSlice+".jpg");
-        $("#stimulus #stimulus-img").replaceWith(stimuli.img[currentSlice]);
+        $("#stimulus .stimulus-img").replaceWith(stimuli.img[currentSlice]);
         
         /*var sp2 = document.getElementById("stimulus");
         console.log(stimuli.img[currentSlice]);
@@ -185,7 +194,7 @@ $( document ).ready(function() {
             prevY=relY;
         },
         drag: function(e) {
-            if(!running) return;
+            if(!running || numSlices==1) return;
             relX = e.pageX - parentOffset.left;
             relY = e.pageY - parentOffset.top;
             //console.log(relX,relY);
@@ -200,7 +209,7 @@ $( document ).ready(function() {
             }
             currentSlice=Math.max(0,Math.min(numSlices-1,currentSlice));
             //$("#stimulus").attr("src","stimuli/noise1/noise1_"+currentSlice+".jpg");
-            $("#stimulus #stimulus-img").replaceWith(stimuli.img[currentSlice]);
+            $("#stimulus .stimulus-img").replaceWith(stimuli.img[currentSlice]);
             $("#stimulus-slice").text("Slice: "+(currentSlice+1));
             $("#stimulus-scroll-position").css("height",100*(currentSlice+1)/numSlices+"%");
         },
@@ -214,25 +223,25 @@ $( document ).ready(function() {
 
     $("#stimulus-scroll-bar").draggable({
         start: function(e) {
-            if(!running) return;
+            if(!running || numSlices==1) return;
             parentOffset = $(this).offset(); 
             relX = e.pageX - parentOffset.left;
             relY = e.pageY - parentOffset.top;
             currentSlice=Math.round(numSlices*relY/$(this).height());
             currentSlice=Math.max(0,Math.min(numSlices-1,currentSlice));
             //$("#stimulus").attr("src","stimuli/noise1/noise1_"+currentSlice+".jpg");
-            $("#stimulus #stimulus-i1mg").replaceWith(stimuli.img[currentSlice]);
+            $("#stimulus .stimulus-img").replaceWith(stimuli.img[currentSlice]);
             $("#stimulus-slice").text("Slice: "+(currentSlice+1));
             $("#stimulus-scroll-position").css("height",100*(currentSlice+1)/numSlices+"%");
         },
         drag: function(e) {
-            if(!running) return;
+            if(!running || numSlices==1) return;
             relX = e.pageX - parentOffset.left;
             relY = e.pageY - parentOffset.top;
             currentSlice=Math.round(numSlices*relY/$(this).height());
             currentSlice=Math.max(0,Math.min(numSlices-1,currentSlice));
             //$("#stimulus").attr("src","stimuli/noise1/noise1_"+currentSlice+".jpg");
-            $("#stimulus #stimulus-img").replaceWith(stimuli.img[currentSlice]);
+            $("#stimulus .stimulus-img").replaceWith(stimuli.img[currentSlice]);
             $("#stimulus-slice").text("Slice: "+(currentSlice+1));
             $("#stimulus-scroll-position").css("height",100*(currentSlice+1)/numSlices+"%");
         },
@@ -296,10 +305,13 @@ $( document ).ready(function() {
                         //nextTrial(currentSlice,numSlices);
                         return;
                     }
+                    if($("#stimulus .stimulus-img").is("video")){
+                        $("#stimulus .stimulus-img").trigger('pause');
+                    }
                     showConfidenceRatings(arr.config.options.ratings,arr.data.length+1);
                 }else if(event.key=="Enter"){
-                    if($("#stimulus #stimulus-img").is("video")){
-                        $("#stimulus #stimulus-img").trigger( $("#stimulus #stimulus-img").prop('paused') ? 'play' : 'pause');
+                    if($("#stimulus .stimulus-img").is("video")){
+                        $("#stimulus .stimulus-img").trigger( $("#stimulus .stimulus-img").prop('paused') ? 'play' : 'pause');
                     }
                 }else if (event.key == "Escape") { 
                     /*$("#response-container").hide();
@@ -340,8 +352,11 @@ $( document ).ready(function() {
 
     $("#stimulus").dblclick(function(event){ //double click event
         //console.log(event.target, event.offsetX,event.offsetY);
-        if(arr.config.options.mark.localeCompare("true")==0){
-            et=$(event.target);
+        et=$(event.target);
+        if(arr.config.options.multiple.localeCompare("MAFC")==0){
+            marks.push(parseInt(et.attr("numImg")));
+            showConfidenceRatings(arr.config.options.ratings,arr.data.length+1);
+        }else if(arr.config.options.mark.localeCompare("true")==0){
             //console.log(et,"double");
             if(et.is("circle") || et.is("svg")){
                 var parentOffset = $(this).parent().offset(); 
@@ -363,12 +378,12 @@ $( document ).ready(function() {
                 }
             }
             if(!found)
-                marks.push(Array(relX,relY, parseInt($("#stimulus #stimulus-img").attr("numImg"))));
-            //console.log(marks);
+                marks.push(Array(relX,relY, parseInt(et.attr("numImg"))));
+            console.log(marks);
             for(i=0;i<marks.length;i++){
                 newelement=$('<svg height="100" width="100"><circle cx="50" cy="50" r="40" stroke="white" stroke-width="4" fill="transparent" /></svg>');
                 newelement.addClass("mark");
-                newelement.appendTo($(this));
+                newelement.appendTo($("#stimulus"));
                 newelement.css({
                     "left":marks[i][0]-newelement.width()/2+"px",
                     "top" :marks[i][1]-newelement.height()/2+"px"
@@ -392,42 +407,7 @@ $( document ).ready(function() {
     $('body').on('click', '.rating',function(e) { 
         rating = $(this).attr("num");
         //console.log(stimuli.info);
-        arr.data.push({
-            trialID:trialSequence[sortIndexes[trialID]],
-            rating:rating,
-            info:stimuli.info,
-            stimulusOn:stimulusOn,
-            stimulusOff:stimulusOff,
-            condition:conditionSequence[sortIndexes[trialID]],
-            marks:marks,
-            });
-        //console.log(arr);
-        currentSlice=0;
-        if(arr.data.length==arr.config.maxTrials){
-            //finish
-            arr.stopTime=Date.now();
-            running=false;
-            $("#response-container").hide();
-            $("#finished-container").show();
-            finishExperiment(arr);
-        }else{
-            trialID=trialSequence[arr.data.length];
-            marks=[];
-            $(".mark").remove();
-            //console.log(trialSequence);
-            $("#response-container").hide();
-            //$("#trial-container").show();
-            //stimuli=load_stimuli(stimuli_name);
-            if(!arr.config.conditions){
-                stimuli_name="stimuli/"+(presenceSequence[trialID]?"present":"absent")+"/noise"+(trialID+1);
-                stimuli=load_stimuli(stimuli_name);
-            }else{
-                stimuli=load_stimuli_drive(arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.stimulusFiles[trialSequence[sortIndexes[trialID]]],
-                    arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.infoFiles[trialSequence[sortIndexes[trialID]]]);
-            }
-            nextTrial(stimuli.img[currentSlice], currentSlice, numSlices);
-
-        }
+        saveTrial(rating);
         return false;
     });
 
@@ -468,9 +448,9 @@ $( document ).ready(function() {
     });
     
     $("#create-experiment").click(function(){
-        if($(this).hasClass("disabled")) return false;
+        // if($(this).hasClass("disabled")) return false;
         
-        fields=$("#form-box").find("input");
+        fields=$("#form-box").find("input, select");
         options={};
         for(f=0;f<fields.length;f++){
             if(fields[f].type.localeCompare("button")!=0){
@@ -482,8 +462,26 @@ $( document ).ready(function() {
         if($("#title").val()=="")
             options["title"]="Experiment";
 
+        options["id"]=createUUID();
+
         download={options:options,
                  conditions:arr.config.conditions};
+
+        $.ajax({
+            type: "POST",
+            url: "php/createExperiment.php",
+            data: {"experiment-id":options["id"],
+                   "title":options["title"]},
+            dataType: "json",
+            success: function(data){
+                //console.log("SUCCESS");
+                //console.log(data["experiment-id"]);
+            },
+            error: function(data){
+                //console.log("ERROR");
+                //console.log(data["experiment-id"]);
+            }
+        });
 
         var hiddenElement = document.createElement('a');
 
@@ -493,8 +491,14 @@ $( document ).ready(function() {
         
         hiddenElement.download = options["title"]+'.pso';
 
-        hiddenElement.text='You finished all the trials, click here to download the data';
+        hiddenElement.text='Download now';
         hiddenElement.click();
+
+        $("#form-box").html("<h3>Experiment created!</h3><p>You will find your results in the following URL, <strong>copy this link somewhere!</strong></p> \
+            <p></p> \
+            <p><a href='results/"+options["id"]+"'>https://www.psyphy.org/results/"+options["id"]+"</a></p>");
+          
+
         //document.getElementById('form_container').prepend(document.createElement('br'));
         //document.getElementById('download').replaceWith(hiddenElement);
     });
@@ -523,12 +527,16 @@ $( document ).ready(function() {
           arr.config.conditions=data["conditions"];
           //console.log(e.target.result, JSON.parse(fileReader.result))
         };
-        data=fileReader.readAsText($('#load-experiment').prop('files')[0]);
+        if(fileReader)
+            data=fileReader.readAsText($('#load-experiment').prop('files')[0]);
         //console.log(data);
     });
 
     $("#ratings").on('mousemove',function(){
-        $("#slider-value").text($(this).val());  
+        r=$(this).val();
+        if(r==1)
+            r="disabled";
+        $("#slider-value").html(r);  
     });
     
 });

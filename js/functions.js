@@ -4,7 +4,7 @@ function moveLoadingBar(loaded, max){
     loaded++;
     if(loaded==max){
         $("#loading-bar").hide();
-        $("#trial-container").show();
+        $("#trial-container").css("display","table");
         $("#loading-bar-progress").css("width","0%");
         running=true;
         stimulusOn=Date.now();
@@ -21,11 +21,21 @@ function moveLoadingBar(loaded, max){
         $("#loading-bar-progress").css("width",(100*(loaded+1)/max)+"%");
 }
 function load_stimuli_drive(list,info){
+    MAFC=false;
+    if(arr.config.options.multiple.localeCompare("first")==0)
+        list=[list[0]];
+    else if(arr.config.options.multiple.localeCompare("MAFC")==0){
+        $("#stimulus").html("");
+        $("#stimulus").addClass("mafc"+list.length);
+        MAFC=true;
+    }
+
     $("#loading-bar").show();
     $("#trial-container").hide();
     loaded=0;
     running=false;
     var stimuli = {img:[],info:null};
+    
     for(i=0;i<list.length;i++){
         if(list[i].name.includes("mp4")){
             stimuli.img[i]=document.createElement("video");
@@ -39,14 +49,14 @@ function load_stimuli_drive(list,info){
             stimuli.img[i].stimId=i;
             stimuli.img[i].stimMax=list.length;
         }
-        stimuli.img[i].id="stimulus-img";
+        stimuli.img[i].setAttribute("class","stimulus-img");
         stimuli.img[i].setAttribute("numImg",i+1);
         
         stimuli.img[i].onload = function() { 
             loaded++;
             if(loaded==list.length){
                 $("#loading-bar").hide();
-                $("#trial-container").show();
+                $("#trial-container").css("display","table");
                 $("#loading-bar-progress").css("width","0%")
                 $("#stimulus-scroll-position").css("height",100*(currentSlice+1)/list.length+"%");
                 running=true;
@@ -57,9 +67,19 @@ function load_stimuli_drive(list,info){
         }
 
         stimuli.img[i].src = "php/getStimuli.php?file-id="+list[i].id+"&name="+list[i].name;
+
+        if(MAFC){
+            $("#stimulus").append(stimuli.img[i]);
+        }
+    }
+    if(MAFC){
+        stimuli.slices=1;
+        $("#stimulus").randomize(".stimulus-img");
+    }else{
+        stimuli.slices=list.length;
+        $("#stimulus .stimulus-img").replaceWith(stimuli.img[0]);
     }
 
-    stimuli.slices=list.length;
     stimuli.info={};
     if(info){
         $.getJSON("php/getStimuli.php?file-id="+info.id,function( data ) {
@@ -74,7 +94,7 @@ function load_stimuli_drive(list,info){
         });
     }
 
-    if(list.length>1){
+    if(stimuli.slices>1){
         $("#stimulus-scroll-bar").show();
         $("#stimulus-slice").show();
     }else{
@@ -98,7 +118,7 @@ function load_stimuli(name){
                 loaded++;
                 if(loaded==50){
                     $("#loading-bar").hide();
-                    $("#trial-container").show();
+                    $("#trial-container").css("display","table");
                     $("#loading-bar-progress").css("width","0%");
                     $("#stimulus-scroll-position").css("height",100*(currentSlice+1)/loaded+"%");
                     $("#trial-container .text").css( "display", "table" );
@@ -110,7 +130,7 @@ function load_stimuli(name){
                     $("#loading-bar-progress").css("width",(100*(loaded+1)/50)+"%")
             }
             stimuli.img[i].src = name+"/noise_"+(i+1)+".jpg";   
-            stimuli.img[i].id="stimulus-img";
+            stimuli.img[i].setAttribute("class","stimulus-img");
             stimuli.img[i].setAttribute("numImg",i+1);
             i+=1;
         }else{
@@ -224,6 +244,10 @@ function imageExists(image_url){
 
 function showConfidenceRatings(ratings, trialNumber){
     stimulusOff=Date.now();
+    if(arr.config.options.ratings==1){
+        saveTrial(-1);
+        return;
+    }
     $("#trial-container").hide();
     $("#confidence-scale").text("");
     for(i=0;i<ratings;i++){
@@ -247,7 +271,7 @@ function finishExperiment(arr){
     
     $.ajax({
         type: "POST",
-        url: "upload.php",
+        url: "php/upload.php",
         data: results,
         dataType: "json",
         success: function(data){
@@ -257,12 +281,13 @@ function finishExperiment(arr){
         error: function(data){
             //console.log("ERROR");
             console.log(data["responseText"]);
+            //console.log(data);
         }
-      });
+    });
 }
 
 function getDisplayParameters( display){
-    var img = document.querySelector("#stimulus #stimulus-img");
+    var img = document.querySelector("#stimulus .stimulus-img");
 
     
     //$('#help #monitor-size').html("Monitor: "+parseInt(display.monitorWidth)+" by "+parseInt(display.monitorHeight) +" cm");
@@ -380,8 +405,46 @@ function selectStimuli(files) {
 	return Math.sqrt( xs + ys );
 };
 
+function saveTrial(rating){
+    arr.data.push({
+        trialID:trialSequence[sortIndexes[trialID]],
+        rating:rating,
+        info:stimuli.info,
+        stimulusOn:stimulusOn,
+        stimulusOff:stimulusOff,
+        condition:conditionSequence[sortIndexes[trialID]],
+        marks:marks,
+        });
+    //console.log(arr);
+    currentSlice=0;
+    if(arr.data.length==arr.config.maxTrials){
+        //finish
+        arr.stopTime=Date.now();
+        running=false;
+        $("#response-container").hide();
+        $("#finished-container").show();
+        finishExperiment(arr);
+    }else{
+        trialID=trialSequence[arr.data.length];
+        marks=[];
+        $(".mark").remove();
+        //console.log(trialSequence);
+        $("#response-container").hide();
+        //$("#trial-container").show();
+        //stimuli=load_stimuli(stimuli_name);
+        if(!arr.config.conditions){
+            stimuli_name="stimuli/"+(presenceSequence[trialID]?"present":"absent")+"/noise"+(trialID+1);
+            stimuli=load_stimuli(stimuli_name);
+        }else{
+            stimuli=load_stimuli_drive(arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.stimulusFiles[trialSequence[sortIndexes[trialID]]],
+                arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.infoFiles[trialSequence[sortIndexes[trialID]]]);
+        }
+        nextTrial(stimuli.img[currentSlice], currentSlice, numSlices);
+
+    }
+}
+
 function nextTrial(stimulus, currentSlice, numSlices){
-    $("#stimulus #stimulus-img").replaceWith(stimulus);
     $("#stimulus-slice").text("Slice: "+(currentSlice+1));
     $("#stimulus-scroll-position").css("height",100*(currentSlice+1)/numSlices+"%");
 }
@@ -396,8 +459,28 @@ function validURL(str) {
     return !!pattern.test(str);
   }
 
-  function popupWindow(url, title, win, w, h) {
+function popupWindow(url, title, win, w, h) {
     const y = win.top.outerHeight / 2 + win.top.screenY - ( h / 2);
     const x = win.top.outerWidth / 2 + win.top.screenX - ( w / 2);
     return win.open(url, title, `toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width=${w}, height=${h}, top=${y}, left=${x}`);
 }
+
+function createUUID(){
+    var dt = new Date().getTime();
+    var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = (dt + Math.random()*16)%16 | 0;
+        dt = Math.floor(dt/16);
+        return (c=='x' ? r :(r&0x3|0x8)).toString(16);
+    });
+    return uuid;
+}
+
+$.fn.randomize = function(selector){
+    (selector ? this.find(selector) : this).parent().each(function(){
+        $(this).children(selector).sort(function(){
+            return Math.random() - 0.5;
+        }).detach().appendTo(this);
+    });
+
+    return this;
+};
