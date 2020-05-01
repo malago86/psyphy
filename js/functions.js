@@ -1,21 +1,21 @@
 
-var loaded=0;
+
 function moveLoadingBar(loaded, max){
     loaded++;
     if(loaded==max){
         $("#loading-bar").hide();
         $("#trial-container").css("display","table");
         $("#loading-bar-progress").css("width","0%");
-        running=true;
         stimulusOn=Date.now();
-        if(arr.config.options.timeout>0){
-            setTimeout(
+        if(arr.config.options.timeout>0 && loading){
+            timeout=setTimeout(
                 showConfidenceRatings,
                 arr.config.options.timeout,
                 arr.config.options.ratings,
                 arr.data.length+1
                 );
         }
+        running=true; loading=false;
     }
     else
         $("#loading-bar-progress").css("width",(100*(loaded+1)/max)+"%");
@@ -33,11 +33,12 @@ function load_stimuli_drive(list,info){
     $("#loading-bar").show();
     $("#trial-container").hide();
     loaded=0;
+    loading=true;
     running=false;
     var stimuli = {img:[],info:null};
     
     for(i=0;i<list.length;i++){
-        if(list[i].name.includes("mp4")){
+        if(list[i].name.includes("mp4") || list[i].name.includes("webm")){
             stimuli.img[i]=document.createElement("video");
             stimuli.img[i].autoplay = true;
             //stimuli.img[i].setAttribute("controls","controls");
@@ -59,8 +60,16 @@ function load_stimuli_drive(list,info){
                 $("#trial-container").css("display","table");
                 $("#loading-bar-progress").css("width","0%")
                 $("#stimulus-scroll-position").css("height",100*(currentSlice+1)/list.length+"%");
-                running=true;
                 stimulusOn=Date.now();
+                if(arr.config.options.timeout>0 && loading){
+                    timeout=setTimeout(
+                        showConfidenceRatings,
+                        arr.config.options.timeout,
+                        arr.config.options.ratings,
+                        arr.data.length+1
+                        );
+                }
+                running=true; loading=false;
             }
             else
                 $("#loading-bar-progress").css("width",(100*(loaded+1)/list.length)+"%");
@@ -107,7 +116,7 @@ function load_stimuli_drive(list,info){
 
 function load_stimuli(name){
     var stimuli = {img:[],info:null};
-    running=false;
+    running=false; loading=true;
     loaded=0;
     var exists=true;
     var i=0;
@@ -152,7 +161,7 @@ function load_stimuli(name){
     }).fail(function() {
         
     });
-    running=true;
+    running=true; loading=false;
 
     return stimuli;
 }
@@ -244,6 +253,7 @@ function imageExists(image_url){
 
 function showConfidenceRatings(ratings, trialNumber){
     stimulusOff=Date.now();
+    if(!running) return;
     if(arr.config.options.ratings==1){
         saveTrial(-1);
         return;
@@ -267,7 +277,7 @@ function showConfidenceRatings(ratings, trialNumber){
 }
   
 function finishExperiment(arr){
-    results={results:arr};
+    results={results:JSON.stringify(arr)};
     
     $.ajax({
         type: "POST",
@@ -352,15 +362,22 @@ function cancelPopup(animCalibration){
 }
 
 function resetExperiment(running, calibrating, animCalibration){
-    if (running){
+    if (running || loading){
+        if(timeout!=false)
+            clearTimeout(timeout);
+        $("#loading-bar").hide();
         $("#response-container").hide();
         $("#trial-container").hide();
         $("#help").hide();
         $("#form-container").show();
         //$("#name").val("");
         $("body").css("background-color","#39302a");
+        $(".error").html("<i class='fas fa-exclamation-circle'></i> Please keep fullscreen mode and do not leave the browser, experiment has been reset!");
+        $(".error").show();
+        calibrated=running=loading=false;
     }else if(calibrating){
         cancelPopup(animCalibration);
+        calibrated=running=loading=false;
     }
 }
 
@@ -421,6 +438,7 @@ function saveTrial(rating){
         //finish
         arr.stopTime=Date.now();
         running=false;
+        $("#trial-container").hide();
         $("#response-container").hide();
         $("#finished-container").show();
         finishExperiment(arr);
@@ -447,6 +465,7 @@ function saveTrial(rating){
 function nextTrial(stimulus, currentSlice, numSlices){
     $("#stimulus-slice").text("Slice: "+(currentSlice+1));
     $("#stimulus-scroll-position").css("height",100*(currentSlice+1)/numSlices+"%");
+    $("#trial-number").text("Trial: "+(arr.data.length));
 }
 
 function validURL(str) {

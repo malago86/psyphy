@@ -7,12 +7,15 @@ var arr={name: "",config: {options:{}}, data:[]};
 var stimuli=null;
 var calibrated=true;
 var running=false;
+var loading=false;
+var loaded=0;
 var preparation=false;
  
 var stimulusOn=null;
 var stimulusOff=null;
 var currentSlice=0;
 
+var timeout=false;
 var trialSequence=null;
 var trialID=1;
 var marks=[];
@@ -400,8 +403,12 @@ $( document ).ready(function() {
         } else {
             // fullscreen is cancelled
             resetExperiment(running, calibrating, animCalibration);
-            calibrated=running=false;
+            calibrated=running=loading=false;
         }
+    });
+
+    $(window).blur(function(){
+        resetExperiment(running, calibrating, animCalibration);
     });
 
     $('body').on('click', '.rating',function(e) { 
@@ -448,14 +455,18 @@ $( document ).ready(function() {
     });
     
     $("#create-experiment").click(function(){
-        // if($(this).hasClass("disabled")) return false;
+        if($(this).hasClass("disabled")) return false;
         
         fields=$("#form-box").find("input, select");
         options={};
         for(f=0;f<fields.length;f++){
             if(fields[f].type.localeCompare("button")!=0){
                 name=$(fields[f]).attr("id");
-                options[name]=$(fields[f]).val();
+                if(fields[f].type.localeCompare("checkbox")==0){
+                    options[name]=$(fields[f]).prop('checked').toString();
+                }else{
+                    options[name]=$(fields[f]).val();
+                }
             }
         }
 
@@ -496,7 +507,7 @@ $( document ).ready(function() {
 
         $("#form-box").html("<h3>Experiment created!</h3><p>You will find your results in the following URL, <strong>copy this link somewhere!</strong></p> \
             <p></p> \
-            <p><a href='results/"+options["id"]+"'>https://www.psyphy.org/results/"+options["id"]+"</a></p>");
+            <p><a href='results/"+options["id"]+"/'>https://www.psyphy.org/results/"+options["id"]+"/</a></p>");
           
 
         //document.getElementById('form_container').prepend(document.createElement('br'));

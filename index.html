@@ -13,15 +13,18 @@
 <body>
     <div class="background">
         <div id="form-container">
-            <img src="images/psyphy.png" class="logo" width="600" style="   margin:20px;">
+            <img src="images/psyphy.png" class="logo" width="600">
             
             <p><strong>Try the test experiment: </strong>Enter your name and click on Start. Calibration will start first.</p>
             <p><strong>Load your experiment:</strong> Upload an experiment file to load experiment configuration. <br>Enter your name and click on Start. Calibration will start first.</p>
+            
             <div class="credits">Developed by <a href="mailto:lago@psych.ucsb.edu">Miguel Lago</a><br>
                 for <a href="https://viu.psych.ucsb.edu" target="_blank">VIU lab at UCSB</a>
                 <br>
                 version <a id="version" href="https://gitlab.com/malago/psyphy" target="_blank"></a>
             </div> 
+            
+            <div class="error"></div>
             
             <input id="name" type="text" placeholder="Name" value="" />
             <!--Screen size (<span class="question-mark">&#10067;</span>): <input id="width" type="text" placeholder="width" value="23" /> by <input id="height" type="text" placeholder="height" value="13" /> 
@@ -64,11 +67,11 @@
                         </td>
                     </tr>
                     <tr>
-                        <th>Marks <abbr title="Allow double click to mark the stimulus">(?)</abbr></th>
-                        <td><input id="mark" type="checkbox" style="font-size:20px; width:100%;text-align:center" value="false"/></td>
+                        <th><abbr title="Allow double click to mark the stimulus">Marks</abbr></th>
+                        <td><input id="mark" type="checkbox" style="font-size:20px; width:100%;text-align:center"/></td>
                     </tr>
                     <tr>
-                        <th>Multiple stimuli <abbr title="Behavior if several images are found in each stimulus folder">(?)</abbr></th>
+                        <th><abbr title="Behavior if several images are found in each stimulus folder">Multiple stimulus</abbr></th>
                         <td>
                             <select id="multiple">
                                 <option value="first">Show first</option>
@@ -82,8 +85,8 @@
                         <td><input id="timeout" type="text" placeholder="optional" style="font-size:20px; width:100%;text-align:center"/></td>
                     </tr>
                 </table>
-                <br><input type="button" id="google-drive-select" value="Find stimuli on Google Drive" style="font-size:14px; height:17px;line-height: 0px;"/><br>
-                <input type="button" id="create-experiment" value="Download experiment config" style="font-size:14px; height:17px;line-height: 0px;" class="disabled"/>
+                <br><input type="button" id="google-drive-select" value="Find stimuli on Google Drive" /><br>
+                <input type="button" id="create-experiment" value="Download experiment config" class="disabled"/>
             </form>
                 
         </div>
@@ -94,9 +97,13 @@
 
         <div id="trial-container">
             <div class="cell">
-                <div class="text"><div>Find the signal in the image. Use the mouse wheel or drag the scrollbar to change the slice<br><br>
-                Press ESC to quit the experiment, data will be lost<br><br>
-                Press SPACEBAR to continue</div></div>
+                <div class="text">
+                    <div>Find the signal in the image. Use the mouse wheel or drag the scrollbar to change the slice<br><br>
+                         Press ESC to quit the experiment, data will be lost<br><br>
+                         Press SPACEBAR to continue
+                    </div>
+                </div>
+                <div id="trial-number"></div>
                 <div id="stimulus-slice">Slice: 1</div>
                 <div id="stimulus-container">
                     <div id="stimulus">

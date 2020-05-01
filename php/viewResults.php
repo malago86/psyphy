@@ -2,14 +2,77 @@
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
-    if(isset($_GET['experiment-id'])){
 
+
+function calculate_time_span($seconds)
+{  
+	$year = floor($seconds /31556926);
+	$months = floor($seconds /2629743);
+	$week=floor($seconds /604800);
+	$day = floor($seconds /86400); 
+	$hours = floor($seconds / 3600);
+	$mins = floor(($seconds - ($hours*3600)) / 60); 
+	$secs = floor($seconds % 60);
+	 if($seconds < 60) $time = $secs." seconds";
+	 else if($seconds < 3600 ) $time =($mins==1)?$mins." minute":$mins." minutes";
+	 else if($seconds < 86400) $time = ($hours==1)?$hours." hour":$hours." hours";
+	 else if($seconds < 604800) $time = ($day==1)?$day." day":$day." days";
+	 else if($seconds < 2629743) $time = ($week==1)?$week." week":$week." weeks";
+	 else if($seconds < 31556926) $time =($months==1)? $months." month":$months." months";
+	 else $time = ($year==1)? $year." year":$year." years";
+	return $time." ago"; 
+}  
+
+
+    if(isset($_GET['experiment-id'])){
+        
         $folder="../results/".$_GET['experiment-id'];
 
-        $files = array();
+        $password=@file_get_contents($folder."/password.txt");
+        if($password==""){
+            $password=false;
+        }
+
+        //echo($_POST['password']."-".password_hash($_POST['password'], PASSWORD_BCRYPT));
+
+
+        if($password){
+            if(isset($_POST['old-password']) && password_verify($_POST['old-password'],$password)){
+                file_put_contents($folder."/password.txt",password_hash($_POST['password'], PASSWORD_BCRYPT));
+            }elseif(!isset($_POST['password']) || isset($_POST['password'])==""){
+                echo('<h1>Introduce your password</h1><form class="form-box" method="POST">
+                    <input id="password" type="password" name="password"/>
+                    <input type="submit" class="download-results" id="create-password" value="submit">
+                </form>');
+                exit();
+            }elseif(!password_verify($_POST['password'],$password)){
+                exit("password error");
+            }
+        }elseif(isset($_POST['password'])){
+            file_put_contents($folder."/password.txt",password_hash($_POST['password'], PASSWORD_BCRYPT));
+            $password=true;
+        }
+
+        $title=@file_get_contents($folder."/title.txt");
+        if($title==""){
+            $title="Experiment";
+        }
+        
+
+        
+
+        /*$files = array();
+        $filemtimes=array();
         foreach (glob($folder."/*.pso") as $file) {
             $files[] = $file;
-        }
+        }*/
+        $files = glob($folder."/*.pso");
+        array_multisort(
+            array_map( 'filemtime', $files ),
+            SORT_NUMERIC,
+            SORT_ASC,
+            $files
+        );
 
         if(isset($_GET['zip'])){
             $filename='./'.$folder.'/'.$_GET['experiment-id'].'.zip';
@@ -31,7 +94,7 @@ error_reporting(E_ALL);
              exit();
         }
 
-        $title=file_get_contents($folder."/title.txt");
+        
 
 ?>
 <head>
@@ -49,24 +112,51 @@ error_reporting(E_ALL);
 <body>
     <div class="background">
         <div id="form-data">
+            <a href='../../'><img src="../../images/psyphy.png" class="logo" width="300"></a>
+            <div class="credits">Developed by <a href="mailto:lago@psych.ucsb.edu">Miguel Lago</a><br>
+                for <a href="https://viu.psych.ucsb.edu" target="_blank">VIU lab at UCSB</a>
+                <br>
+                version <a id="version" href="https://gitlab.com/malago/psyphy" target="_blank"></a>
+            </div> 
 <?php
 
 
-        echo("<h1>Showing experiment ".$title."</h1>");
+        
 
-        echo("<ul>");
+        ?>
+        <p>Here, you will find a list of participants on your experiment.</p>
+        <p>Download all data by clicking the button at the end, old participant data will be erased periodically so be sure to download your data.</p>
+        <p>You will need to <strong>create a password</strong> to download the data.</p>
+        <form class="form-box" method="POST" style="width:33%">
+            <i class="fas fa-key" style="position: absolute; top: 20px; left: 20px;"></i> 
+            <? if($password) echo '<input id="old-password" type="password" name="old-password" placeholder="old password" /><br>'; ?>            
+            <input id="password" type="password" name="password" placeholder="new password"/>
+            <input type="submit" class='download-results' id="create-password" value="set password">
+        </form>
+        <hr>
+        <?
+
+echo("<h1>Participants in experiment <strong>".$title."</strong></h1>");
+
+        echo("<ul class='results'>");
+        $i=1;
         foreach($files as $f){
             $participant=json_decode(file_get_contents($f));
             //print_r($participant);
             //$f=end(explode("/",$f));
-            echo("<li><span class='name'>".$participant->name."</span> <span class='date'>".date("Y/m/d H:m:s",intval($participant->stopTime)/1000)."</span></li>");
+            echo("<li><div class='name'><i class='fas fa-user'></i><br> #".$i."</div> <div class='date'>".calculate_time_span(date("U")-intval($participant->stopTime)/1000)."</div></li>");
+            $i++;
         }
-        echo("</ul>");
-
-        if(count($files)>0){
-            echo("<a class='download-results' href='../".$_GET['experiment-id'].".zip'>download all results</a>");
-        }
-?>
+        echo("</ul><br><br>");
+        if(!$password){
+            echo "<h2 class='error'><i class='fas fa-lock'></i> Set a password to download your data <i class='fas fa-lock'></i></h2>";
+        }elseif(count($files)>0){ ?>
+            <form class="form-box" method="POST" action=<? echo "../".$_GET['experiment-id'].".zip" ?> style="width:33%">   
+                <i class="fas fa-download" style="position: absolute; top: 20px; left: 20px"></i> 
+                <input id="password" type="password" name="password" placeholder="repeat password"/>
+                <input type="submit" class='download-results' value="download all results" style="font-size:20px;padding:20px">
+            </form>
+        <? } ?>
         </div>
     </div>
 </body>
