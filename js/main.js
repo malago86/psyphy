@@ -5,11 +5,17 @@ var version="0.1";
 var count=0;
 var arr={name: "",config: {options:{}}, data:[]};
 var stimuli=null;
-var calibrated=true;
+var calibrated=false;
+var calibrating=false;
+var animCalibration=-1;
+var blindSpotDistance=[];
+var blindSpotDegrees=13; //13.59
 var running=false;
 var loading=false;
 var loaded=0;
 var preparation=false;
+
+var display=null;
  
 var stimulusOn=null;
 var stimulusOff=null;
@@ -21,34 +27,27 @@ var trialID=1;
 var marks=[];
 var numSlices=100;
 
+
 $( document ).ready(function() {
     $("#version").text(version);
     
     var parentOffset = null;
     var prevX,prevY,relX,relY;
     var scrollSpeed=8;
-    
-
-    var calibrating=false;
-    var blindSpotDistance=[];
     var pixelsPerCM=0;
-    var animCalibration=-1;
     
-
     var maxTrials=20;
-    
-    
     var stimuli_name="noise"+trialID;
 
     
     var presenceSequence=null;
     
-    var display=null;
+    
     var degreesPerPixel=0.022;
     var monitorHeight,monitorWidth;
 
     var ccWidthCM=8.560;
-    var blindSpotDegrees=13; //13.59
+    
 
     
 
@@ -93,12 +92,12 @@ $( document ).ready(function() {
                     degreesPerPixel:degreesPerPixel,
                     stimulusHeight:null,
                     stimulusWidth:null,
-                    distance:null,
+                    distance:[],
                     windowWidth:window.innerWidth,
                     windowHeight:window.innerHeight,
                     pixelsPerCM:pixelsPerCM,
                     blindSpotDistance:blindSpotDistance,
-                    pixelsPerDegree:(mean(blindSpotDistance)/blindSpotDegrees),
+                    pixelsPerDegree:[],
                 },
                 conditions:arr.config.conditions,
                 options:arr.config.options,
@@ -154,8 +153,8 @@ $( document ).ready(function() {
         }else{
             $("#trial-container .instructions").text("Press SPACEBAR to continue");
         }
-
-        nextTrial(stimuli.img[currentSlice], currentSlice, numSlices);
+        getDisplayParameters();
+        nextTrial(currentSlice, numSlices);
         
         //$("#trial-container").show();
         //running=true;
@@ -297,15 +296,35 @@ $( document ).ready(function() {
 
     $(document).on( 
         'keydown', function(event) { 
-            //console.log(running,calibrating);
-            if(running){
-                getDisplayParameters(arr["config"]["display"]);
+            if(calibrating){
+                if(event.which==32 && $("#calibration-step2").is(":visible")){ //spacebar
+                    r1=$("#calibration-step2 .blind-spot-dot").css("right");
+                    r2=$("#calibration-step2 .blind-spot-cross").css("right");
+                    w2=$("#calibration-step2 .blind-spot-cross").css("width");
+                    r1=parseInt(r1.substr(0,r1.length-2));
+                    r2=parseInt(r2.substr(0,r2.length-2));
+                    w2=parseInt(w2.substr(0,w2.length-2))/2;
+                    blindSpotDistance.push(r1-(r2-w2));
+                    $("#calibration-step2 .blind-spot-dot").css("right","100px");
+                    clearInterval(animCalibration);
+                    animCalibration=calibrationMove($("#calibration-step2 .blind-spot-dot"));
+                    if(blindSpotDistance.length>1){
+                        $("#calibration-step2").toggle();
+                        $("#calibration-step3").toggle();
+                        calibrated=true;
+                        clearInterval(animCalibration);
+                    }
+                    return false;
+                }else if(event.key=="Escape"){
+                    cancelPopup(animCalibration);
+                    calibrating=false;
+                }
+            }else if(running){
                 if(event.which==32){ //spacebar
                     if(preparation){
                         preparation=false;
                         stimulusOn=Date.now();
                         $("#trial-container .text").hide();
-                        //nextTrial(currentSlice,numSlices);
                         return;
                     }
                     if($("#stimulus .stimulus-img").is("video")){
@@ -326,29 +345,6 @@ $( document ).ready(function() {
                     resetExperiment(running, calibrating, animCalibration);
                 } else if(event.key=="h"){
                     $("#help").toggle();
-                }
-            }else if(calibrating){
-                if(event.which==32 && $("#calibration-step2").is(":visible")){ //spacebar
-                    r1=$("#calibration-step2 .blind-spot-dot").css("right");
-                    r2=$("#calibration-step2 .blind-spot-cross").css("right");
-                    w2=$("#calibration-step2 .blind-spot-cross").css("width");
-                    r1=parseInt(r1.substr(0,r1.length-2));
-                    r2=parseInt(r2.substr(0,r2.length-2));
-                    w2=parseInt(w2.substr(0,w2.length-2))/2;
-                    blindSpotDistance.push(r1-(r2-w2));
-                    $("#calibration-step2 .blind-spot-dot").css("right","100px");
-                    clearInterval(animCalibration);
-                    animCalibration=calibrationMove($("#calibration-step2 .blind-spot-dot"));
-                    if(blindSpotDistance.length>10){
-                        $("#calibration-step2").toggle();
-                        $("#calibration-step3").toggle();
-                        calibrated=true;
-                        clearInterval(animCalibration);
-                    }
-                    return false;
-                }else if(event.key=="Escape"){
-                    cancelPopup(animCalibration);
-                    calibrating=false;
                 }
             }
     }); 
@@ -381,7 +377,7 @@ $( document ).ready(function() {
                 }
             }
             if(!found)
-                marks.push(Array(relX,relY, parseInt(et.attr("numImg"))));
+                marks.push(Array(relX,relY, parseInt(et.attr("numImg")), Date.now()));
             console.log(marks);
             for(i=0;i<marks.length;i++){
                 newelement=$('<svg height="100" width="100"><circle cx="50" cy="50" r="40" stroke="white" stroke-width="4" fill="transparent" /></svg>');
@@ -414,7 +410,9 @@ $( document ).ready(function() {
     $('body').on('click', '.rating',function(e) { 
         rating = $(this).attr("num");
         //console.log(stimuli.info);
+        //calibrated=false;
         saveTrial(rating);
+        console.log("calib click",calibrating);
         return false;
     });
 
@@ -442,7 +440,7 @@ $( document ).ready(function() {
         $("#calibration-step2").toggle();
         left=parseInt(left.substr(0,left.length-2));
         //console.log(left);
-        pixelsPerCM=ccWidthCM/left;
+        pixelsPerCM=left/ccWidthCM;
         animCalibration=calibrationMove($("#calibration-step2 .blind-spot-dot"));
     });
     $("#calibration-step3 .button").click(function(){
@@ -451,6 +449,7 @@ $( document ).ready(function() {
         $("#calibration-step1").toggle();
         $("#calibration-step3").toggle();
         $("#calibration").toggle();
+        getDisplayParameters();
         calibrating=false;
     });
     
