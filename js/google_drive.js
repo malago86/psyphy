@@ -38,7 +38,7 @@ $( document ).ready(function() {
 
                     folder_ids.push({name:folderName,
                         id:thisElement.attr("google-folder-id"),
-                        stimuli:{infoFiles:[],stimulusFiles:[]}
+                        stimuli:{infoFiles:[],feedbackFiles:[],stimulusFiles:[]}
                     });
                     //thisElement.css("background-color","green");
                     loading=true;
@@ -66,7 +66,9 @@ function getStimuli(data, id, thisElement){
                 stimulusImages=[];
                 for(j=0;j<dataIn.length;j++){
                     if(dataIn[j].name.includes(".json"))
-                        folder_ids[id].stimuli.infoFiles.push(dataIn[j]);
+                        folder_ids[id].stimuli.infoFiles[folder_ids[id].stimuli.stimulusFiles.length]=dataIn[j];
+                    else if(dataIn[j].name.includes("feedback"))
+                        folder_ids[id].stimuli.feedbackFiles[folder_ids[id].stimuli.stimulusFiles.length]=dataIn[j];
                     else
                         stimulusImages.push(dataIn[j]);
                 }

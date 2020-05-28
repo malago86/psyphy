@@ -14,6 +14,7 @@ var running=false;
 var loading=false;
 var loaded=0;
 var preparation=false;
+var showingFeedback=false;
 
 var display=null;
  
@@ -26,6 +27,7 @@ var trialSequence=null;
 var trialID=1;
 var marks=[];
 var numSlices=100;
+var cheatCode=false;
 
 
 $( document ).ready(function() {
@@ -52,7 +54,7 @@ $( document ).ready(function() {
     
 
     $("#start-experiment").click(function(e){
-        if(!calibrated){
+        if(!calibrated && !cheatCode){
             calibrating=true;
             document.documentElement.requestFullscreen();
             blindSpotDistance=[];
@@ -143,7 +145,8 @@ $( document ).ready(function() {
             arr.config.maxTrials=sortIndexes.length;
 
             stimuli=load_stimuli_drive(arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.stimulusFiles[trialSequence[sortIndexes[trialID]]],
-                arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.infoFiles[trialSequence[sortIndexes[trialID]]]);
+                arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.infoFiles[trialSequence[sortIndexes[trialID]]],
+                arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.feedbackFiles[trialSequence[sortIndexes[trialID]]]);
         }
         //console.log(stimuli);
         //document.body.appendChild(stimuli.img[1]);
@@ -296,7 +299,10 @@ $( document ).ready(function() {
 
     $(document).on( 
         'keydown', function(event) { 
-            if(calibrating){
+            if(showingFeedback){
+                $("#feedback-container").hide();
+                saveTrial(rating);
+            }else if(calibrating){
                 if(event.which==32 && $("#calibration-step2").is(":visible")){ //spacebar
                     r1=$("#calibration-step2 .blind-spot-dot").css("right");
                     r2=$("#calibration-step2 .blind-spot-cross").css("right");
@@ -308,7 +314,7 @@ $( document ).ready(function() {
                     $("#calibration-step2 .blind-spot-dot").css("right","100px");
                     clearInterval(animCalibration);
                     animCalibration=calibrationMove($("#calibration-step2 .blind-spot-dot"));
-                    if(blindSpotDistance.length>1){
+                    if(blindSpotDistance.length>9){
                         $("#calibration-step2").toggle();
                         $("#calibration-step3").toggle();
                         calibrated=true;
@@ -378,14 +384,15 @@ $( document ).ready(function() {
             }
             if(!found)
                 marks.push(Array(relX,relY, parseInt(et.attr("numImg")), Date.now()));
-            console.log(marks);
+            //console.log(marks);
+            var radius=40;
             for(i=0;i<marks.length;i++){
-                newelement=$('<svg height="100" width="100"><circle cx="50" cy="50" r="40" stroke="white" stroke-width="4" fill="transparent" /></svg>');
+                newelement=$('<svg height="100" width="100"><circle cx="'+(radius+10)+'" cy="'+(radius+10)+'" r="'+(radius)+'" stroke="white" stroke-width="4" fill="transparent" /></svg>');
                 newelement.addClass("mark");
                 newelement.appendTo($("#stimulus"));
                 newelement.css({
-                    "left":marks[i][0]-newelement.width()/2+"px",
-                    "top" :marks[i][1]-newelement.height()/2+"px"
+                    "left":marks[i][0]-radius+"px",
+                    "top" :marks[i][1]-radius+"px"
                 });
             }
         }
@@ -396,7 +403,7 @@ $( document ).ready(function() {
     document.addEventListener("fullscreenchange", function (event) {
         if (document.fullscreenElement) {
             // fullscreen is activated
-        } else {
+        } else if(!cheatCode) {
             // fullscreen is cancelled
             resetExperiment(running, calibrating, animCalibration);
             calibrated=running=loading=false;
@@ -404,15 +411,18 @@ $( document ).ready(function() {
     });
 
     $(window).blur(function(){
-        resetExperiment(running, calibrating, animCalibration);
+        if(!cheatCode) {
+            resetExperiment(running, calibrating, animCalibration);
+        }
     });
 
-    $('body').on('click', '.rating',function(e) { 
+    $('body').on('click', '.rating',function(e) { //click on confidence rating
         rating = $(this).attr("num");
         //console.log(stimuli.info);
         //calibrated=false;
         saveTrial(rating);
-        console.log("calib click",calibrating);
+        //console.log("calib click",calibrating);
+
         return false;
     });
 
@@ -549,4 +559,11 @@ $( document ).ready(function() {
         $("#slider-value").html(r);  
     });
     
+    $(document).key('ctrl+shift+f', function() {
+        cheatCode=true;
+        if ($('#cheatcode').length === 0) {
+            $("body").append("<div id='cheatcode'><i class='fas fa-bug'></i></div>");
+        }
+    });
+
 });

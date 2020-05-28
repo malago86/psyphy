@@ -20,7 +20,7 @@ function moveLoadingBar(loaded, max){
     else
         $("#loading-bar-progress").css("width",(100*(loaded+1)/max)+"%");
 }
-function load_stimuli_drive(list,info){
+function load_stimuli_drive(list,info,feedback){
     MAFC=false;
     if(arr.config.options.multiple.localeCompare("first")==0)
         list=[list[0]];
@@ -101,6 +101,26 @@ function load_stimuli_drive(list,info){
         }).fail(function() {
             
         });
+    }
+    
+    if(feedback){
+        //$.get("php/getStimuli.php?file-id="+feedback.id,function( data ) {
+        if(feedback.name.includes("mp4") || feedback.name.includes("webm")){
+            stimuli.feedback=document.createElement("video");
+            stimuli.feedback.autoplay = true;
+        }else{
+            stimuli.feedback=new Image();
+            stimuli.feedback.stimId="feedback";
+        }
+        stimuli.feedback.setAttribute("class","stimulus-img");
+        stimuli.feedback.setAttribute("numImg","feedback");
+        stimuli.feedback.onload = function() { 
+            
+        }
+        stimuli.feedback.src = "php/getStimuli.php?file-id="+feedback.id+"&name="+feedback.name;
+        //}).fail(function() {
+            
+        //});
     }
 
     if(stimuli.slices>1){
@@ -187,7 +207,7 @@ function load_stimuli2(name){
         i+=1;
     }
 
-    console.log(canvas.img[1]);
+    //console.log(canvas.img[1]);
 
     listImages=listImages.map(function(i) {
         var img = document.createElement("img");
@@ -273,7 +293,7 @@ function showConfidenceRatings(ratings, trialNumber){
         }).appendTo('#confidence-scale');
     }
     $("#response-container").css("display","table");
-    $("#response-text").text("Trial: "+trialNumber);
+    $("#response-text").text("Trial: "+(trialNumber));
     $("#help").hide();
 }
   
@@ -428,7 +448,17 @@ function selectStimuli(files) {
 var savedRating=-1;
 function saveTrial(rating){
     $("#response-container").hide();
-    if(!calibrated){
+
+    if(!showingFeedback && stimuli.feedback){
+        $("#feedback-container .cell .stimulus-img").replaceWith(stimuli.feedback);
+        $("#feedback-container").css("display","table");
+        showingFeedback=true;
+        savedRating=rating;
+        return false;
+    }
+    
+    showingFeedback=false;
+    if(!calibrated && !cheatCode){
         calibrating=true;
         document.documentElement.requestFullscreen();
         blindSpotDistance=[];
@@ -472,7 +502,8 @@ function saveTrial(rating){
                 stimuli=load_stimuli(stimuli_name);
             }else{
                 stimuli=load_stimuli_drive(arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.stimulusFiles[trialSequence[sortIndexes[trialID]]],
-                    arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.infoFiles[trialSequence[sortIndexes[trialID]]]);
+                    arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.infoFiles[trialSequence[sortIndexes[trialID]]],
+                    arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.feedbackFiles[trialSequence[sortIndexes[trialID]]]);
             }
             
             if((Date.now()-arr.config.display.pixelsPerDegree.slice(-1)[0][1]) > 600000) // recalibrate every 10 minutes
@@ -485,7 +516,7 @@ function saveTrial(rating){
 
 function nextTrial(currentSlice, numSlices){
     
-    if(!calibrated){
+    if(!calibrated && !cheatCode){
         calibrating=true;
         document.documentElement.requestFullscreen();
         blindSpotDistance=[];
@@ -500,7 +531,7 @@ function nextTrial(currentSlice, numSlices){
     }
     $("#stimulus-slice").text("Slice: "+(currentSlice+1));
     $("#stimulus-scroll-position").css("height",100*(currentSlice+1)/numSlices+"%");
-    $("#trial-number").text("Trial: "+(arr.data.length));
+    $("#trial-number").text("Trial: "+(arr.data.length+1));
 }
 
 function validURL(str) {
