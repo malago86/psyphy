@@ -75,7 +75,7 @@ function load_stimuli_drive(list,info,feedback){
                 $("#loading-bar-progress").css("width",(100*(loaded+1)/list.length)+"%");
         }
 
-        stimuli.img[i].src = "php/getStimuli.php?file-id="+list[i].id+"&name="+list[i].name;
+        stimuli.img[i].src = "https://drive.google.com/uc?export=view&id="+list[i].id;
 
         if(MAFC){
             $("#stimulus").append(stimuli.img[i]);
@@ -91,7 +91,7 @@ function load_stimuli_drive(list,info,feedback){
 
     stimuli.info={};
     if(info){
-        $.getJSON("php/getStimuli.php?file-id="+info.id,function( data ) {
+        $.getJSON("php/getJson.php?id="+info.id,function( data ) {
             stimuli.info=data;
             if(stimuli.info.text && preparation==false){
                 $("#trial-container .text").css( "display", "table" );
@@ -104,7 +104,6 @@ function load_stimuli_drive(list,info,feedback){
     }
     
     if(feedback){
-        //$.get("php/getStimuli.php?file-id="+feedback.id,function( data ) {
         if(feedback.name.includes("mp4") || feedback.name.includes("webm")){
             stimuli.feedback=document.createElement("video");
             stimuli.feedback.autoplay = true;
@@ -117,10 +116,7 @@ function load_stimuli_drive(list,info,feedback){
         stimuli.feedback.onload = function() { 
             
         }
-        stimuli.feedback.src = "php/getStimuli.php?file-id="+feedback.id+"&name="+feedback.name;
-        //}).fail(function() {
-            
-        //});
+        stimuli.feedback.src = "https://drive.google.com/uc?export=view&id="+feedback.id;
     }
 
     if(stimuli.slices>1){

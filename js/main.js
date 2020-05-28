@@ -563,6 +563,7 @@ $( document ).ready(function() {
         cheatCode=true;
         if ($('#cheatcode').length === 0) {
             $("body").append("<div id='cheatcode'><i class='fas fa-bug'></i></div>");
+            $("#cheatcode").slideDown(200).css('display', 'flex');
         }
     });
 
