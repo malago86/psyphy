@@ -12,6 +12,7 @@ var blindSpotDistance=[];
 var blindSpotDegrees=13; //13.59
 var running=false;
 var loading=false;
+var responding=false;
 var loaded=0;
 var preparation=false;
 var showingFeedback=false;
@@ -144,9 +145,20 @@ $( document ).ready(function() {
             arr.conditionSequence=conditionSequence;
             arr.config.maxTrials=sortIndexes.length;
 
-            stimuli=load_stimuli_drive(arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.stimulusFiles[trialSequence[sortIndexes[trialID]]],
-                arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.infoFiles[trialSequence[sortIndexes[trialID]]],
-                arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.feedbackFiles[trialSequence[sortIndexes[trialID]]]);
+            if(!arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.feedbackFiles){
+                arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.feedbackFiles=[];
+            }
+
+            if(trialSequence[sortIndexes[trialID]] in arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.feedbackFiles){
+                stimuli=load_stimuli_drive(arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.stimulusFiles[trialSequence[sortIndexes[trialID]]],
+                    arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.infoFiles[trialSequence[sortIndexes[trialID]]],
+                    arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.feedbackFiles[trialSequence[sortIndexes[trialID]]]);
+            }else{
+                stimuli=load_stimuli_drive(arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.stimulusFiles[trialSequence[sortIndexes[trialID]]],
+                    arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.infoFiles[trialSequence[sortIndexes[trialID]]],
+                    null);
+            }
+            
         }
         //console.log(stimuli);
         //document.body.appendChild(stimuli.img[1]);
@@ -299,9 +311,10 @@ $( document ).ready(function() {
 
     $(document).on( 
         'keydown', function(event) { 
+            console.log(responding);
             if(showingFeedback){
                 $("#feedback-container").hide();
-                saveTrial(rating);
+                saveTrial(-1);
             }else if(calibrating){
                 if(event.which==32 && $("#calibration-step2").is(":visible")){ //spacebar
                     r1=$("#calibration-step2 .blind-spot-dot").css("right");
@@ -325,6 +338,14 @@ $( document ).ready(function() {
                     cancelPopup(animCalibration);
                     calibrating=false;
                 }
+            }else if(responding){
+                responseDivs=$('.question');
+                responses=[];
+                for(r=0;r<responseDivs.length;r++){
+                    responses.push($(responseDivs[r]).attr("value"));
+                }
+                saveTrial(responses);
+                responding=false;
             }else if(running){
                 if(event.which==32){ //spacebar
                     if(preparation){
@@ -336,7 +357,7 @@ $( document ).ready(function() {
                     if($("#stimulus .stimulus-img").is("video")){
                         $("#stimulus .stimulus-img").trigger('pause');
                     }
-                    showConfidenceRatings(arr.config.options.ratings,arr.data.length+1);
+                    showResponse(arr.config.options.ratings,arr.data.length+1);
                 }else if(event.key=="Enter"){
                     if($("#stimulus .stimulus-img").is("video")){
                         $("#stimulus .stimulus-img").trigger( $("#stimulus .stimulus-img").prop('paused') ? 'play' : 'pause');
@@ -360,7 +381,7 @@ $( document ).ready(function() {
         et=$(event.target);
         if(arr.config.options.multiple.localeCompare("MAFC")==0){
             marks.push(parseInt(et.attr("numImg")));
-            showConfidenceRatings(arr.config.options.ratings,arr.data.length+1);
+            showResponse(arr.config.options.ratings,arr.data.length+1);
         }else if(arr.config.options.mark.localeCompare("true")==0){
             //console.log(et,"double");
             if(et.is("circle") || et.is("svg")){
@@ -418,12 +439,16 @@ $( document ).ready(function() {
 
     $('body').on('click', '.rating',function(e) { //click on confidence rating
         rating = $(this).attr("num");
-        //console.log(stimuli.info);
-        //calibrated=false;
-        saveTrial(rating);
-        //console.log("calib click",calibrating);
-
+        $(this).siblings(".question").attr("value",rating);
+        $(".rating").removeClass("selected");
+        $(this).toggleClass("selected");
         return false;
+    });
+
+    $('body').on('mousemove', '.slider',function(e) {
+        r=$(this).val();
+        $(this).parent().find(".slider-value").html(r);  
+        $(this).siblings(".question").attr('value',r);  
     });
 
     $( window ).resize(function() {

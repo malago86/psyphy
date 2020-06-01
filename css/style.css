@@ -249,15 +249,21 @@ input[type="button"].disabled{
 .present{
     border: 2px solid greenyellow;
 }
-.present:hover{
+.present:hover,.present.selected{
     background-color:green
 }
 
 .absent{
     border: 2px solid red
 }
-.absent:hover{
+.absent:hover, .absent.selected{
     background-color:rgb(160, 0, 0);;
+}
+
+.question {
+    margin-top: 40px;
+    font-weight: bold;
+    clear: both;
 }
 
 #confidence-scale{
@@ -460,11 +466,12 @@ input[type="file"] {
     display: inline-block;*/
     position: absolute;
   }
-#slider-value{
+#slider-value, .slider-value{
     float: left;
     text-align: center;
     width: 33%;
 }
+
 .slider {
     float:right;
     -webkit-appearance: none;

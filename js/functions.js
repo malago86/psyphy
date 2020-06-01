@@ -9,7 +9,7 @@ function moveLoadingBar(loaded, max){
         stimulusOn=Date.now();
         if(arr.config.options.timeout>0 && loading){
             timeout=setTimeout(
-                showConfidenceRatings,
+                showResponse,
                 arr.config.options.timeout,
                 arr.config.options.ratings,
                 arr.data.length+1
@@ -63,7 +63,7 @@ function load_stimuli_drive(list,info,feedback){
                 stimulusOn=Date.now();
                 if(arr.config.options.timeout>0 && loading){
                     timeout=setTimeout(
-                        showConfidenceRatings,
+                        showResponse,
                         arr.config.options.timeout,
                         arr.config.options.ratings,
                         arr.data.length+1
@@ -117,6 +117,8 @@ function load_stimuli_drive(list,info,feedback){
             
         }
         stimuli.feedback.src = "https://drive.google.com/uc?export=view&id="+feedback.id;
+    }else{
+        stimuli.feedback=null;
     }
 
     if(stimuli.slices>1){
@@ -267,29 +269,71 @@ function imageExists(image_url){
  
 }
 
-function showConfidenceRatings(ratings, trialNumber){
+function showResponse(ratings, trialNumber){
     stimulusOff=Date.now();
     if(!running) return;
-    if(arr.config.options.ratings==1){
-        //calibrated=false;
-        saveTrial(-1);
-        return;
-    }
+    
+    responding=true;
     $("#trial-container").hide();
     $("#confidence-scale").text("");
-    for(i=0;i<ratings;i++){
-        if(i<ratings/2) divclass="absent";
-        else divclass="present";
-        //console.log('rating '+divclass);
+
+    if(stimuli.info.customResponse){
+        for(r=0;r<stimuli.info.customResponse.length;r++){
+            if(stimuli.info.customResponse[r].type=="rating"){
+                jQuery('<div/>', {
+                    "class": 'question',
+                    "num": i+1,
+                    "value": -1,
+                    text: stimuli.info.customResponse[r].question
+                }).appendTo('#confidence-scale');
+                if(stimuli.info.customResponse[r].max<10){
+                    for(i=0;i<stimuli.info.customResponse[r].max;i++){
+                        if(i<stimuli.info.customResponse[r].max/2) divclass="absent";
+                        else divclass="present";
+                        //console.log('rating '+divclass);
+                        jQuery('<div/>', {
+                            "class": 'rating '+divclass,
+                            "num": i+1,
+                            title: i+1,
+                            text: i+1
+                        }).appendTo('#confidence-scale');
+                    }
+                }else{
+                    $('#confidence-scale').append('<div class="slidecontainer"> \
+                        <div class="slider-value response" value='+Math.floor(stimuli.info.customResponse[r].max/2)+'>'+Math.floor(stimuli.info.customResponse[r].max/2)+'</div> \
+                        <input type="range" min="1" max="'+stimuli.info.customResponse[r].max+'" value="'+Math.floor(stimuli.info.customResponse[r].max/2)+'" class="slider"> \
+                    </div>');
+                }
+            }
+        }
+    }else{
+        if(arr.config.options.ratings==1){
+            //calibrated=false;
+            saveTrial(-1);
+            return;
+        }
+
         jQuery('<div/>', {
-            "class": 'rating '+divclass,
-            "num": i+1,
-            title: i+1,
-            text: i+1
+            "class": 'question',
+            "num": 1,
+            "value": -1,
         }).appendTo('#confidence-scale');
+        
+        for(i=0;i<ratings;i++){
+            if(i<ratings/2) divclass="absent";
+            else divclass="present";
+            //console.log('rating '+divclass);
+            jQuery('<div/>', {
+                "class": 'rating '+divclass,
+                "num": i+1,
+                title: i+1,
+                text: i+1
+            }).appendTo('#confidence-scale');
+        }
     }
     $("#response-container").css("display","table");
     $("#response-text").text("Trial: "+(trialNumber));
+    $('#confidence-scale').append("<br><br>Press SPACEBAR to continue");
     $("#help").hide();
 }
   
@@ -441,15 +485,15 @@ function selectStimuli(files) {
 	 
 	return Math.sqrt( xs + ys );
 };
-var savedRating=-1;
-function saveTrial(rating){
+var savedResponses=-1;
+function saveTrial(responses){
     $("#response-container").hide();
 
     if(!showingFeedback && stimuli.feedback){
         $("#feedback-container .cell .stimulus-img").replaceWith(stimuli.feedback);
         $("#feedback-container").css("display","table");
         showingFeedback=true;
-        savedRating=rating;
+        savedResponses=responses;
         return false;
     }
     
@@ -461,15 +505,15 @@ function saveTrial(rating){
         $("#calibration").show();
         $(".background").css("filter","blur(4px)");
         $(".background").css("opacity",".4");
-        savedRating=rating;
+        savedResponses=rating;
     }else{
-        if(savedRating!=-1){
-            rating=savedRating;
-            savedRating=-1;
+        if(savedResponses!=-1){
+            responses=savedResponses;
+            savedResponses=-1;
         }
         arr.data.push({
             trialID:trialSequence[sortIndexes[trialID]],
-            rating:rating,
+            responses:responses,
             info:stimuli.info,
             stimulusOn:stimulusOn,
             stimulusOff:stimulusOff,
@@ -497,9 +541,15 @@ function saveTrial(rating){
                 stimuli_name="stimuli/"+(presenceSequence[trialID]?"present":"absent")+"/noise"+(trialID+1);
                 stimuli=load_stimuli(stimuli_name);
             }else{
-                stimuli=load_stimuli_drive(arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.stimulusFiles[trialSequence[sortIndexes[trialID]]],
-                    arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.infoFiles[trialSequence[sortIndexes[trialID]]],
-                    arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.feedbackFiles[trialSequence[sortIndexes[trialID]]]);
+                if(trialSequence[sortIndexes[trialID]] in arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.feedbackFiles){
+                    stimuli=load_stimuli_drive(arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.stimulusFiles[trialSequence[sortIndexes[trialID]]],
+                        arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.infoFiles[trialSequence[sortIndexes[trialID]]],
+                        arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.feedbackFiles[trialSequence[sortIndexes[trialID]]]);
+                }else{
+                    stimuli=load_stimuli_drive(arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.stimulusFiles[trialSequence[sortIndexes[trialID]]],
+                        arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.infoFiles[trialSequence[sortIndexes[trialID]]],
+                        null);
+                }
             }
             
             if((Date.now()-arr.config.display.pixelsPerDegree.slice(-1)[0][1]) > 600000) // recalibrate every 10 minutes
