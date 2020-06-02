@@ -42,10 +42,10 @@ function load_stimuli_drive(list,info,feedback){
     var stimuli = {img:[],info:null};
 
     stimuli.info={};
-    
     if(info){
         loadingInfo=true;
         $("#stimulus-container").hide();
+        
         $.getJSON("/php/getJson.php?id="+info.id,function( data ) {
             stimuli.info=data;
             if(stimuli.info.text && preparation==false){
@@ -58,6 +58,7 @@ function load_stimuli_drive(list,info,feedback){
             loadingInfo=false;
         }).fail(function() {
             loadingInfo=false;
+            $("#stimulus-container").show();
         });
     }
 
