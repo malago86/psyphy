@@ -102,12 +102,13 @@ function calculate_time_span($seconds)
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
-<script src="../../js/functions.js"></script>
-<script src="../../js/main.js"></script>
-<script src="../../js/google_drive.js"></script>
-<link rel="stylesheet" type="text/css" href="../../css/style.css">
+<script src="/js/jquery.key.js"></script>
+<script src="/js/functions.js"></script>
+<script src="/js/main.js"></script>
+<script src="/js/google_drive.js"></script>
+<link rel="stylesheet" type="text/css" href="/css/style.css">
 <link rel="icon" href="favicon.ico" type="image/x-icon" />
-<link href="../../fontawesome/css/all.css" rel="stylesheet"> 
+<link href="/fontawesome/css/all.css" rel="stylesheet"> 
 </head>
 <body>
     <div class="background">

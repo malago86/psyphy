@@ -429,7 +429,10 @@ table td{
     border: rgb(229, 72, 35) 3px solid;
     cursor: pointer;
     margin:0;
-  }
+}
+.form-box p{
+    font-size: 15px;
+}
 
 input[type="file"] {
     display: none;

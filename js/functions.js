@@ -91,7 +91,7 @@ function load_stimuli_drive(list,info,feedback){
 
     stimuli.info={};
     if(info){
-        $.getJSON("php/getJson.php?id="+info.id,function( data ) {
+        $.getJSON("/php/getJson.php?id="+info.id,function( data ) {
             stimuli.info=data;
             if(stimuli.info.text && preparation==false){
                 $("#trial-container .text").css( "display", "table" );
@@ -342,7 +342,7 @@ function finishExperiment(arr){
     
     $.ajax({
         type: "POST",
-        url: "php/upload.php",
+        url: "/php/upload.php",
         data: results,
         dataType: "json",
         success: function(data){
@@ -615,3 +615,20 @@ $.fn.randomize = function(selector){
 
     return this;
 };
+
+function loadExperimentData(data){
+    arr.config.options={};
+    for(key in data.options){
+        //console.log(key);
+        arr.config.options[key]=data.options[key];
+    }
+    instructions="";
+    if(validURL(arr.config.options.instructions)){
+        instructions="<h2><a href='"+arr.config.options.instructions+"' target='popup' onclick=\"popupWindow('"+arr.config.options.instructions+"', 'popup', window, 800, 800);\">Read instructions for this experiment</a></h2>"
+    }
+
+    $("#form-box").html("<h3>Experiment <strong>"+data["options"]["title"]+"</strong> loaded!</h3>"+instructions+"<p><a href='/'>Reset</a></p>");
+    //arr.config.ratings=data["ratings"];
+    //arr.config.name=data["title"];
+    arr.config.conditions=data["conditions"];
+}

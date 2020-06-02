@@ -51,8 +51,14 @@ $( document ).ready(function() {
 
     var ccWidthCM=8.560;
     
+    var params = window.location.pathname.split('/').slice(1);
 
-    
+    if(params[0]=="experiment"){
+        
+        $.getJSON("/experiment/"+params[1]+".json",function( data ) {
+            loadExperimentData(data);
+        })
+    }
 
     $("#start-experiment").click(function(e){
         if(!calibrated && !cheatCode){
@@ -514,8 +520,9 @@ $( document ).ready(function() {
 
         $.ajax({
             type: "POST",
-            url: "php/createExperiment.php",
-            data: {"experiment-id":options["id"],
+            url: "/php/createExperiment.php",
+            data: {"experiment-data":JSON.stringify(download),
+                   "experiment-id":options["id"],
                    "title":options["title"]},
             dataType: "json",
             success: function(data){
@@ -539,9 +546,11 @@ $( document ).ready(function() {
         hiddenElement.text='Download now';
         hiddenElement.click();
 
-        $("#form-box").html("<h3>Experiment created!</h3><p>You will find your results in the following URL, <strong>copy this link somewhere!</strong></p> \
-            <p></p> \
-            <p><a href='results/"+options["id"]+"/'>https://www.psyphy.org/results/"+options["id"]+"/</a></p>");
+        $("#form-box").html("<h3>Experiment created!</h3><p>Send your participants the following link:</p> \
+            <p><a href='experiment/"+options["id"]+"/' target='_blank'>https://www.psyphy.org/experiment/"+options["id"]+"/</a></p> \
+            <p style='margin-bottom:20px'></p>\
+            <p>You will find your results in the following URL, <strong>copy this link somewhere!</strong></p> \
+            <p><a href='results/"+options["id"]+"/' target='_blank'>https://www.psyphy.org/results/"+options["id"]+"/</a></p>");
           
 
         //document.getElementById('form_container').prepend(document.createElement('br'));
@@ -552,25 +561,7 @@ $( document ).ready(function() {
         var fileReader = new FileReader();
         var data;
         fileReader.onload = function (e) {
-          data = JSON.parse(fileReader.result);  // data <-- in this var you have the file data in Base64 format
-          
-          //$("#experimentTitle").val(data["title"]);
-          //$("#ratings").val(data["ratings"]);
-          arr.config.options={};
-          for(key in data.options){
-              //console.log(key);
-              arr.config.options[key]=data.options[key];
-          }
-          instructions="";
-          if(validURL(arr.config.options.instructions)){
-              instructions="<h2><a href='"+arr.config.options.instructions+"' target='popup' onclick=\"popupWindow('"+arr.config.options.instructions+"', 'popup', window, 800, 800);\">Read instructions for this experiment</a></h2>"
-          }
-
-          $("#form-box").html("<h3>Experiment <strong>"+data["options"]["title"]+"</strong> loaded!</h3>"+instructions+"<p><a href='.'>Reset</a></p>");
-          //arr.config.ratings=data["ratings"];
-          //arr.config.name=data["title"];
-          arr.config.conditions=data["conditions"];
-          //console.log(e.target.result, JSON.parse(fileReader.result))
+            loadExperimentData(JSON.parse(fileReader.result));
         };
         if(fileReader)
             data=fileReader.readAsText($('#load-experiment').prop('files')[0]);
