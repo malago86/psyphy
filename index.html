@@ -9,7 +9,7 @@
 <script src="js/google_drive.js"></script>
 <link rel="stylesheet" type="text/css" href="css/style.css">
 <link rel="icon" href="favicon.ico" type="image/x-icon" />
-<link href="../fontawesome/css/all.css" rel="stylesheet"> 
+<link href="fontawesome/css/all.css" rel="stylesheet"> 
 </head>
 <body>
     <div class="background">
@@ -48,46 +48,48 @@
                 border-bottom: 2px solid white;
                 margin: auto;
                 margin-bottom: 15px;
-                width: 80%;"><i class="far fa-plus-square"></i> Create experiment file</p>
-                <table>
-                    <tr>
-                        <th>Title</th>
-                        <td><input id="title" type="text" style="font-size:20px; width:100%;text-align:center" placeholder="optional"/></td>
-                    </tr>
-                    <tr>
-                        <th>Instructions URL</th>
-                        <td><input id="instructions" type="text" placeholder="optional" style="width:100%;text-align:center"/></td>
-                    </tr>
-                    <tr>
-                        <th># ratings</th>
-                        <td>
-                            <div id="slider-value">8</div>
-                            <div class="slidecontainer">
-                                <input type="range" min="1" max="10" value="8" class="slider" id="ratings">
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th><abbr title="Allow double click to mark the stimulus">Marks</abbr></th>
-                        <td><input id="mark" type="checkbox" style="font-size:20px; width:100%;text-align:center"/></td>
-                    </tr>
-                    <tr>
-                        <th><abbr title="Behavior if several images are found in each stimulus folder">Multiple stimulus</abbr></th>
-                        <td>
-                            <select id="multiple">
-                                <option value="first">Show first</option>
-                                <option value="MAFC">MAFC</option>
-                                <option value="3D">3D scroll</option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Trial timeout (<abbr title="milliseconds, set to empty or 0 to disable">ms</abbr>)</th>
-                        <td><input id="timeout" type="text" placeholder="optional" style="font-size:20px; width:100%;text-align:center"/></td>
-                    </tr>
-                </table>
-                <br><input type="button" id="google-drive-select" value="Find stimuli on Google Drive" /><br>
-                <input type="button" id="create-experiment" value="Download experiment config" class="disabled"/>
+                width: 80%;" id="create-title"><i class="far fa-plus-square icon"></i> Create experiment file</p>
+                <div id="create-toggle">
+                    <table>
+                        <tr>
+                            <th>Title</th>
+                            <td><input id="title" type="text" style="font-size:20px; width:100%;text-align:center" placeholder="optional"/></td>
+                        </tr>
+                        <tr>
+                            <th>Instructions URL</th>
+                            <td><input id="instructions" type="text" placeholder="optional" style="width:100%;text-align:center"/></td>
+                        </tr>
+                        <tr>
+                            <th># ratings</th>
+                            <td>
+                                <div id="slider-value">8</div>
+                                <div class="slidecontainer">
+                                    <input type="range" min="1" max="10" value="8" class="slider" id="ratings">
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th><abbr title="Allow double click to mark the stimulus">Marks</abbr></th>
+                            <td><input id="mark" type="checkbox" style="font-size:20px; width:100%;text-align:center"/></td>
+                        </tr>
+                        <tr>
+                            <th><abbr title="Behavior if several images are found in each stimulus folder">Multiple stimulus</abbr></th>
+                            <td>
+                                <select id="multiple">
+                                    <option value="first">Show first</option>
+                                    <option value="MAFC">MAFC</option>
+                                    <option value="3D">3D scroll</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Trial timeout (<abbr title="milliseconds, set to empty or 0 to disable">ms</abbr>)</th>
+                            <td><input id="timeout" type="text" placeholder="optional" style="font-size:20px; width:100%;text-align:center"/></td>
+                        </tr>
+                    </table>
+                    <br><input type="button" id="google-drive-select" value="Find stimuli on Google Drive" /><br>
+                    <input type="button" id="create-experiment" value="Download experiment config" class="disabled"/>
+                </div>
             </form>
                 
         </div>

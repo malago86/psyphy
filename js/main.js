@@ -592,4 +592,10 @@ $( document ).ready(function() {
         }
     });
 
+    $(".form-box #create-title").click(function(){
+        $("#create-toggle").toggle();
+        $("#create-title").children(".icon").toggleClass("fas fa-plus-square");
+        $("#create-title").children(".icon").toggleClass("far fa-minus-square");
+    });
+
 });

@@ -415,6 +415,14 @@ table td{
     margin-top:10px;
 }
 
+.form-box #create-title:hover{
+    cursor:pointer;
+    border-color:rgb(229,72,35) !important;
+}
+.form-box #create-toggle{
+    display:none;
+}
+
 .form-box input[type="checkbox"]{
     height: 23px;
     background-color: rgb(57, 48, 42);
