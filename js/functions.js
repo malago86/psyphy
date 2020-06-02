@@ -6,6 +6,9 @@ function moveLoadingBar(loaded, max){
         $("#loading-bar").hide();
         $("#trial-container").css("display","table");
         $("#loading-bar-progress").css("width","0%");
+        console.log("move",loadingInfo);
+        if(!loadingInfo)
+            $("#stimulus-container").show();
         stimulusOn=Date.now();
         if(arr.config.options.timeout>0 && loading){
             timeout=setTimeout(
@@ -29,6 +32,7 @@ function load_stimuli_drive(list,info,feedback){
         $("#stimulus").addClass("mafc"+list.length);
         MAFC=true;
     }
+    
 
     $("#loading-bar").show();
     $("#trial-container").hide();
@@ -36,6 +40,27 @@ function load_stimuli_drive(list,info,feedback){
     loading=true;
     running=false;
     var stimuli = {img:[],info:null};
+
+    stimuli.info={};
+    
+    if(info){
+        loadingInfo=true;
+        $("#stimulus-container").hide();
+        $.getJSON("/php/getJson.php?id="+info.id,function( data ) {
+            stimuli.info=data;
+            if(stimuli.info.text && preparation==false){
+                $("#trial-container .text").css( "display", "table" );
+                $("#trial-container .text div").html(stimuli.info.text);
+                preparation=true;
+            }else{
+                $("#stimulus-container").show();
+            }
+            loadingInfo=false;
+        }).fail(function() {
+            loadingInfo=false;
+        });
+    }
+
     
     for(i=0;i<list.length;i++){
         if(list[i].name.includes("mp4") || list[i].name.includes("webm")){
@@ -89,19 +114,7 @@ function load_stimuli_drive(list,info,feedback){
         $("#stimulus .stimulus-img").replaceWith(stimuli.img[0]);
     }
 
-    stimuli.info={};
-    if(info){
-        $.getJSON("/php/getJson.php?id="+info.id,function( data ) {
-            stimuli.info=data;
-            if(stimuli.info.text && preparation==false){
-                $("#trial-container .text").css( "display", "table" );
-                $("#trial-container .text div").html(stimuli.info.text);
-                preparation=true;
-            }
-        }).fail(function() {
-            
-        });
-    }
+    
     
     if(feedback){
         if(feedback.name.includes("mp4") || feedback.name.includes("webm")){

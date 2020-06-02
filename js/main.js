@@ -16,6 +16,7 @@ var responding=false;
 var loaded=0;
 var preparation=false;
 var showingFeedback=false;
+var loadingInfo=false;
 
 var display=null;
  
@@ -54,10 +55,10 @@ $( document ).ready(function() {
     var params = window.location.pathname.split('/').slice(1);
 
     if(params[0]=="experiment"){
-        
+        $("#form-box").html("<i class='fas fa-hourglass fa-spin'></i>");
         $.getJSON("/experiment/"+params[1]+".json",function( data ) {
             loadExperimentData(data);
-        })
+        });
     }
 
     $("#start-experiment").click(function(e){
@@ -317,7 +318,6 @@ $( document ).ready(function() {
 
     $(document).on( 
         'keydown', function(event) { 
-            console.log(responding);
             if(showingFeedback){
                 $("#feedback-container").hide();
                 saveTrial(-1);
@@ -344,7 +344,7 @@ $( document ).ready(function() {
                     cancelPopup(animCalibration);
                     calibrating=false;
                 }
-            }else if(responding){
+            }else if(responding && event.which==32){
                 responseDivs=$('.question');
                 responses=[];
                 for(r=0;r<responseDivs.length;r++){
@@ -358,6 +358,12 @@ $( document ).ready(function() {
                         preparation=false;
                         stimulusOn=Date.now();
                         $("#trial-container .text").hide();
+                        $("#stimulus-container").show();
+                        if($("#stimulus .stimulus-img").is("video")){
+                            console.log("restart");
+                            $("#stimulus .stimulus-img")[0].currentTime=0;
+                            $("#stimulus .stimulus-img").trigger('play');
+                        }
                         return;
                     }
                     if($("#stimulus .stimulus-img").is("video")){
@@ -454,7 +460,7 @@ $( document ).ready(function() {
     $('body').on('mousemove', '.slider',function(e) {
         r=$(this).val();
         $(this).parent().find(".slider-value").html(r);  
-        $(this).siblings(".question").attr('value',r);  
+        $(this).parent().parent().attr('value',r);  
     });
 
     $( window ).resize(function() {
