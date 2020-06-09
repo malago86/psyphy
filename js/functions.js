@@ -370,6 +370,18 @@ function finishExperiment(arr){
             //console.log(data);
         }
     });
+
+    var hiddenElement = document.createElement('a');
+
+    hiddenElement.href = 'data:attachment/text,' + JSON.stringify(arr);
+    hiddenElement.target = '_blank';
+    hiddenElement.id= 'download';
+    
+    hiddenElement.download = arr.name+'.pso';
+
+    hiddenElement.text='You can also download your data here';
+
+    $("#download-data").html(hiddenElement);
 }
 
 function getDisplayParameters(){
