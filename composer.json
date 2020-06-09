@@ -1,1 +1,7 @@
-{}
+{
+    "name":"psyphy",
+    "require": {
+        "google/apiclient": ">=2.4.1",
+        "components/font-awesome":">5.12"
+    }
+}
