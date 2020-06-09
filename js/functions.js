@@ -100,8 +100,8 @@ function load_stimuli_drive(list,info,feedback){
             else
                 $("#loading-bar-progress").css("width",(100*(loaded+1)/list.length)+"%");
         }
-
-        stimuli.img[i].src = "https://drive.google.com/uc?export=view&id="+list[i].id;
+        //stimuli.img[i].src = "https://drive.google.com/uc?export=view&id="+list[i].id;
+        stimuli.img[i].src = "/php/getStimuli.php?file-id="+list[i].id+"&name="+list[i].name;
 
         if(MAFC){
             $("#stimulus").append(stimuli.img[i]);
@@ -130,7 +130,8 @@ function load_stimuli_drive(list,info,feedback){
         stimuli.feedback.onload = function() { 
             
         }
-        stimuli.feedback.src = "https://drive.google.com/uc?export=view&id="+feedback.id;
+        //stimuli.feedback.src = "https://drive.google.com/uc?export=view&id="+feedback.id;
+        stimuli.feedback.src = "/php/getStimuli.php?file-id="+feedback.id+"&name="+feedback.name;
     }else{
         stimuli.feedback=null;
     }
