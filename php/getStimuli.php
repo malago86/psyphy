@@ -4,8 +4,10 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-require_once("vendor/autoload.php");
-require_once("google-api-php-client-2.4.1/vendor/autoload.php");
+if(file_exists("../vendor/autoload.php"))
+    require_once("../vendor/autoload.php");
+if(file_exists("google-api-php-client-2.4.1/vendor/autoload.php"))
+    require_once("google-api-php-client-2.4.1/vendor/autoload.php");
 
 
 $client = new Google_Client();
