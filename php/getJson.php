@@ -5,12 +5,35 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 
-require_once("google-api-php-client-2.4.1/vendor/autoload.php");
+if(file_exists("../vendor/autoload.php"))
+    require_once("../vendor/autoload.php");
+elseif(file_exists("google-api-php-client-2.4.1/vendor/autoload.php"))
+    require_once("google-api-php-client-2.4.1/vendor/autoload.php");
 
+function initializeClient() {
+    $private_key = base64_decode( getenv('client_secret') );
+    $private_key = str_replace('\n', "\n", $private_key);
 
-$client = new Google_Client();
-$client->setAuthConfig('../credentials/credentials.json');
-$client->addScope('https://www.googleapis.com/auth/drive');
+    $client_parameters = array(
+        'client_email'        => getenv('client_email'),
+        'signing_algorithm'   => 'HS256',
+        'signing_key'         => $private_key
+    );
+
+    $client = new Google_Client( $client_parameters );
+    $client->useApplicationDefaultCredentials();
+    $client->setClientId( getenv('client_id') ); 
+    //$client->setScopes(['https://www.googleapis.com/auth/analytics.readonly']);
+    return $client;
+}
+
+if(file_exists("../credentials/credentials.json")){
+    $client = new Google_Client();
+    $client->setAuthConfig('../credentials/credentials.json');
+}else{
+    $client = initializeClient();
+}
+$client->addScope('https://www.googleapis.com/auth/drive.readonly');
 
 $service = new Google_Service_Drive($client);
 
