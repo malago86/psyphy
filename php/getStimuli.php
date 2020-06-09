@@ -12,10 +12,10 @@ if(file_exists("google-api-php-client-2.4.1/vendor/autoload.php"))
 
 
 
-if(file_exists("../credentials/credentials.json"))
+if(file_exists("../credentials/credentials.json")){
     $client = new Google_Client();
     $client->setAuthConfig('../credentials/credentials.json');
-else{
+}else{
     $config = [
         'client_secret' => getenv('client_secret'),
         'client_id' => getenv('client_id'),
