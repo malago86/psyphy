@@ -423,22 +423,28 @@ $( document ).ready(function() {
                 var relY=event.offsetY;
             }
             $(".mark").remove();
+
+            if(event.shiftKey) type=1;
+            else if(event.ctrlKey) type=2;
+            else if(event.altKey) type=3;
+            else type=0;
         
             found=false;
             for(i=marks.length-1;i>=0;i--){
                 //console.log(i,relX,relY,marks[i][0],marks[i][1],Math.getDistance(relX,relY,marks[i][0],marks[i][1]));
                 if(Math.getDistance(relX,relY,marks[i][0],marks[i][1])<50){
-                    //delete mark
-                    marks.splice(i,1);
-                    found=true;
+                    if(marks[i][4]==type){
+                        //delete mark
+                        marks.splice(i,1);
+                        found=true;
+                    }else{
+                        marks[i][4]=type;
+                        found=true;
+                    }
                 }
             }
             
             if(!found){
-                if(event.shiftKey) type=1;
-                else if(event.ctrlKey) type=2;
-                else if(event.altKey) type=3;
-                else type=0;
                 marks.push(Array(relX,relY, parseInt(et.attr("numImg")), Date.now(), type));
             }
             //console.log(marks);
