@@ -1,5 +1,5 @@
 
-var version="1.0.1";
+var version="1.1.0";
 
 
 var count=0;
@@ -30,6 +30,8 @@ var trialID=1;
 var marks=[];
 var numSlices=100;
 var cheatCode=false;
+
+var markColors=["white","lime","red","blue"];
 
 
 $( document ).ready(function() {
@@ -409,19 +411,25 @@ $( document ).ready(function() {
         
             found=false;
             for(i=marks.length-1;i>=0;i--){
-                console.log(i,relX,relY,marks[i][0],marks[i][1],Math.getDistance(relX,relY,marks[i][0],marks[i][1]));
+                //console.log(i,relX,relY,marks[i][0],marks[i][1],Math.getDistance(relX,relY,marks[i][0],marks[i][1]));
                 if(Math.getDistance(relX,relY,marks[i][0],marks[i][1])<50){
                     //delete mark
                     marks.splice(i,1);
                     found=true;
                 }
             }
-            if(!found)
-                marks.push(Array(relX,relY, parseInt(et.attr("numImg")), Date.now()));
+            
+            if(!found){
+                if(event.shiftKey) type=1;
+                else if(event.ctrlKey) type=2;
+                else if(event.altKey) type=3;
+                else type=0;
+                marks.push(Array(relX,relY, parseInt(et.attr("numImg")), Date.now(), type));
+            }
             //console.log(marks);
             var radius=40;
             for(i=0;i<marks.length;i++){
-                newelement=$('<svg height="100" width="100"><circle cx="'+(radius+10)+'" cy="'+(radius+10)+'" r="'+(radius)+'" stroke="white" stroke-width="4" fill="transparent" /></svg>');
+                newelement=$('<svg height="100" width="100"><circle cx="'+(radius+10)+'" cy="'+(radius+10)+'" r="'+(radius)+'" stroke="'+markColors[marks[i][4]]+'" stroke-width="4" fill="transparent" /></svg>');
                 newelement.addClass("mark");
                 newelement.appendTo($("#stimulus"));
                 newelement.css({
