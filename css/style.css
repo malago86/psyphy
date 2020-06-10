@@ -186,6 +186,7 @@ input[type="button"].disabled{
 
 #stimulus .stimulus-img{
     float:left;
+    margin:10px;
 }
 
 #stimulus-scroll-bar{

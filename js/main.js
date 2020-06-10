@@ -60,6 +60,21 @@ $( document ).ready(function() {
         $("#form-box").html("<i class='fas fa-hourglass fa-spin'></i>");
         $.getJSON("/experiment/"+params[1]+".json",function( data ) {
             loadExperimentData(data);
+        })
+        .fail(function() {
+            $.ajax({
+                type: "POST",
+                url: "/php/createExperiment.php",
+                data: {"load-id":params[1]},
+                dataType: "json",
+                success: function(data){
+                    loadExperimentData(data);
+                },
+                error: function(data){
+                    //console.log("ERROR");
+                    console.log(data);
+                }
+            });
         });
     }
 

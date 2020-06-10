@@ -3,7 +3,7 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-/*if(file_exists("../vendor/autoload.php"))
+if(file_exists("../vendor/autoload.php"))
     require_once("../vendor/autoload.php");
 
 use Kreait\Firebase\Factory;
@@ -16,10 +16,13 @@ $storage = $firebase->createStorage();
 $storageClient = $storage->getStorageClient();
 $defaultBucket = $storage->getBucket();
 
-$defaultBucket->upload(file_get_contents("../results/".$_GET['experiment-id']."/title.txt"),
+/*$defaultBucket->upload(file_get_contents("../results/".$_GET['experiment-id']."/title.txt"),
 [
     'name' => "uploaded_title.txt"
 ]);*/
+
+
+
 
 function calculate_time_span($seconds)
 {  
@@ -42,20 +45,27 @@ function calculate_time_span($seconds)
 
 
     if(isset($_GET['experiment-id'])){
-        
-        $folder="../results/".$_GET['experiment-id'];
+        $folder="results/".$_GET['experiment-id'];
 
-        $password=@file_get_contents($folder."/password.txt");
-        if($password==""){
-            $password=false;
+        if(!is_dir("../".$folder))
+            mkdir("../".$folder);
+
+        try{
+            $defaultBucket->object($folder."/password.txt")->downloadToFile("../".$folder."/password.txt");
+        }catch(Exception $e) {
+        }finally{
+            $password=@file_get_contents("../".$folder."/password.txt");
+            if($password==""){
+                $password=false;
+            }
         }
-
         //echo($_POST['password']."-".password_hash($_POST['password'], PASSWORD_BCRYPT));
 
 
         if($password){
             if(isset($_POST['old-password']) && password_verify($_POST['old-password'],$password)){
-                file_put_contents($folder."/password.txt",password_hash($_POST['password'], PASSWORD_BCRYPT));
+                //file_put_contents($folder."/password.txt",password_hash($_POST['password'], PASSWORD_BCRYPT));
+
             }elseif(!isset($_POST['password']) || isset($_POST['password'])==""){
                 echo('<h1>Introduce your password</h1><form class="form-box" method="POST">
                     <input id="password" type="password" name="password"/>
@@ -66,16 +76,27 @@ function calculate_time_span($seconds)
                 exit("password error");
             }
         }elseif(isset($_POST['password'])){
-            file_put_contents($folder."/password.txt",password_hash($_POST['password'], PASSWORD_BCRYPT));
+            $hash=password_hash($_POST['password'], PASSWORD_BCRYPT);
+            file_put_contents("../".$folder."/password.txt",$hash);
+            
+            $defaultBucket->upload($hash,
+            [
+                'name' => $folder."/password.txt"
+            ]);
+            
             $password=true;
+
         }
 
-        $title=@file_get_contents($folder."/title.txt");
+        try{
+            $defaultBucket->object($folder."/title.txt")->downloadToFile("../".$folder."/title.txt");
+        }catch(Exception $e) {
+        }
+
+        $title=@file_get_contents("../".$folder."/title.txt");
         if($title==""){
             $title="Experiment";
         }
-        
-
         
 
         /*$files = array();
@@ -83,18 +104,29 @@ function calculate_time_span($seconds)
         foreach (glob($folder."/*.pso") as $file) {
             $files[] = $file;
         }*/
-        $files = glob($folder."/*.pso");
-        array_multisort(
-            array_map( 'filemtime', $files ),
-            SORT_NUMERIC,
-            SORT_ASC,
-            $files
-        );
+
+        $objects = $defaultBucket->objects([
+            'prefix' => $folder,
+        ]);
+        $files=array();
+        foreach ($objects as $object) {
+            //echo $object->name()." | " . PHP_EOL;
+            $object->downloadToFile("../".$object->name());
+            array_push($files,"../".$object->name());
+        }
+
+        $files = glob("../".$folder."/*.pso");
+            array_multisort(
+                array_map( 'filemtime', $files ),
+                SORT_NUMERIC,
+                SORT_ASC,
+                $files
+            );
 
         if(isset($_GET['zip'])){
-            $filename='./'.$folder.'/'.$_GET['experiment-id'].'.zip';
+            $filename="../".$folder.'/'.$_GET['experiment-id'].'.zip';
             //echo('cd '.$folder.'; zip -q '.$_GET['experiment-id'].'.zip *.pso');
-            exec('cd "'.$folder.'"; zip -q '.$_GET['experiment-id'].'.zip *.pso');
+            exec('cd "../'.$folder.'"; zip -q '.$_GET['experiment-id'].'.zip *.pso');
             //echo('tar zcf '.$filename.' '.$folder.'/*.pso');
           
             if (file_exists($filename)) {
