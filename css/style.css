@@ -133,6 +133,7 @@ input[type="button"].disabled{
     top:10px;
     left: 50%;
     transform: translateX(-50%);
+    z-index:10;
 }
 
 #trial-spacebar{
@@ -153,6 +154,14 @@ input[type="button"].disabled{
     font-weight: bold;
     text-align: center;
     margin-top:10px;
+}
+#stimulus-slice{
+    position: fixed;
+    transform: translateX(-50%);
+    top: 35px;
+    left: 50%;
+    z-index: 10;
+    margin-top:0;
 }
 
 #stimulus-container{
@@ -177,7 +186,6 @@ input[type="button"].disabled{
 
 #stimulus .stimulus-img{
     float:left;
-    margin:10px;
 }
 
 #stimulus-scroll-bar{
