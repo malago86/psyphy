@@ -1,7 +1,9 @@
 {
     "name":"malago/psyphy",
+    "description":"PsyPhy",
     "require": {
         "google/apiclient": ">=2.4.1",
+        "kreait/firebase-php": "^5.0",
         "components/font-awesome":">5.12"
     }
 }

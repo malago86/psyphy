@@ -116,8 +116,8 @@ $( document ).ready(function() {
             startTime:Date.now(),
             data:[]
         };
-
-        document.documentElement.requestFullscreen();
+        if(!cheatCode)
+            document.documentElement.requestFullscreen();
 
         //
         marks=[];
@@ -388,6 +388,7 @@ $( document ).ready(function() {
             }
     }); 
 
+    
     $("#stimulus").dblclick(function(event){ //double click event
         //console.log(event.target, event.offsetX,event.offsetY);
         et=$(event.target);
@@ -396,10 +397,10 @@ $( document ).ready(function() {
             showResponse(arr.config.options.ratings,arr.data.length+1);
         }else if(arr.config.options.mark.localeCompare("true")==0){
             //console.log(et,"double");
-            if(et.is("circle") || et.is("svg")){
-                var parentOffset = $(this).parent().offset(); 
-                var relX = event.pageX - parentOffset.left;
-                var relY = event.pageY - parentOffset.top;
+            if(et.is("circle") || et.is("svg")) {
+                var parentOffset = $(this).offset(); 
+                var relX = event.pageX - parentOffset.left -10;
+                var relY = event.pageY - parentOffset.top -10;
             }else{
                 var relX=event.offsetX;
                 var relY=event.offsetY;
@@ -408,8 +409,8 @@ $( document ).ready(function() {
         
             found=false;
             for(i=marks.length-1;i>=0;i--){
-                //console.log(i,relX,relY,marks[i][0],marks[i][1],Math.getDistance(relX,relY,marks[i][0],marks[i][1]));
-                if(Math.getDistance(relX,relY,marks[i][0],marks[i][1])<40){
+                console.log(i,relX,relY,marks[i][0],marks[i][1],Math.getDistance(relX,relY,marks[i][0],marks[i][1]));
+                if(Math.getDistance(relX,relY,marks[i][0],marks[i][1])<50){
                     //delete mark
                     marks.splice(i,1);
                     found=true;
