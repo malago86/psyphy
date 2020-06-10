@@ -10,8 +10,11 @@ use Kreait\Firebase\Factory;
 use Kreait\Firebase\ServiceAccount;
     
 //$serviceAccount = ServiceAccount::fromJsonFile('../credentials/psychonline-firebase-adminsdk-12uxl-c8a23d2ad7.json');
-$firebase = (new Factory)->withServiceAccount('../credentials/psychonline-firebase-adminsdk-12uxl-c8a23d2ad7.json');
-    
+if(file_exists('../credentials/psychonline-firebase-adminsdk-12uxl-c8a23d2ad7.json'))
+    $firebase = (new Factory)->withServiceAccount('../credentials/psychonline-firebase-adminsdk-12uxl-c8a23d2ad7.json');
+else
+    $firebase = (new Factory)->withServiceAccount(getenv("firebase_secret"));
+
 $storage = $firebase->createStorage();
 $storageClient = $storage->getStorageClient();
 $defaultBucket = $storage->getBucket();
