@@ -370,8 +370,8 @@ $( document ).ready(function() {
                 responses=[];
                 for(r=0;r<responseDivs.length;r++){
                     resp=$(responseDivs[r]).find(".textresponse").val();
-
-                    if((resp && resp=="") || (!resp && $(responseDivs[r]).attr("value")==-1))
+                    console.log(resp,$(responseDivs[r]).attr("value"));
+                    if((resp && resp=="") || (resp === undefined && $(responseDivs[r]).attr("value")=="-1"))
                         return false;
                     else if(!resp)
                         resp=$(responseDivs[r]).attr("value");

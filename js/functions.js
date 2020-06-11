@@ -339,7 +339,7 @@ function showResponse(ratings, trialNumber){
             return;
         }
 
-        jQuery('<div/>', {
+        q=jQuery('<div/>', {
             "class": 'question',
             "num": 1,
             "value": -1,
@@ -354,7 +354,7 @@ function showResponse(ratings, trialNumber){
                 "num": i+1,
                 title: i+1,
                 text: i+1
-            }).appendTo('#confidence-scale');
+            }).appendTo(q);
         }
     }
     $("#response-container").css("display","table");
