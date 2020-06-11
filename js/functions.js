@@ -6,7 +6,7 @@ function moveLoadingBar(loaded, max){
         $("#loading-bar").hide();
         $("#trial-container").css("display","table");
         $("#loading-bar-progress").css("width","0%");
-        console.log("move",loadingInfo);
+        //console.log("move",loadingInfo);
         if(!loadingInfo)
             $("#stimulus-container").show();
         stimulusOn=Date.now();
@@ -293,14 +293,17 @@ function showResponse(ratings, trialNumber){
     $("#confidence-scale").text("");
 
     if(stimuli.info.customResponse){
+        if(!Array.isArray(stimuli.info.customResponse))
+            stimuli.info.customResponse=Array(stimuli.info.customResponse);
         for(r=0;r<stimuli.info.customResponse.length;r++){
             if(stimuli.info.customResponse[r].type=="rating"){
-                jQuery('<div/>', {
+                q=jQuery('<div/>', {
                     "class": 'question',
-                    "num": i+1,
+                    "num": r+1,
                     "value": -1,
-                    text: stimuli.info.customResponse[r].question
                 }).appendTo('#confidence-scale');
+                q.append("<div>"+stimuli.info.customResponse[r].question+"</div>");
+                if(stimuli.info.customResponse[r].max==undefined) stimuli.info.customResponse[r].max=8;
                 if(stimuli.info.customResponse[r].max<10){
                     for(i=0;i<stimuli.info.customResponse[r].max;i++){
                         if(i<stimuli.info.customResponse[r].max/2) divclass="absent";
@@ -311,14 +314,22 @@ function showResponse(ratings, trialNumber){
                             "num": i+1,
                             title: i+1,
                             text: i+1
-                        }).appendTo('#confidence-scale');
+                        }).appendTo(q);
                     }
                 }else{
-                    $('#confidence-scale').append('<div class="slidecontainer"> \
+                    q.append('<div class="slidecontainer"> \
                         <div class="slider-value response" value='+Math.floor(stimuli.info.customResponse[r].max/2)+'>'+Math.floor(stimuli.info.customResponse[r].max/2)+'</div> \
                         <input type="range" min="1" max="'+stimuli.info.customResponse[r].max+'" value="'+Math.floor(stimuli.info.customResponse[r].max/2)+'" class="slider"> \
                     </div>');
                 }
+            }else if(stimuli.info.customResponse[r].type=="text"){
+                q=jQuery('<div/>', {
+                    "class": 'question',
+                    "num": r+1,
+                    "value": -1,
+                }).appendTo('#confidence-scale');
+                q.append("<div>"+stimuli.info.customResponse[r].question+"</div>");
+                q.append('<input type="text" class="textresponse" placeholder="Write your answer">');
             }
         }
     }else{
@@ -362,11 +373,11 @@ function finishExperiment(arr){
         dataType: "json",
         success: function(data){
             //console.log("SUCCESS");
-            console.log(data["responseText"]);
+            //console.log(data["responseText"]);
         },
         error: function(data){
             //console.log("ERROR");
-            console.log(data["responseText"]);
+            //console.log(data["responseText"]);
             //console.log(data);
         }
     });

@@ -68,6 +68,10 @@ input[type="text"]:hover, select:hover{
     background: rgb(73, 57, 47);
 }
 
+.textresponse{
+    display:block;
+}
+
 
 .form-box input[type="text"], .form-box select, .form-box input[type="password"]{
     border-width: 1px;

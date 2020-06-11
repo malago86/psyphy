@@ -72,7 +72,7 @@ $( document ).ready(function() {
                 },
                 error: function(data){
                     //console.log("ERROR");
-                    console.log(data);
+                    //console.log(data);
                 }
             });
         });
@@ -361,23 +361,33 @@ $( document ).ready(function() {
                     cancelPopup(animCalibration);
                     calibrating=false;
                 }
-            }else if(responding && event.which==32){
+            }else if(responding && (event.which==32 || event.key=="Enter")){
+
+                if(event.which==32 && $(".textresponse").is(":focus")) return true;
+
                 responseDivs=$('.question');
+
                 responses=[];
                 for(r=0;r<responseDivs.length;r++){
-                    responses.push($(responseDivs[r]).attr("value"));
+                    resp=$(responseDivs[r]).find(".textresponse").val();
+
+                    if((resp && resp=="") || (!resp && $(responseDivs[r]).attr("value")==-1))
+                        return false;
+                    else if(!resp)
+                        resp=$(responseDivs[r]).attr("value");
+                    responses.push(resp);
                 }
                 saveTrial(responses);
                 responding=false;
             }else if(running){
-                if(event.which==32){ //spacebar
+                if(event.which==32 && arr.config.options.multiple.localeCompare("MAFC")!=0){ //spacebar
                     if(preparation){
                         preparation=false;
                         stimulusOn=Date.now();
                         $("#trial-container .text").hide();
                         $("#stimulus-container").show();
                         if($("#stimulus .stimulus-img").is("video")){
-                            console.log("restart");
+                            //console.log("restart");
                             $("#stimulus .stimulus-img")[0].currentTime=0;
                             $("#stimulus .stimulus-img").trigger('play');
                         }
@@ -481,7 +491,7 @@ $( document ).ready(function() {
 
     $('body').on('click', '.rating',function(e) { //click on confidence rating
         rating = $(this).attr("num");
-        $(this).siblings(".question").attr("value",rating);
+        $(this).parent().attr("value",rating);
         $(".rating").removeClass("selected");
         $(this).toggleClass("selected");
         return false;
