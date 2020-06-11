@@ -4,8 +4,43 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "335db50353f8c90f12c47d35488efa97",
+    "content-hash": "a17d344acebfd04b3172c3a94b91fd96",
     "packages": [
+        {
+            "name": "components/font-awesome",
+            "version": "5.12.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/components/font-awesome.git",
+                "reference": "f033e952d0e20684443c0466045deae61fd4e733"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/components/font-awesome/zipball/f033e952d0e20684443c0466045deae61fd4e733",
+                "reference": "f033e952d0e20684443c0466045deae61fd4e733",
+                "shasum": ""
+            },
+            "type": "component",
+            "extra": {
+                "component": {
+                    "styles": [
+                        "css/all.css"
+                    ],
+                    "files": [
+                        "css/all.min.css",
+                        "webfonts/*"
+                    ]
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "CC-BY-4.0",
+                "MIT",
+                "OFL-1.1"
+            ],
+            "description": "Font Awesome, the iconic SVG, font, and CSS framework.",
+            "time": "2020-02-05T15:33:46+00:00"
+        },
         {
             "name": "fig/http-message-util",
             "version": "1.1.4",
@@ -717,55 +752,6 @@
                 "url"
             ],
             "time": "2019-07-01T23:21:34+00:00"
-        },
-        {
-            "name": "khill/fontawesomephp",
-            "version": "2.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/kevinkhill/FontAwesomePHP.git",
-                "reference": "324fdac57c319f7212d4be2e47f1d03c3f015e1a"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/kevinkhill/FontAwesomePHP/zipball/324fdac57c319f7212d4be2e47f1d03c3f015e1a",
-                "reference": "324fdac57c319f7212d4be2e47f1d03c3f015e1a",
-                "shasum": ""
-            },
-            "require-dev": {
-                "phpunit/phpunit": "~4.8",
-                "satooshi/php-coveralls": "~1.0",
-                "squizlabs/php_codesniffer": "~2.5"
-            },
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "providers": [
-                        "Khill\\FontAwesome\\Laravel\\FontAwesomeServiceProvider"
-                    ],
-                    "aliases": {
-                        "FA": "Khill\\FontAwesome\\Laravel\\FontAwesomeFacade"
-                    }
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Khill\\FontAwesome\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Kevin Hill",
-                    "email": "kevinkhill@gmail.com",
-                    "role": "Developer"
-                }
-            ],
-            "description": "PHP wrapper library for the fantastic Font Awesome icon set.",
-            "time": "2018-06-19T17:27:46+00:00"
         },
         {
             "name": "kreait/clock",
