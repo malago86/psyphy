@@ -18,6 +18,7 @@ You can access the latest version of PsyPhy [here](https://www.psyphy.org).
 
 * [jQuery](https://jquery.com/)
 * [Google APIs Client Library for PHP](https://github.com/googleapis/google-api-php-client)
+* [Unofficial Firebase Admin SDK for PHP](https://github.com/kreait/firebase-php)
 * [Font Awesome](https://fontawesome.com/)
 * [jQuery UI](https://jqueryui.com/)
 * [jQuery Key](https://github.com/yckart/jquery.key.js)
