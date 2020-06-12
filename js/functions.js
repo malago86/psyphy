@@ -304,7 +304,7 @@ function showResponse(ratings, trialNumber){
                 }).appendTo('#confidence-scale');
                 q.append("<div>"+stimuli.info.customResponse[r].question+"</div>");
                 if(stimuli.info.customResponse[r].max==undefined) stimuli.info.customResponse[r].max=8;
-                if(stimuli.info.customResponse[r].max<10){
+                if(stimuli.info.customResponse[r].max<=10){
                     for(i=0;i<stimuli.info.customResponse[r].max;i++){
                         if(i<stimuli.info.customResponse[r].max/2) divclass="absent";
                         else divclass="present";
@@ -329,7 +329,23 @@ function showResponse(ratings, trialNumber){
                     "value": -1,
                 }).appendTo('#confidence-scale');
                 q.append("<div>"+stimuli.info.customResponse[r].question+"</div>");
-                q.append('<input type="text" class="textresponse" placeholder="Write your answer">');
+                q.append('<input type="text" class="textresponse" maxlength="100" placeholder="Write your answer">');
+            }else if(stimuli.info.customResponse[r].type=="select"){
+                q=jQuery('<div/>', {
+                    "class": 'question',
+                    "num": r+1,
+                    "value": -1,
+                }).appendTo('#confidence-scale');
+                q.append("<div>"+stimuli.info.customResponse[r].question+"</div>");
+                for(i=0;i<stimuli.info.customResponse[r].options.length;i++){
+                    //console.log('rating '+divclass);
+                    jQuery('<div/>', {
+                        "class": 'rating option',
+                        "num": stimuli.info.customResponse[r].options[i],
+                        title: stimuli.info.customResponse[r].options[i],
+                        text: stimuli.info.customResponse[r].options[i]
+                    }).appendTo(q);
+                }
             }
         }
     }else{
@@ -666,6 +682,7 @@ function loadExperimentData(data){
     }
 
     $("#form-box").html("<h3>Experiment <strong>"+data["options"]["title"]+"</strong> loaded!</h3>"+instructions+"<p><a href='/'>Reset</a></p>");
+    document.title = data["options"]["title"]+' - PSY'+String.fromCodePoint(0x26AA)+'PHY';
     //arr.config.ratings=data["ratings"];
     //arr.config.name=data["title"];
     arr.config.conditions=data["conditions"];

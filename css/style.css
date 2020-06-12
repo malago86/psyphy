@@ -272,11 +272,17 @@ input[type="button"].disabled{
     cursor: pointer;
     color:white;
 }
+.option{
+    width:auto;
+    font-size:20px;
+    padding:2px;
+    min-width:50px;
+}
 
-.present{
+.present, .option{
     border: 2px solid greenyellow;
 }
-.present:hover,.present.selected{
+.present:hover,.present.selected,.option:hover,.option.selected{
     background-color:green
 }
 
@@ -288,9 +294,13 @@ input[type="button"].disabled{
 }
 
 .question {
-    margin-top: 40px;
+    margin-top: 10px;
+    padding-top: 10px;
     font-weight: bold;
     clear: both;
+    text-align: center;
+    display: flow-root;
+    border-top: 1px solid white;
 }
 
 #confidence-scale{
@@ -509,7 +519,7 @@ input[type="file"] {
     text-align: center;
     width: 33%;
 }
-
+.slidecontainer{display:flex}
 .slider {
     float:right;
     -webkit-appearance: none;
