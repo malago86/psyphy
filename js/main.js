@@ -13,6 +13,8 @@ var blindSpotDegrees=13; //13.59
 var running=false;
 var loading=false;
 var responding=false;
+var pressedKey=-1;
+var allowedKeys=[];
 var loaded=0;
 var preparation=false;
 var showingFeedback=false;
@@ -417,7 +419,9 @@ $( document ).ready(function() {
                 saveTrial(responses);
                 responding=false;
             }else if(running){
-                if(event.which==32 && arr.config.options.multiple.localeCompare("MAFC")!=0){ //spacebar
+                pressedKey=allowedKeys.indexOf(event.code);
+                console.log(pressedKey,allowedKeys,event.code);
+                if(pressedKey > -1 && arr.config.options.multiple.localeCompare("MAFC")!=0){ //spacebar
                     if(preparation){
                         preparation=false;
                         stimulusOn=Date.now();

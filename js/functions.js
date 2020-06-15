@@ -351,6 +351,7 @@ function showResponse(ratings, trialNumber){
     }else{
         if(arr.config.options.ratings==1){
             //calibrated=false;
+            responding=false;
             saveTrial(-1);
             return;
         }
@@ -584,6 +585,10 @@ function saveTrial(responses){
             responses=savedResponses;
             savedResponses=-1;
         }
+        pressedKeyName="Spacebar";
+        if(arr.config.options.keys!=undefined)
+            pressedKeyName=allowedKeys[pressedKey];
+        
         arr.data.push({
             trialID:trialSequence[sortIndexes[trialID]],
             responses:responses,
@@ -592,6 +597,7 @@ function saveTrial(responses){
             stimulusOff:stimulusOff,
             condition:conditionSequence[sortIndexes[trialID]],
             marks:marks,
+            pressedKey:pressedKeyName,
             });
         //console.log(arr);
         currentSlice=0;
@@ -705,4 +711,6 @@ function loadExperimentData(data){
     //arr.config.ratings=data["ratings"];
     //arr.config.name=data["title"];
     arr.config.conditions=data["conditions"];
+
+    allowedKeys=arr.config.options.keys.split(',');
 }
