@@ -19,7 +19,7 @@ if(isset($_POST['results'])){
     //touch($myFile);
     $myFile=$myFile.$jsondata->config->options->id."/";
     
-    file_put_contents("../".$myFile.$jsondata->name."-".date("U").".pso", json_encode($jsondata));
+    file_put_contents("../".$myFile.$jsondata->name.".pso", json_encode($jsondata));
 
     if(file_exists('../credentials/psychonline-firebase-adminsdk-12uxl-c8a23d2ad7.json'))
         $firebase = (new Factory)->withServiceAccount('../credentials/psychonline-firebase-adminsdk-12uxl-c8a23d2ad7.json');
@@ -32,7 +32,7 @@ if(isset($_POST['results'])){
 
     $defaultBucket->upload(json_encode($jsondata),
     [
-        'name' => $myFile.$jsondata->name."-".date("U").".pso"
+        'name' => $myFile.$jsondata->name.".pso"
     ]);
 }
 

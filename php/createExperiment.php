@@ -36,6 +36,14 @@ if(isset($_POST['experiment-id']) && isset($_POST['title']) && isset($_POST['exp
     ]);
 
     echo json_encode($result);
+}elseif(isset($_POST['load-id']) && isset($_POST['participant-id'])){
+    $id=$_POST['load-id'];
+    $participant=$_POST['participant-id'];
+    $object=$defaultBucket->object("results/".$id."/".$participant.".pso");
+    if($object->exists()){
+        $object->downloadToFile("../results/".$id."/".$participant.".pso");
+        echo file_get_contents("../results/".$id."/".$participant.".pso");
+    }
 }elseif(isset($_POST['load-id'])){
     $id=$_POST['load-id'];
     $object=$defaultBucket->object("experiment/".$id.".json");
@@ -43,5 +51,4 @@ if(isset($_POST['experiment-id']) && isset($_POST['title']) && isset($_POST['exp
         $object->downloadToFile("../experiment/".$id.".json");
         echo file_get_contents("../experiment/".$id.".json");
     }
-
 }

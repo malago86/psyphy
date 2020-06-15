@@ -15,6 +15,9 @@ a:hover{
 strong{
     color:#ff8a6e;
 }
+.background{
+    text-align: center;
+}
 
 #form-container, #form-data{
     margin:auto;

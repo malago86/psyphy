@@ -381,6 +381,7 @@ function showResponse(ratings, trialNumber){
   
 function finishExperiment(arr){
     results={results:JSON.stringify(arr)};
+    $.removeCookie('psyphy');
     
     $.ajax({
         type: "POST",
@@ -492,6 +493,24 @@ function resetExperiment(running, calibrating, animCalibration){
         $("body").css("background-color","#39302a");
         $(".error").html("<i class='fas fa-exclamation-circle'></i> Please keep fullscreen mode and do not leave the browser, experiment has been reset!");
         $(".error").show();
+
+        results={results:JSON.stringify(arr)};
+        
+        $.ajax({
+            type: "POST",
+            url: "/php/upload.php",
+            data: results,
+            dataType: "json",
+            success: function(data){
+                //console.log("SUCCESS");
+                //console.log(data["responseText"]);
+            },
+            error: function(data){
+                //console.log("ERROR");
+                //console.log(data["responseText"]);
+                //console.log(data);
+            }
+        });
     }
     if(calibrating){
         cancelPopup(animCalibration);

@@ -55,6 +55,17 @@ $( document ).ready(function() {
     var ccWidthCM=8.560;
     
     var params = window.location.pathname.split('/').slice(1);
+    var cookieName;
+
+    if($.cookie("psyphy")){
+        cookie=$.cookie("psyphy").split(",");
+        params[0]="experiment";
+        params[1]=cookie[0];
+        cookieName=cookie[1];
+        $("#name").hide();
+        $("#form-container p").hide();
+        $("#form-container img").after("<p>We found an experiment already started, please finish it before proceeding.</p>");
+    }
 
     if(params[0]=="experiment"){
         $("#form-box").html("<i class='fas fa-hourglass fa-spin'></i>");
@@ -110,8 +121,11 @@ $( document ).ready(function() {
         
 
 		if(name==""){
-			name="Test Participant";
+			name=new Date().getTime();
         }
+
+        name=name+"-"+(new Date().getTime());
+        
 
         arr={config: {
                 maxTrials: maxTrials,
@@ -135,6 +149,24 @@ $( document ).ready(function() {
         };
         if(!cheatCode)
             document.documentElement.requestFullscreen();
+
+        if(cookieName!=undefined){
+            name=cookieName;
+            console.log("/results/"+params[1]+"/"+name+".pso");
+            $.ajax({
+                type: "POST",
+                url: "/php/createExperiment.php",
+                data: {"load-id":params[1],"participant-id":name},
+                dataType: "json",
+                success: function(data){
+                    arr=data;
+                },
+                error: function(data){
+                    //console.log("ERROR");
+                    console.log(data);
+                }
+            });
+        }
 
         //
         marks=[];
@@ -161,7 +193,9 @@ $( document ).ready(function() {
             }
 
             sortIndexes=Array.from({length:conditionSequence.length},(v,k)=>k);
-            sortIndexes.sort(function(a, b) {return 0.5 - Math.random()});
+            if(arr.config.options.randomize==undefined || arr.config.options.randomize.localeCompare("true")){
+                sortIndexes.sort(function(a, b) {return 0.5 - Math.random()});
+            }
 
             arr.name=name;
             arr.sortIndexes=sortIndexes;
@@ -184,6 +218,9 @@ $( document ).ready(function() {
             }
             
         }
+
+        $.cookie("psyphy", [arr.config.options.id,name], { expires : 10 });
+
         //console.log(stimuli);
         //document.body.appendChild(stimuli.img[1]);
         numSlices=stimuli.slices;
