@@ -112,6 +112,15 @@ input[type="button"].disabled{
     background:inherit;
 }
 
+#delete-experiment {
+    clear: both;
+    display: block;
+    margin: auto;
+    font-size: 13px;
+    padding: 5px;
+    border-width: 2px;
+}
+
 .text{
     text-align: center;
     background: gray;

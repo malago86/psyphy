@@ -712,5 +712,8 @@ function loadExperimentData(data){
     //arr.config.name=data["title"];
     arr.config.conditions=data["conditions"];
 
-    allowedKeys=arr.config.options.keys.split(',');
+    if(arr.config.options.keys!=undefined)
+        allowedKeys=arr.config.options.keys.split(',');
+    else
+        allowedKeys=["Space"];
 }

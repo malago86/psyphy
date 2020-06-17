@@ -1,5 +1,5 @@
 
-var version="1.3.0";
+var version="1.4.0";
 
 
 var count=0;
@@ -67,6 +67,7 @@ $( document ).ready(function() {
         $("#name").hide();
         $("#form-container p").hide();
         $("#form-container img").after("<p>We found an experiment already started, please finish it before proceeding.</p>");
+        $("#form-container #start-experiment").after("<input type='button' id='delete-experiment' value='Delete data and restart'>");
     }
 
     if(params[0]=="experiment"){
@@ -452,6 +453,9 @@ $( document ).ready(function() {
                     resetExperiment(running, calibrating, animCalibration);
                 } else if(event.key=="h"){
                     $("#help").toggle();
+                }else if(event.key=="F5"){
+                    resetExperiment(running, calibrating, animCalibration);
+                    location.reload();
                 }
             }
     }); 
@@ -676,4 +680,16 @@ $( document ).ready(function() {
         $("#create-title").children(".icon").toggleClass("far fa-minus-square");
     });
 
+    $("#delete-experiment").on('click',function(){
+        $.removeCookie('psyphy');
+        location.reload();
+    });
+
+});
+
+window.addEventListener('beforeunload', function (e) {
+    if(running){
+        e.preventDefault();
+        e.returnValue = '';
+    }
 });
