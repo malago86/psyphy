@@ -66,7 +66,7 @@
                             <td>
                                 <div id="slider-value">8</div>
                                 <div class="slidecontainer">
-                                    <input type="range" min="1" max="10" value="8" class="slider" id="ratings">
+                                    <input type="range" min="1" max="12" value="8" class="slider" id="ratings">
                                 </div>
                             </td>
                         </tr>
@@ -94,11 +94,11 @@
                         </tr>
                         <tr>
                             <th><abbr title="Recalibration interval in minutes, set to empty or 0 to disable">Calibration interval</abbr></th>
-                            <td><input id="calibration" type="text" placeholder="calibration" style="font-size:20px; width:100%;text-align:center" value="10"/></td>
+                            <td><input id="calibration" type="number" placeholder="calibration" style="font-size:20px; width:100%;text-align:center" value="10"/></td>
                         </tr>
                         <tr>
                             <th>Trial timeout (<abbr title="milliseconds, set to empty or 0 to disable">ms</abbr>)</th>
-                            <td><input id="timeout" type="text" placeholder="optional" style="font-size:20px; width:100%;text-align:center"/></td>
+                            <td><input id="timeout" type="number" placeholder="optional" style="font-size:20px; width:100%;text-align:center"/></td>
                         </tr>
                     </table>
                     <br><input type="button" id="google-drive-select" value="Find stimuli on Google Drive" /><br>

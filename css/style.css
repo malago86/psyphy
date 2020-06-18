@@ -56,7 +56,7 @@ a[id=download]:hover, #load-experiment-label:hover, #google-drive-result ul li:h
     color:white;
 }
 
-input[type="text"], select, input[type="password"], input[type="submit"]{
+input[type="text"], input[type="number"], select, input[type="password"], input[type="submit"]{
 	border: 3px solid rgb(229, 72, 35);
 	background: rgb(57, 48, 42);
 	color:white;
@@ -67,7 +67,7 @@ input[type="text"], select, input[type="password"], input[type="submit"]{
     font-size:20px; 
 }
 
-input[type="text"]:hover, select:hover{
+input[type="text"]:hover, input[type="number"]:hover, select:hover{
     background: rgb(73, 57, 47);
 }
 
@@ -76,7 +76,7 @@ input[type="text"]:hover, select:hover{
 }
 
 
-.form-box input[type="text"], .form-box select, .form-box input[type="password"]{
+.form-box input[type="text"], .form-box select, .form-box input[type="password"], .form-box input[type="number"]{
     border-width: 1px;
 }
 .form-box input[type="button"], .form-box input[type="submit"]{

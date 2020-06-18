@@ -93,6 +93,9 @@ $( document ).ready(function() {
     }
 
     $("#start-experiment").click(function(e){
+        if(arr.config.options.calibration<=0)
+            calibrated=true;
+
         if(!calibrated && !cheatCode){
             calibrating=true;
             document.documentElement.requestFullscreen();
@@ -595,6 +598,13 @@ $( document ).ready(function() {
                 name=$(fields[f]).attr("id");
                 if(fields[f].type.localeCompare("checkbox")==0){
                     options[name]=$(fields[f]).prop('checked').toString();
+                }else if(name.localeCompare("ratings")==0){
+                    if($(fields[f]).val()==11)
+                        options[name]="50";
+                    else if($(fields[f]).val()==12)
+                        options[name]="100";
+                    else
+                        options[name]=$(fields[f]).val();
                 }else{
                     options[name]=$(fields[f]).val();
                 }
@@ -663,6 +673,13 @@ $( document ).ready(function() {
         r=$(this).val();
         if(r==1)
             r="disabled";
+        else if(r==11){
+            $(this).val(50);
+            r=50;
+        }else if(r==12){
+            $(this).val(100);
+            r=100;
+        }
         $("#slider-value").html(r);  
     });
     

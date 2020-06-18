@@ -714,6 +714,8 @@ function loadExperimentData(data){
     console.log(data);
     if(arr.config.options.calibration==undefined)
         arr.config.options.calibration=10;
+    else if(arr.config.options.calibration="")
+        arr.config.options.calibration=0;
 
     if(arr.config.options.keys!=undefined)
         allowedKeys=arr.config.options.keys.split(',');
