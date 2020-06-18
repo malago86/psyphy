@@ -631,7 +631,7 @@ function saveTrial(responses){
                 }
             }
             
-            if((Date.now()-arr.config.display.pixelsPerDegree.slice(-1)[0][1]) > 600000) // recalibrate every 10 minutes
+            if(arr.config.options.calibration>0 && (Date.now()-arr.config.display.pixelsPerDegree.slice(-1)[0][1]) > arr.config.options.calibration*1000*60) // recalibrate every 10 minutes
                 calibrated=false;
             nextTrial(currentSlice, numSlices);
             
@@ -711,6 +711,9 @@ function loadExperimentData(data){
     //arr.config.ratings=data["ratings"];
     //arr.config.name=data["title"];
     arr.config.conditions=data["conditions"];
+    console.log(data);
+    if(arr.config.options.calibration==undefined)
+        arr.config.options.calibration=10;
 
     if(arr.config.options.keys!=undefined)
         allowedKeys=arr.config.options.keys.split(',');
