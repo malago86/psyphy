@@ -194,16 +194,7 @@ $( document ).ready(function() {
             trialSequence=[];
             numConditions=arr.config.conditions.length;
 
-            if(arr.config.options.randomize.localeCompare("all")==0){
-                for(i=0;i<numConditions;i++){
-                    trialSequence=trialSequence.concat(Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>k));
-                    conditionSequence=conditionSequence.concat(Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>i));
-                }
-                sortIndexes=Array.from({length:conditionSequence.length},(v,k)=>k);
-                if(arr.config.options.randomize==undefined || arr.config.options.randomize.localeCompare("true")){
-                    sortIndexes.sort(function(a, b) {return 0.5 - Math.random()});
-                }
-            }else if(arr.config.options.randomize.localeCompare("randomrandom")==0){
+            if(arr.config.options.randomize.localeCompare("randomrandom")==0){
                 conditionOrder=Array.from({length:numConditions},(v,k)=>k);
                 conditionOrder.sort(function(a, b) {return 0.5 - Math.random()});
                 console.log(conditionOrder);
@@ -234,7 +225,16 @@ $( document ).ready(function() {
                     conditionSequence=conditionSequence.concat(Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>i));
                 }
                 sortIndexes=Array.from({length:conditionSequence.length},(v,k)=>k);
-            }            
+            }else{
+                for(i=0;i<numConditions;i++){
+                    trialSequence=trialSequence.concat(Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>k));
+                    conditionSequence=conditionSequence.concat(Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>i));
+                }
+                sortIndexes=Array.from({length:conditionSequence.length},(v,k)=>k);
+                if(arr.config.options.randomize==undefined || arr.config.options.randomize.localeCompare("true")){
+                    sortIndexes.sort(function(a, b) {return 0.5 - Math.random()});
+                }
+            }      
 
             console.log(conditionSequence);
             console.log(trialSequence);
