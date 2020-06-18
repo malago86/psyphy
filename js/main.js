@@ -193,15 +193,52 @@ $( document ).ready(function() {
             conditionSequence=[];
             trialSequence=[];
             numConditions=arr.config.conditions.length;
-            for(i=0;i<numConditions;i++){
-                trialSequence=trialSequence.concat(Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>k));
-                conditionSequence=conditionSequence.concat(Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>i));
-            }
 
-            sortIndexes=Array.from({length:conditionSequence.length},(v,k)=>k);
-            if(arr.config.options.randomize==undefined || arr.config.options.randomize.localeCompare("true")){
-                sortIndexes.sort(function(a, b) {return 0.5 - Math.random()});
-            }
+            if(arr.config.options.randomize.localeCompare("all")==0){
+                for(i=0;i<numConditions;i++){
+                    trialSequence=trialSequence.concat(Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>k));
+                    conditionSequence=conditionSequence.concat(Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>i));
+                }
+                sortIndexes=Array.from({length:conditionSequence.length},(v,k)=>k);
+                if(arr.config.options.randomize==undefined || arr.config.options.randomize.localeCompare("true")){
+                    sortIndexes.sort(function(a, b) {return 0.5 - Math.random()});
+                }
+            }else if(arr.config.options.randomize.localeCompare("randomrandom")==0){
+                conditionOrder=Array.from({length:numConditions},(v,k)=>k);
+                conditionOrder.sort(function(a, b) {return 0.5 - Math.random()});
+                console.log(conditionOrder);
+                for(i=0;i<numConditions;i++){
+                    newT=Array.from({length:arr.config.conditions[conditionOrder[i]].stimuli.stimulusFiles.length},(v,k)=>k);
+                    trialSequence=trialSequence.concat(newT.sort(function(a, b) {return 0.5 - Math.random()}));
+                    conditionSequence=conditionSequence.concat(Array.from({length:arr.config.conditions[conditionOrder[i]].stimuli.stimulusFiles.length},(v,k)=>conditionOrder[i]));
+                }
+                sortIndexes=Array.from({length:conditionSequence.length},(v,k)=>k);
+            }else if(arr.config.options.randomize.localeCompare("randomkeep")==0){
+                conditionOrder=Array.from({length:numConditions},(v,k)=>k);
+                conditionOrder.sort(function(a, b) {return 0.5 - Math.random()});
+                for(i=0;i<numConditions;i++){
+                    trialSequence=trialSequence.concat(Array.from({length:arr.config.conditions[conditionOrder[i]].stimuli.stimulusFiles.length},(v,k)=>k));
+                    conditionSequence=conditionSequence.concat(Array.from({length:arr.config.conditions[conditionOrder[i]].stimuli.stimulusFiles.length},(v,k)=>conditionOrder[i]));
+                }
+                sortIndexes=Array.from({length:conditionSequence.length},(v,k)=>k);
+            }else if(arr.config.options.randomize.localeCompare("keeprandom")==0){
+                for(i=0;i<numConditions;i++){
+                    newT=Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>k);
+                    trialSequence=trialSequence.concat(newT.sort(function(a, b) {return 0.5 - Math.random()}));
+                    conditionSequence=conditionSequence.concat(Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>i));
+                }
+                sortIndexes=Array.from({length:conditionSequence.length},(v,k)=>k);
+            }else if(arr.config.options.randomize.localeCompare("keepkeep")==0){
+                for(i=0;i<numConditions;i++){
+                    trialSequence=trialSequence.concat(Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>k));
+                    conditionSequence=conditionSequence.concat(Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>i));
+                }
+                sortIndexes=Array.from({length:conditionSequence.length},(v,k)=>k);
+            }            
+
+            console.log(conditionSequence);
+            console.log(trialSequence);
+            console.log(sortIndexes);
 
             arr.name=name;
             arr.sortIndexes=sortIndexes;

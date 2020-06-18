@@ -79,8 +79,16 @@
                             <td><input id="keys" type="text" value="Space"/></td>
                         </tr>
                         <tr>
-                            <th><abbr title="Randomize trial order">Randomize</abbr></th>
-                            <td><input id="randomize" type="checkbox" style="font-size:20px; width:100%;text-align:center" checked="checked"/></td>
+                            <th><abbr title="Randomize">Randomize trials</abbr></th>
+                            <td>
+                                <select id="randomize" style="font-size:16px">
+                                    <option value="all" title="Randomize all trials regardless of the condition">Randomize all</option>
+                                    <option value="randomrandom" title="Block conditions and randomize their order, randomize trials inside the conditions">Random blocks, random trials</option>
+                                    <option value="keeprandom" title="Block conditions and keep their order, randomize trials inside the conditions">Ordered blocks, random trials</option>
+                                    <option value="randomkeep" title="Block conditions and randomize their order, keep trial order inside the conditions">Random blocks, ordered trials</option>
+                                    <option value="keepkeep" title="Keep order for conditions and trials inside the conditions">Do not randomize</option>
+                                </select>
+                            </td>
                         </tr>
                         <tr>
                             <th><abbr title="Behavior if several images are found in each stimulus folder">Multiple stimulus</abbr></th>
