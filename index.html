@@ -4,8 +4,9 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
 <script src="/js/jquery.key.js"></script>
-<script src="/js/jquery.cookie.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/js-cookie@rc/dist/js.cookie.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mobile-detect@1.4.4/mobile-detect.min.js"></script>
 <script src="/js/functions.js"></script>
 <script src="/js/main.js"></script>
 <script src="/js/google_drive.js"></script>
@@ -76,12 +77,12 @@
                         </tr>
                         <tr>
                             <th><a href="https://keycode.info/" target="_blank" title="Comma-separated list of allowed keyboard key codes to continue">Allowed keys</a></th>
-                            <td><input id="keys" type="text" value="Space"/></td>
+                            <td><input id="keys" type="text" value="Space" style="width:100%;text-align:center"/></td>
                         </tr>
                         <tr>
                             <th><abbr title="Randomize">Randomize trials</abbr></th>
                             <td>
-                                <select id="randomize" style="font-size:16px">
+                                <select id="randomize" style="width:100%;font-size:16px;margin-top:0;height:26px;">
                                     <option value="all" title="Randomize all trials regardless of the condition">Randomize all</option>
                                     <option value="randomrandom" title="Block conditions and randomize their order, randomize trials inside the conditions">Random blocks, random trials</option>
                                     <option value="keeprandom" title="Block conditions and keep their order, randomize trials inside the conditions">Ordered blocks, random trials</option>
@@ -93,7 +94,7 @@
                         <tr>
                             <th><abbr title="Behavior if several images are found in each stimulus folder">Multiple stimulus</abbr></th>
                             <td>
-                                <select id="multiple">
+                                <select id="multiple" style="margin-top:0;height:26px;font-size:16px;width:100%">
                                     <option value="first">Show first</option>
                                     <option value="MAFC">MAFC</option>
                                     <option value="3D">3D scroll</option>

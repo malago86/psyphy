@@ -22,6 +22,7 @@ strong{
 #form-container, #form-data{
     margin:auto;
     width:fit-content;
+    width: -moz-fit-content;
     text-align: center;
 }
 
@@ -183,15 +184,17 @@ input[type="button"].disabled{
 #stimulus-container{
     margin:auto;
     width: fit-content;
+    width: -moz-fit-content;
     position: relative;
 }
 
 #stimulus, #feedback-container{
     display:table;
     /*height: 85%;*/
-    width:100%;
+    /*width:100%;*/
     text-align:center;
     position:relative;
+    margin: auto;
 }
 
 #trial-container,#feedback-container{
@@ -317,6 +320,7 @@ input[type="button"].disabled{
 
 #confidence-scale{
     width: fit-content;
+    width: -moz-fit-content;
     margin:auto;
 }
 

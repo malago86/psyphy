@@ -1,6 +1,7 @@
 
 var version="1.4.0";
 
+var md = new MobileDetect(window.navigator.userAgent);
 
 var count=0;
 var arr={name: "",config: {options:{}}, data:[]};
@@ -38,6 +39,15 @@ var markColors=["white","lime","red","blue"];
 
 $( document ).ready(function() {
     $("#version").text(version);
+
+    if(md.phone()){
+        $("#form-container").html("<img src='/images/psyphy.png' class='logo' width='600'><br><div class='error' style='display:block'><i class='fas fa-exclamation-circle'></i> You cannot use PsyPhy in a mobile device, please try again in a laptop or desktop computer</div>");
+        $("#form-box").hide();
+    }else if(!md.is('WebKit') && !md.userAgent()==="Firefox"){
+        $("#form-container").html("<img src='/images/psyphy.png' class='logo' width='600'><br><div class='error' style='display:block'><i class='fas fa-exclamation-circle'></i> Currently, PsyPhy is only compatible with WebKit-based browsers like Google Chrome or Firefox</div>");
+        $("#form-box").hide();
+    }
+
     
     var parentOffset = null;
     var prevX,prevY,relX,relY;
@@ -59,8 +69,8 @@ $( document ).ready(function() {
     var params = window.location.pathname.split('/').slice(1);
     var cookieName;
 
-    if($.cookie("psyphy")){
-        cookie=$.cookie("psyphy").split(",");
+    if(Cookies.get('psyphy')){
+        cookie=Cookies.get('psyphy').split(",");
         params[0]="experiment";
         params[1]=cookie[0];
         cookieName=cookie[1];
@@ -194,37 +204,48 @@ $( document ).ready(function() {
             trialSequence=[];
             numConditions=arr.config.conditions.length;
 
-            if(arr.config.options.randomize.localeCompare("randomrandom")==0){
-                conditionOrder=Array.from({length:numConditions},(v,k)=>k);
-                conditionOrder.sort(function(a, b) {return 0.5 - Math.random()});
-                console.log(conditionOrder);
-                for(i=0;i<numConditions;i++){
-                    newT=Array.from({length:arr.config.conditions[conditionOrder[i]].stimuli.stimulusFiles.length},(v,k)=>k);
-                    trialSequence=trialSequence.concat(newT.sort(function(a, b) {return 0.5 - Math.random()}));
-                    conditionSequence=conditionSequence.concat(Array.from({length:arr.config.conditions[conditionOrder[i]].stimuli.stimulusFiles.length},(v,k)=>conditionOrder[i]));
-                }
-                sortIndexes=Array.from({length:conditionSequence.length},(v,k)=>k);
-            }else if(arr.config.options.randomize.localeCompare("randomkeep")==0){
-                conditionOrder=Array.from({length:numConditions},(v,k)=>k);
-                conditionOrder.sort(function(a, b) {return 0.5 - Math.random()});
-                for(i=0;i<numConditions;i++){
-                    trialSequence=trialSequence.concat(Array.from({length:arr.config.conditions[conditionOrder[i]].stimuli.stimulusFiles.length},(v,k)=>k));
-                    conditionSequence=conditionSequence.concat(Array.from({length:arr.config.conditions[conditionOrder[i]].stimuli.stimulusFiles.length},(v,k)=>conditionOrder[i]));
-                }
-                sortIndexes=Array.from({length:conditionSequence.length},(v,k)=>k);
-            }else if(arr.config.options.randomize.localeCompare("keeprandom")==0){
-                for(i=0;i<numConditions;i++){
-                    newT=Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>k);
-                    trialSequence=trialSequence.concat(newT.sort(function(a, b) {return 0.5 - Math.random()}));
-                    conditionSequence=conditionSequence.concat(Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>i));
-                }
-                sortIndexes=Array.from({length:conditionSequence.length},(v,k)=>k);
-            }else if(arr.config.options.randomize.localeCompare("keepkeep")==0){
-                for(i=0;i<numConditions;i++){
-                    trialSequence=trialSequence.concat(Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>k));
-                    conditionSequence=conditionSequence.concat(Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>i));
-                }
-                sortIndexes=Array.from({length:conditionSequence.length},(v,k)=>k);
+            if(arr.config.options.randomize!=undefined){
+                if(arr.config.options.randomize.localeCompare("randomrandom")==0){
+                    conditionOrder=Array.from({length:numConditions},(v,k)=>k);
+                    conditionOrder.sort(function(a, b) {return 0.5 - Math.random()});
+                    console.log(conditionOrder);
+                    for(i=0;i<numConditions;i++){
+                        newT=Array.from({length:arr.config.conditions[conditionOrder[i]].stimuli.stimulusFiles.length},(v,k)=>k);
+                        trialSequence=trialSequence.concat(newT.sort(function(a, b) {return 0.5 - Math.random()}));
+                        conditionSequence=conditionSequence.concat(Array.from({length:arr.config.conditions[conditionOrder[i]].stimuli.stimulusFiles.length},(v,k)=>conditionOrder[i]));
+                    }
+                    sortIndexes=Array.from({length:conditionSequence.length},(v,k)=>k);
+                }else if(arr.config.options.randomize.localeCompare("randomkeep")==0){
+                    conditionOrder=Array.from({length:numConditions},(v,k)=>k);
+                    conditionOrder.sort(function(a, b) {return 0.5 - Math.random()});
+                    for(i=0;i<numConditions;i++){
+                        trialSequence=trialSequence.concat(Array.from({length:arr.config.conditions[conditionOrder[i]].stimuli.stimulusFiles.length},(v,k)=>k));
+                        conditionSequence=conditionSequence.concat(Array.from({length:arr.config.conditions[conditionOrder[i]].stimuli.stimulusFiles.length},(v,k)=>conditionOrder[i]));
+                    }
+                    sortIndexes=Array.from({length:conditionSequence.length},(v,k)=>k);
+                }else if(arr.config.options.randomize.localeCompare("keeprandom")==0){
+                    for(i=0;i<numConditions;i++){
+                        newT=Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>k);
+                        trialSequence=trialSequence.concat(newT.sort(function(a, b) {return 0.5 - Math.random()}));
+                        conditionSequence=conditionSequence.concat(Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>i));
+                    }
+                    sortIndexes=Array.from({length:conditionSequence.length},(v,k)=>k);
+                }else if(arr.config.options.randomize.localeCompare("keepkeep")==0){
+                    for(i=0;i<numConditions;i++){
+                        trialSequence=trialSequence.concat(Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>k));
+                        conditionSequence=conditionSequence.concat(Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>i));
+                    }
+                    sortIndexes=Array.from({length:conditionSequence.length},(v,k)=>k);
+                }else{
+                    for(i=0;i<numConditions;i++){
+                        trialSequence=trialSequence.concat(Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>k));
+                        conditionSequence=conditionSequence.concat(Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>i));
+                    }
+                    sortIndexes=Array.from({length:conditionSequence.length},(v,k)=>k);
+                    if(arr.config.options.randomize==undefined || arr.config.options.randomize.localeCompare("true")){
+                        sortIndexes.sort(function(a, b) {return 0.5 - Math.random()});
+                    }
+                }  
             }else{
                 for(i=0;i<numConditions;i++){
                     trialSequence=trialSequence.concat(Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>k));
@@ -234,7 +255,7 @@ $( document ).ready(function() {
                 if(arr.config.options.randomize==undefined || arr.config.options.randomize.localeCompare("true")){
                     sortIndexes.sort(function(a, b) {return 0.5 - Math.random()});
                 }
-            }      
+            }
 
             console.log(conditionSequence);
             console.log(trialSequence);
@@ -262,7 +283,7 @@ $( document ).ready(function() {
             
         }
 
-        $.cookie("psyphy", [arr.config.options.id,name], { expires : 10 });
+        Cookies.set('psyphy', [arr.config.options.id,name], { expires:10, sameSite: 'strict', path: window.location.pathname})
 
         //console.log(stimuli);
         //document.body.appendChild(stimuli.img[1]);
@@ -735,7 +756,7 @@ $( document ).ready(function() {
     });
 
     $("#delete-experiment").on('click',function(){
-        $.removeCookie('psyphy');
+        Cookies.remove('psyphy',{path: window.location.pathname});
         location.reload();
     });
 

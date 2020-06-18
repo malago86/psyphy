@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added option for recalibration interval or disabling calibration
 - Added two new ratings at the end of the slider for 50 and 100 ratings
 - Added new randomization options for blocked conditions and trials
+- Safety check for mobile devices and uncompatible browsers
 
 ## [1.3.0] - 2020-06-12
 - New response type: ``select``
