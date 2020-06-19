@@ -20,35 +20,44 @@ if(isset($_POST['experiment-id']) && isset($_POST['title']) && isset($_POST['exp
     $jsondata = json_decode($_POST['experiment-data']);
     $title=substr($_POST['title'],0,100);
     $id=substr($_POST['experiment-id'],0,100);
-    $result=Array("experiment-id"=>$id);
-    mkdir("../results/".$id);
-    file_put_contents("../results/".$id."/title.txt", $_POST['title']);
-    file_put_contents("../experiment/".$id.".json", json_encode($jsondata));
+    if(strpos($id,".") == false){
+        $result=Array("experiment-id"=>$id);
+        if(!is_dir("../results/".$id))
+            mkdir("../results/".$id);
+        file_put_contents("../results/".$id."/title.txt", $_POST['title']);
+        file_put_contents("../experiment/".$id.".json", json_encode($jsondata));
 
-    $defaultBucket->upload(json_encode($jsondata),
-    [
-        'name' => "experiment/".$id.".json"
-    ]);
+        $defaultBucket->upload(json_encode($jsondata),
+        [
+            'name' => "experiment/".$id.".json"
+        ]);
 
-    $defaultBucket->upload($_POST['title'],
-    [
-        'name' => "results/".$id."/title.txt"
-    ]);
+        $defaultBucket->upload($_POST['title'],
+        [
+            'name' => "results/".$id."/title.txt"
+        ]);
 
-    echo json_encode($result);
+        echo json_encode($result);
+    }
 }elseif(isset($_POST['load-id']) && isset($_POST['participant-id'])){
     $id=$_POST['load-id'];
-    $participant=$_POST['participant-id'];
-    $object=$defaultBucket->object("results/".$id."/".$participant.".pso");
-    if($object->exists()){
-        $object->downloadToFile("../results/".$id."/".$participant.".pso");
-        echo file_get_contents("../results/".$id."/".$participant.".pso");
+    if(strpos($id,".") == false){
+        $participant=$_POST['participant-id'];
+        $object=$defaultBucket->object("results/".$id."/".$participant.".pso");
+        if($object->exists()){
+            $object->downloadToFile("../results/".$id."/".$participant.".pso");
+            echo file_get_contents("../results/".$id."/".$participant.".pso");
+        }
     }
 }elseif(isset($_POST['load-id'])){
     $id=$_POST['load-id'];
-    $object=$defaultBucket->object("experiment/".$id.".json");
-    if($object->exists()){
-        $object->downloadToFile("../experiment/".$id.".json");
-        echo file_get_contents("../experiment/".$id.".json");
+    if(strpos($id,".") == false){
+        if(!is_dir("../results/".$id))
+            mkdir("../results/".$id);
+        $object=$defaultBucket->object("experiment/".$id.".json");
+        if($object->exists()){
+            $object->downloadToFile("../experiment/".$id.".json");
+            echo file_get_contents("../experiment/".$id.".json");
+        }
     }
 }

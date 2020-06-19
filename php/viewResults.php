@@ -48,6 +48,9 @@ function calculate_time_span($seconds)
 
 
     if(isset($_GET['experiment-id'])){
+        if(strpos($_GET['experiment-id'],".") !== false){
+            exit();
+        }
         $folder="results/".$_GET['experiment-id'];
 
         if(!is_dir("../".$folder))
@@ -160,7 +163,7 @@ function calculate_time_span($seconds)
 <script src="/js/google_drive.js"></script>
 <link rel="stylesheet" type="text/css" href="/css/style.css">
 <link rel="icon" href="favicon.ico" type="image/x-icon" />
-<link href="/fontawesome/css/all.css" rel="stylesheet"> 
+<link href="/css/fontawesome.css" rel="stylesheet"> 
 </head>
 <body>
     <div class="background">
@@ -182,12 +185,12 @@ function calculate_time_span($seconds)
         <p>You will need to <strong>create a password</strong> to download the data.</p>
         <form class="form-box" method="POST" style="width:33%">
             <i class="fas fa-key" style="position: absolute; top: 20px; left: 20px;"></i> 
-            <? if($password) echo '<input id="old-password" type="password" name="old-password" placeholder="old password" /><br>'; ?>            
+            <?php if($password) echo '<input id="old-password" type="password" name="old-password" placeholder="old password" /><br>'; ?>            
             <input id="password" type="password" name="password" placeholder="new password"/>
             <input type="submit" class='download-results' id="create-password" value="set password">
         </form>
         <hr>
-        <?
+        <?php
 
 echo("<h1>Participants in experiment <strong>".$title."</strong></h1>");
 
@@ -197,21 +200,25 @@ echo("<h1>Participants in experiment <strong>".$title."</strong></h1>");
             $participant=json_decode(file_get_contents($f));
             //print_r($participant);
             //$f=end(explode("/",$f));
-            echo("<li><div class='name'><i class='fas fa-user'></i><br> #".$i."</div> <div class='date'>".calculate_time_span(date("U")-intval($participant->stopTime)/1000)."</div></li>");
+            if(!property_exists($participant,"stopTime"))
+                $stopTime="unfinished";
+            else
+                $stopTime=calculate_time_span(date("U")-intval($participant->stopTime)/1000);
+            echo("<li><div class='name'><i class='fas fa-user'></i><br> #".$i."</div> <div class='date'>".$stopTime."</div></li>");
             $i++;
         }
         echo("</ul><br><br>");
         if(!$password){
             echo "<h2 class='error'><i class='fas fa-lock'></i> Set a password to download your data <i class='fas fa-lock'></i></h2>";
         }elseif(count($files)>0){ ?>
-            <form class="form-box" method="POST" action=<? echo "../".$_GET['experiment-id'].".zip" ?> style="width:33%">   
+            <form class="form-box" method="POST" action=<?php echo "../".$_GET['experiment-id'].".zip" ?> style="width:33%">   
                 <i class="fas fa-download" style="position: absolute; top: 20px; left: 20px"></i> 
                 <input id="password" type="password" name="password" placeholder="repeat password"/>
                 <input type="submit" class='download-results' value="download all results" style="font-size:20px;padding:20px">
             </form>
-        <? } ?>
+        <?php } ?>
         </div>
     </div>
 </body>
 
-<? } ?>
+<?php } ?>

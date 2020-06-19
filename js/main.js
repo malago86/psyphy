@@ -1,5 +1,5 @@
 
-var version="1.4.0";
+var version="1.4.1";
 
 var md = new MobileDetect(window.navigator.userAgent);
 
@@ -76,6 +76,7 @@ $( document ).ready(function() {
         cookieName=cookie[1];
         $("#name").hide();
         $("#form-container p").hide();
+        $("#load-experiment-label").hide();
         $("#form-container img").after("<p>We found an experiment already started, please finish it before proceeding.</p>");
         $("#form-container #start-experiment").after("<input type='button' id='delete-experiment' value='Delete data and restart'>");
     }
