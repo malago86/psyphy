@@ -10,7 +10,7 @@ The experimenter can distribute the .pso file containing the setup of the experi
 
 ### Requisites
 
-PsyPhy works better with Google Chrome.
+PsyPhy works better with Webkit-based browsers like Google Chrome and with Firefox.
 
 ## Website
 
