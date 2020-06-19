@@ -12,7 +12,7 @@ PsyPhy works better with Google Chrome.
 
 ## Website
 
-You can access the latest version of PsyPhy [here](https://www.psyphy.org).
+You can access the latest version of PsyPhy [here](https://psyphy.psych.ucsb.edu/).
 
 ## Built With
 
@@ -22,6 +22,8 @@ You can access the latest version of PsyPhy [here](https://www.psyphy.org).
 * [Font Awesome](https://fontawesome.com/)
 * [jQuery UI](https://jqueryui.com/)
 * [jQuery Key](https://github.com/yckart/jquery.key.js)
+* [JavaScript Cookie](https://github.com/js-cookie/js-cookie/)
+* [mobile-detect.js](https://github.com/hgoebl/mobile-detect.js)
 
 ## Versioning
 
