@@ -6,6 +6,8 @@ PsyPhy is a Javascript-based tool that aims to make the design of experiments as
 
 The experimenter can distribute the .pso file containing the setup of the experiment. Participants must load that experiment file or access the corresponding URL. If specified, an link to the instructions will show. After clicking on the Start button the calibration screen will show and the experiment will begin. Browser’s full screen mode will activate and the participant will have to finish all the trials in one session. Trials will be presented in a condition and trial randomized order for each participant. If a feedback stimulus is present, it will be shown after the participant responds.
 
+**Check the [wiki](https://gitlab.com/malago/psyphy/-/wikis/home) for more information on how to use PsyPhy and a tutorial**
+
 ### Requisites
 
 PsyPhy works better with Google Chrome.
