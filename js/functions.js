@@ -42,12 +42,14 @@ function load_stimuli_drive(list,info,feedback){
     var stimuli = {img:[],info:null};
 
     stimuli.info={};
+    
     if(info){
         loadingInfo=true;
         $("#stimulus-container").hide();
         
         $.getJSON("/php/getJson.php?id="+info.id,function( data ) {
             stimuli.info=data;
+            //console.log(data);
             if(stimuli.info.text && preparation==false){
                 $("#trial-container .text").css( "display", "table" );
                 $("#trial-container .text div").html(stimuli.info.text);
@@ -56,9 +58,10 @@ function load_stimuli_drive(list,info,feedback){
                 $("#stimulus-container").show();
             }
             loadingInfo=false;
-        }).fail(function() {
+        }).fail(function(data) {
             loadingInfo=false;
             $("#stimulus-container").show();
+            //console.log(data);
         });
     }
 
@@ -698,7 +701,7 @@ $.fn.randomize = function(selector){
 function loadExperimentData(data){
     arr.config.options={};
     for(key in data.options){
-        //console.log(key);
+        //console.log(key,data.options[key]);
         arr.config.options[key]=data.options[key];
     }
     instructions="";
@@ -711,11 +714,13 @@ function loadExperimentData(data){
     //arr.config.ratings=data["ratings"];
     //arr.config.name=data["title"];
     arr.config.conditions=data["conditions"];
-    console.log(data);
+    //console.log(data);
     if(arr.config.options.calibration==undefined)
         arr.config.options.calibration=10;
-    else if(arr.config.options.calibration="")
+    else if(arr.config.options.calibration=="")
         arr.config.options.calibration=0;
+    else
+        arr.config.options.calibration=parseInt(arr.config.options.calibration);
 
     if(arr.config.options.keys!=undefined)
         allowedKeys=arr.config.options.keys.split(',');

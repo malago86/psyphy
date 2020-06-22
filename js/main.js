@@ -85,6 +85,7 @@ $( document ).ready(function() {
         $("#form-box").html("<i class='fas fa-hourglass fa-spin'></i>");
         $.getJSON("/experiment/"+params[1]+".json",function( data ) {
             loadExperimentData(data);
+            //console.log(arr.config.options);
         })
         .fail(function() {
             $.ajax({
@@ -169,7 +170,7 @@ $( document ).ready(function() {
 
         if(cookieName!=undefined){
             name=cookieName;
-            console.log("/results/"+params[1]+"/"+name+".pso");
+            //console.log("/results/"+params[1]+"/"+name+".pso");
             $.ajax({
                 type: "POST",
                 url: "/php/createExperiment.php",
@@ -180,7 +181,7 @@ $( document ).ready(function() {
                 },
                 error: function(data){
                     //console.log("ERROR");
-                    console.log(data);
+                    //console.log(data);
                 }
             });
         }
@@ -209,7 +210,7 @@ $( document ).ready(function() {
                 if(arr.config.options.randomize.localeCompare("randomrandom")==0){
                     conditionOrder=Array.from({length:numConditions},(v,k)=>k);
                     conditionOrder.sort(function(a, b) {return 0.5 - Math.random()});
-                    console.log(conditionOrder);
+                    //console.log(conditionOrder);
                     for(i=0;i<numConditions;i++){
                         newT=Array.from({length:arr.config.conditions[conditionOrder[i]].stimuli.stimulusFiles.length},(v,k)=>k);
                         trialSequence=trialSequence.concat(newT.sort(function(a, b) {return 0.5 - Math.random()}));
@@ -258,10 +259,7 @@ $( document ).ready(function() {
                 }
             }
 
-            console.log(conditionSequence);
-            console.log(trialSequence);
-            console.log(sortIndexes);
-
+            
             arr.name=name;
             arr.sortIndexes=sortIndexes;
             arr.trialSequence=trialSequence;
@@ -472,7 +470,7 @@ $( document ).ready(function() {
                 responses=[];
                 for(r=0;r<responseDivs.length;r++){
                     resp=$(responseDivs[r]).find(".textresponse").val();
-                    console.log(resp,$(responseDivs[r]).attr("value"));
+                    //console.log(resp,$(responseDivs[r]).attr("value"));
                     if((resp && resp=="") || (resp === undefined && $(responseDivs[r]).attr("value")=="-1"))
                         return false;
                     else if(!resp)
@@ -483,7 +481,7 @@ $( document ).ready(function() {
                 responding=false;
             }else if(running){
                 pressedKey=allowedKeys.indexOf(event.code);
-                console.log(pressedKey,allowedKeys,event.code);
+                //console.log(pressedKey,allowedKeys,event.code);
                 if(pressedKey > -1 && arr.config.options.multiple.localeCompare("MAFC")!=0){ //spacebar
                     if(preparation){
                         preparation=false;
