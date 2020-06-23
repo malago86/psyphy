@@ -24,7 +24,24 @@ $defaultBucket = $storage->getBucket();
     'name' => "uploaded_title.txt"
 ]);*/
 
+function recursive_implode(array $array, $glue = ',', $include_keys = false, $trim_all = true){
+	$glued_string = '';
 
+	// Recursively iterates array and adds key/value to glued string
+	array_walk_recursive($array, function($value, $key) use ($glue, $include_keys, &$glued_string)
+	{
+		$include_keys and $glued_string .= $key.$glue;
+		$glued_string .= $value.$glue;
+	});
+
+	// Removes last $glue from string
+	strlen($glue) > 0 and $glued_string = substr($glued_string, 0, -strlen($glue));
+
+	// Trim ALL whitespace
+	$trim_all and $glued_string = preg_replace("/(\s)/ixsm", '', $glued_string);
+
+	return (string) $glued_string;
+}
 
 
 function calculate_time_span($seconds)
@@ -131,21 +148,70 @@ function calculate_time_span($seconds)
 
         if(isset($_GET['zip'])){
             $filename="../".$folder.'/'.$_GET['experiment-id'].'.zip';
+            array_map('unlink', glob("../".$folder."/*.zip"));
             //echo('cd '.$folder.'; zip -q '.$_GET['experiment-id'].'.zip *.pso');
-            exec('cd "../'.$folder.'"; zip -q '.$_GET['experiment-id'].'.zip *.pso');
-            //echo('tar zcf '.$filename.' '.$folder.'/*.pso');
-          
-            if (file_exists($filename)) {
-               header('Content-Type: application/zip');
-               header('Content-Disposition: attachment; filename="'.basename($filename).'"');
-               header('Content-Length: ' . filesize($filename));
-          
-               flush();
-               readfile($filename);
-               // delete file
-               //unlink($filename);
-           
-             }
+
+            if(isset($_POST['JSON'])){
+                exec('cd "../'.$folder.'"; zip -q '.$_GET['experiment-id'].'.zip *.pso');
+                //echo('tar zcf '.$filename.' '.$folder.'/*.pso');
+            
+                if (file_exists($filename)) {
+                    header('Content-Type: application/zip');
+                    header('Content-Disposition: attachment; filename="'.basename($filename).'"');
+                    header('Content-Length: ' . filesize($filename));
+                
+                    flush();
+                    readfile($filename);
+                    // delete file
+                    //unlink($filename);
+            
+                }
+            }elseif(isset($_POST['CSV'])){
+                array_map('unlink', glob("../".$folder."/*.csv"));
+                foreach($files as $f){
+                    $participant=json_decode(file_get_contents($f));
+                    //var_dump($participant->data);
+                    $vars=$participant->data;
+                    if(count($vars)){
+                        $keys=array_keys((array)$vars[0]);
+                        $keysCSV="";
+                        foreach($keys as $key){
+                            if(!is_object($vars[0]->$key)){
+                                $keysCSV=$keysCSV.$key.",";
+                            }
+                        }
+                        $keysCSV=substr($keysCSV, 0, -1);
+                        $valuesCSV="";
+                        foreach($vars as $trial){
+                            foreach($keys as $key){
+                                if(!is_object($trial->$key)){
+                                    if(is_array($trial->$key))
+                                        $k=recursive_implode($trial->$key,";");
+                                    else
+                                        $k=$trial->$key;
+                                    $valuesCSV=$valuesCSV.$k.",";
+                                }
+                            }
+                            $valuesCSV=substr($valuesCSV, 0, -1)."\n";
+                        }
+                        //echo $keysCSV."\n".$valuesCSV;
+                        file_put_contents("../".$folder."/".$participant->name.".csv",$keysCSV."\n".$valuesCSV);
+                    }
+                    
+                }
+
+                exec('cd "../'.$folder.'"; zip -q '.$_GET['experiment-id'].'.zip *.csv');
+                //echo('tar zcf '.$filename.' '.$folder.'/*.pso');
+            
+                if (file_exists($filename)) {
+                    header('Content-Type: application/zip');
+                    header('Content-Disposition: attachment; filename="'.basename($filename).'"');
+                    header('Content-Length: ' . filesize($filename));
+                
+                    flush();
+                    readfile($filename);
+                }
+            }
              exit();
         }
 
@@ -157,6 +223,7 @@ function calculate_time_span($seconds)
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mobile-detect@1.4.4/mobile-detect.min.js"></script>
 <script src="/js/jquery.key.js"></script>
 <script src="/js/functions.js"></script>
 <script src="/js/main.js"></script>
@@ -214,7 +281,8 @@ echo("<h1>Participants in experiment <strong>".$title."</strong></h1>");
             <form class="form-box" method="POST" action=<?php echo "../".$_GET['experiment-id'].".zip" ?> style="width:33%">   
                 <i class="fas fa-download" style="position: absolute; top: 20px; left: 20px"></i> 
                 <input id="password" type="password" name="password" placeholder="repeat password"/>
-                <input type="submit" class='download-results' value="download all results" style="font-size:20px;padding:20px">
+                Download results: <input type="submit" class='download-results json' value="JSON" name="JSON" >
+                <input type="submit" class='download-results csv' value="CSV" name="CSV">
             </form>
         <?php } ?>
         </div>

@@ -589,13 +589,12 @@ input[type="file"] {
 }
 .download-results{
     clear:both;
-    font-size:20px;
+    font-size:10px;
     font-weight: bold;
-    display:block;
+    display:inline;
     border: 3px solid rgb(229, 72, 35);
-    margin:auto;
+    margin:2px;
     padding:10px;
-    margin-top:10px;
 }
 
 hr{
