@@ -1,5 +1,5 @@
 
-var version="1.5.0";
+var version="1.5.1";
 
 var md = new MobileDetect(window.navigator.userAgent);
 
@@ -31,6 +31,7 @@ var timeout=false;
 var trialSequence=null;
 var trialID=1;
 var marks=[];
+var playPause=[];
 var numSlices=100;
 var cheatCode=false;
 
@@ -502,6 +503,7 @@ $( document ).ready(function() {
                 }else if(event.key=="Enter"){
                     if($("#stimulus .stimulus-img").is("video")){
                         $("#stimulus .stimulus-img").trigger( $("#stimulus .stimulus-img").prop('paused') ? 'play' : 'pause');
+                        playPause.push(Array(Date.now(),$("#stimulus .stimulus-img").prop('paused')));
                     }
                 }else if (event.key == "Escape") { 
                     /*$("#response-container").hide();

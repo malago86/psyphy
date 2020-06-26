@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
  
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.5.1] - 2020-06-24
+- Recalibration shows a continue screen when finished
+- Pressing Enter for video stimuli will record the time and status of the video
+
 ## [1.5.0] - 2020-06-23
 - Added option to download results in `CSV` format
 

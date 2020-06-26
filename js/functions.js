@@ -49,6 +49,8 @@ function load_stimuli_drive(list,info,feedback){
         
         $.getJSON("/php/getJson.php?id="+info.id,function( data ) {
             stimuli.info=data;
+            if(!calibrated)
+                stimuli.info.text="Recalibration finished. Press SPACEBAR to continue";
             //console.log(data);
             if(stimuli.info.text && preparation==false){
                 $("#trial-container .text").css( "display", "table" );
@@ -600,6 +602,7 @@ function saveTrial(responses){
             stimulusOff:stimulusOff,
             condition:conditionSequence[sortIndexes[trialID]],
             marks:marks,
+            playPause:playPause,
             pressedKey:pressedKeyName,
             });
         //console.log(arr);
@@ -634,8 +637,10 @@ function saveTrial(responses){
                 }
             }
             
-            if(arr.config.options.calibration>0 && (Date.now()-arr.config.display.pixelsPerDegree.slice(-1)[0][1]) > arr.config.options.calibration*1000*60) // recalibrate every 10 minutes
+            if(arr.config.options.calibration>0 && (Date.now()-arr.config.display.pixelsPerDegree.slice(-1)[0][1]) > arr.config.options.calibration*1000*60){ // recalibrate every 10 minutes
                 calibrated=false;
+                console.log("reca");
+            }
             nextTrial(currentSlice, numSlices);
             
         }
@@ -720,7 +725,7 @@ function loadExperimentData(data){
     else if(arr.config.options.calibration=="")
         arr.config.options.calibration=0;
     else
-        arr.config.options.calibration=parseInt(arr.config.options.calibration);
+        arr.config.options.calibration=parseFloat(arr.config.options.calibration);
 
     if(arr.config.options.keys!=undefined)
         allowedKeys=arr.config.options.keys.split(',');
