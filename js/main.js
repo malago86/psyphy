@@ -1,5 +1,5 @@
 
-var version="1.5.1";
+var version="1.5.2";
 
 var md = new MobileDetect(window.navigator.userAgent);
 
@@ -38,7 +38,10 @@ var cheatCode=false;
 var markColors=["white","lime","red","blue"];
 
 
+
 $( document ).ready(function() {
+    document.getElementById('trial-container').onwheel = function(){ return false; }
+    
     $("#version").text(version);
 
     if(md.phone()){
@@ -324,6 +327,8 @@ $( document ).ready(function() {
 
         $("#stimulus-slice").text("Slice: "+(currentSlice+1));
         $("#stimulus-scroll-position").css("height",100*(currentSlice+1)/numSlices+"%");
+
+
     });
 
     $("#stimulus").draggable({
@@ -489,6 +494,7 @@ $( document ).ready(function() {
                         stimulusOn=Date.now();
                         $("#trial-container .text").hide();
                         $("#stimulus-container").show();
+                        window.scrollTo(0, 0);
                         if($("#stimulus .stimulus-img").is("video")){
                             //console.log("restart");
                             $("#stimulus .stimulus-img")[0].currentTime=0;
@@ -513,7 +519,8 @@ $( document ).ready(function() {
                     $("body").css("background-color","#39302a");
                     $("#help").hide();*/
                     resetExperiment(running, calibrating, animCalibration);
-                } else if(event.key=="h"){
+                } else if(event.key=="h"){ //help
+                    getDisplayParameters();
                     $("#help").toggle();
                 }else if(event.key=="F5"){
                     resetExperiment(running, calibrating, animCalibration);

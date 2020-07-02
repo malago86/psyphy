@@ -9,6 +9,7 @@ function moveLoadingBar(loaded, max){
         //console.log("move",loadingInfo);
         if(!loadingInfo)
             $("#stimulus-container").show();
+        window.scrollTo(0, 0);
         stimulusOn=Date.now();
         if(arr.config.options.timeout>0 && loading){
             timeout=setTimeout(
@@ -91,6 +92,7 @@ function load_stimuli_drive(list,info,feedback){
                 $("#trial-container").css("display","table");
                 $("#loading-bar-progress").css("width","0%")
                 $("#stimulus-scroll-position").css("height",100*(currentSlice+1)/list.length+"%");
+                window.scrollTo(0, 0);
                 stimulusOn=Date.now();
                 if(arr.config.options.timeout>0 && loading){
                     timeout=setTimeout(
@@ -171,6 +173,7 @@ function load_stimuli(name){
                     $("#trial-container .text").css( "display", "table" );
                     $("#trial-container .text div").html(stimuli.info.text);
                     preparation=true;
+                    window.scrollTo(0, 0);
                     stimulusOn=Date.now();
                 }
                 else
@@ -422,7 +425,7 @@ function getDisplayParameters(){
     
     if (running || loading){
         var img = document.querySelector("#stimulus .stimulus-img");
-
+        console.log(img.width,img.height);
         
         //$('#help #monitor-size').html("Monitor: "+parseInt(display.monitorWidth)+" by "+parseInt(display.monitorHeight) +" cm");
         $('#help #resolution').html("Resolution: "+screen.width+" by "+screen.height);
@@ -665,6 +668,7 @@ function nextTrial(currentSlice, numSlices){
     $("#stimulus-slice").text("Slice: "+(currentSlice+1));
     $("#stimulus-scroll-position").css("height",100*(currentSlice+1)/numSlices+"%");
     $("#trial-number").text("Trial: "+(arr.data.length+1));
+
 }
 
 function validURL(str) {
