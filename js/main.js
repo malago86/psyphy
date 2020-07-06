@@ -172,9 +172,10 @@ $( document ).ready(function() {
         if(!cheatCode)
             document.documentElement.requestFullscreen();
 
+        resuming=false;
         if(cookieName!=undefined){
             name=cookieName;
-            //console.log("/results/"+params[1]+"/"+name+".pso");
+            console.log("/results/"+params[1]+"/"+name+".pso");
             $.ajax({
                 type: "POST",
                 url: "/php/createExperiment.php",
@@ -182,13 +183,17 @@ $( document ).ready(function() {
                 dataType: "json",
                 success: function(data){
                     arr=data;
+                    beginExperiment(true);
                 },
                 error: function(data){
                     //console.log("ERROR");
                     //console.log(data);
                 }
             });
+        }else{
+            beginExperiment(false);
         }
+
 
         //
         marks=[];
@@ -198,110 +203,7 @@ $( document ).ready(function() {
         //$("#trial-container").hide();
         
         //stimuli=load_stimuli(stimuli_name);
-        if(!arr.config.conditions){
-            stimuli_name="stimuli/"+(presenceSequence[trialID]?"present":"absent")+"/noise"+(trialID+1);
-            stimuli=load_stimuli(stimuli_name);
-            arr.name=name;
-            arr.config.options.ratings=ratings;
-            sortIndexes=trialSequence;
-            conditionSequence=presenceSequence;
-        }else{
-            conditionSequence=[];
-            trialSequence=[];
-            numConditions=arr.config.conditions.length;
-
-            if(arr.config.options.randomize!=undefined){
-                if(arr.config.options.randomize.localeCompare("randomrandom")==0){
-                    conditionOrder=Array.from({length:numConditions},(v,k)=>k);
-                    conditionOrder.sort(function(a, b) {return 0.5 - Math.random()});
-                    //console.log(conditionOrder);
-                    for(i=0;i<numConditions;i++){
-                        newT=Array.from({length:arr.config.conditions[conditionOrder[i]].stimuli.stimulusFiles.length},(v,k)=>k);
-                        trialSequence=trialSequence.concat(newT.sort(function(a, b) {return 0.5 - Math.random()}));
-                        conditionSequence=conditionSequence.concat(Array.from({length:arr.config.conditions[conditionOrder[i]].stimuli.stimulusFiles.length},(v,k)=>conditionOrder[i]));
-                    }
-                    sortIndexes=Array.from({length:conditionSequence.length},(v,k)=>k);
-                }else if(arr.config.options.randomize.localeCompare("randomkeep")==0){
-                    conditionOrder=Array.from({length:numConditions},(v,k)=>k);
-                    conditionOrder.sort(function(a, b) {return 0.5 - Math.random()});
-                    for(i=0;i<numConditions;i++){
-                        trialSequence=trialSequence.concat(Array.from({length:arr.config.conditions[conditionOrder[i]].stimuli.stimulusFiles.length},(v,k)=>k));
-                        conditionSequence=conditionSequence.concat(Array.from({length:arr.config.conditions[conditionOrder[i]].stimuli.stimulusFiles.length},(v,k)=>conditionOrder[i]));
-                    }
-                    sortIndexes=Array.from({length:conditionSequence.length},(v,k)=>k);
-                }else if(arr.config.options.randomize.localeCompare("keeprandom")==0){
-                    for(i=0;i<numConditions;i++){
-                        newT=Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>k);
-                        trialSequence=trialSequence.concat(newT.sort(function(a, b) {return 0.5 - Math.random()}));
-                        conditionSequence=conditionSequence.concat(Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>i));
-                    }
-                    sortIndexes=Array.from({length:conditionSequence.length},(v,k)=>k);
-                }else if(arr.config.options.randomize.localeCompare("keepkeep")==0){
-                    for(i=0;i<numConditions;i++){
-                        trialSequence=trialSequence.concat(Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>k));
-                        conditionSequence=conditionSequence.concat(Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>i));
-                    }
-                    sortIndexes=Array.from({length:conditionSequence.length},(v,k)=>k);
-                }else{
-                    for(i=0;i<numConditions;i++){
-                        trialSequence=trialSequence.concat(Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>k));
-                        conditionSequence=conditionSequence.concat(Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>i));
-                    }
-                    sortIndexes=Array.from({length:conditionSequence.length},(v,k)=>k);
-                    if(arr.config.options.randomize==undefined || arr.config.options.randomize.localeCompare("true")){
-                        sortIndexes.sort(function(a, b) {return 0.5 - Math.random()});
-                    }
-                }  
-            }else{
-                for(i=0;i<numConditions;i++){
-                    trialSequence=trialSequence.concat(Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>k));
-                    conditionSequence=conditionSequence.concat(Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>i));
-                }
-                sortIndexes=Array.from({length:conditionSequence.length},(v,k)=>k);
-                if(arr.config.options.randomize==undefined || arr.config.options.randomize.localeCompare("true")){
-                    sortIndexes.sort(function(a, b) {return 0.5 - Math.random()});
-                }
-            }
-
-            
-            arr.name=name;
-            arr.sortIndexes=sortIndexes;
-            arr.trialSequence=trialSequence;
-            arr.conditionSequence=conditionSequence;
-            arr.config.maxTrials=sortIndexes.length;
-
-            if(!arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.feedbackFiles){
-                arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.feedbackFiles=[];
-            }
-
-            if(trialSequence[sortIndexes[trialID]] in arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.feedbackFiles){
-                stimuli=load_stimuli_drive(arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.stimulusFiles[trialSequence[sortIndexes[trialID]]],
-                    arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.infoFiles[trialSequence[sortIndexes[trialID]]],
-                    arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.feedbackFiles[trialSequence[sortIndexes[trialID]]]);
-            }else{
-                stimuli=load_stimuli_drive(arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.stimulusFiles[trialSequence[sortIndexes[trialID]]],
-                    arr.config.conditions[conditionSequence[sortIndexes[trialID]]].stimuli.infoFiles[trialSequence[sortIndexes[trialID]]],
-                    null);
-            }
-            
-        }
-
-        Cookies.set('psyphy', [arr.config.options.id,name], { expires:10, sameSite: 'strict', path: window.location.pathname})
-
-        //console.log(stimuli);
-        //document.body.appendChild(stimuli.img[1]);
-        numSlices=stimuli.slices;
-        if(arr.config.options.multiple.localeCompare("MAFC")==0){
-            $("#trial-container .instructions").text("Double click on the signal-present stimulus");
-        }else{
-            $("#trial-container .instructions").text("Press SPACEBAR to continue");
-        }
-        getDisplayParameters();
-        nextTrial(currentSlice, numSlices);
         
-        //$("#trial-container").show();
-        //running=true;
-        $("body").css("background-color","rgb(128,128,128)");
         
     });
 
