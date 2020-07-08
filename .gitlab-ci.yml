@@ -2,7 +2,9 @@ deploy:
       stage: deploy
       script:
         - apt-get update -qq && apt-get install -y -qq lftp
-        - lftp sftp://$USERNAME:'$PASSWORD'@$HOST -e 'set sftp:auto-confirm yes;set ssl:verify-certificate no;ls; exit;'
+        - echo $USERNAME
+        - echo "$USERNAME@$HOST"
+        - lftp sftp://$USERNAME:$PASSWORD@$HOST -e 'set sftp:auto-confirm yes;set ssl:verify-certificate no;ls; exit;'
         - echo "deployment complete"
       only:
         - master
