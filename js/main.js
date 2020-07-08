@@ -1,5 +1,5 @@
 
-var version="1.5.2";
+var version="1.6.0";
 
 var md = new MobileDetect(window.navigator.userAgent);
 
@@ -37,10 +37,23 @@ var cheatCode=false;
 
 var markColors=["white","lime","red","blue"];
 
+var testExperimentID="863d24f0-1360-47b1-bb2d-d43ac905818d"; //4AFC
 
+var googleClient=null;
+var googleToken=null;
 
 $( document ).ready(function() {
-    document.getElementById('trial-container').onwheel = function(){ return false; }
+    document.getElementById('trial-container').onwheel = function(){ if(running) return false; }
+
+    if(Cookies.get('experiments')){
+        experiments=Cookies.get('experiments').split(",");
+        experiments=experiments.slice(0, -1);
+        for(e=0;e<experiments.length;e++){
+            ee=experiments[e].split("|");
+            $(".created-list").append('<li><strong>'+ee[1]+'</strong> <a href="/results/'+ee[0]+'/" title="See results"><i class="fas fa-poll-h"></i></a> <a href="/experiment/'+ee[0]+'/" title="Run"><i class="fas fa-play"></i></a></li>');
+        }
+        $(".form-box .created").show();
+    }
     
     $("#version").text(version);
 
@@ -79,7 +92,7 @@ $( document ).ready(function() {
         params[1]=cookie[0];
         cookieName=cookie[1];
         $("#name").hide();
-        $("#form-container p").hide();
+        $(".home-instructions").hide();
         $("#load-experiment-label").hide();
         $("#form-container img").after("<p>We found an experiment already started, please finish it before proceeding.</p>");
         $("#form-container #start-experiment").after("<input type='button' id='delete-experiment' value='Delete data and restart'>");
@@ -116,7 +129,8 @@ $( document ).ready(function() {
             calibrating=true;
             document.documentElement.requestFullscreen();
             blindSpotDistance=[];
-            $("#calibration").show();
+            $("#calibration-dialog").show();
+            $("#calibration-dialog .close").show();
             $(".background").css("filter","blur(4px)");
             $(".background").css("opacity",".4");
             return false;
@@ -143,7 +157,7 @@ $( document ).ready(function() {
         
 
 		if(name==""){
-			name=new Date().getTime();
+			name="Participant";
         }
 
         name=name+"-"+(new Date().getTime());
@@ -175,7 +189,6 @@ $( document ).ready(function() {
         resuming=false;
         if(cookieName!=undefined){
             name=cookieName;
-            console.log("/results/"+params[1]+"/"+name+".pso");
             $.ajax({
                 type: "POST",
                 url: "/php/createExperiment.php",
@@ -188,10 +201,34 @@ $( document ).ready(function() {
                 error: function(data){
                     //console.log("ERROR");
                     //console.log(data);
+                    beginExperiment(false);
                 }
             });
         }else{
-            beginExperiment(false);
+            if(!arr.config.conditions){
+                $.getJSON("/experiment/"+testExperimentID+".json",function( data ) {
+                    loadExperimentData(data);
+                    beginExperiment(false);
+                    //console.log(arr.config.options);
+                })
+                .fail(function() {
+                    $.ajax({
+                        type: "POST",
+                        url: "/php/createExperiment.php",
+                        data: {"load-id":testExperimentID},
+                        dataType: "json",
+                        success: function(data){
+                            loadExperimentData(data);
+                            beginExperiment(false);
+                        },
+                        error: function(data){
+                            //console.log("ERROR");
+                            //console.log(data);
+                        }
+                    });
+                });
+            }else
+                beginExperiment(false);
         }
 
 
@@ -304,7 +341,7 @@ $( document ).ready(function() {
 
     var currentSize=50;
     var ccRatio=1.5857725083364208966283808818081;
-    $("#calibration .credit-card-slider-position").draggable({
+    $("#calibration-dialog .credit-card-slider-position").draggable({
         start: function(e) {
             parentOffset = $(this).parent().offset(); 
             
@@ -314,9 +351,9 @@ $( document ).ready(function() {
             //console.log($(this).parent().width(),relX,currentSize);
             currentSize=Math.max(-2,Math.min(currentSize,98));
             //$("#stimulus").attr("src","stimuli/noise1/noise1_"+currentSlice+".jpg");
-            $("#calibration .credit-card-slider-position").css("left",currentSize+"%");
-            $("#calibration .credit-card-outline").css("width",(100+(currentSize*300/100))+"px");
-            $("#calibration .credit-card-outline").css("height",((100+(currentSize*300/100))/ccRatio)+"px");
+            $("#calibration-dialog .credit-card-slider-position").css("left",currentSize+"%");
+            $("#calibration-dialog .credit-card-outline").css("width",(100+(currentSize*300/100))+"px");
+            $("#calibration-dialog .credit-card-outline").css("height",((100+(currentSize*300/100))/ccRatio)+"px");
 
             
         },
@@ -328,13 +365,13 @@ $( document ).ready(function() {
             //console.log($(this).parent().width(),relX,currentSize);
             currentSize=Math.max(-2,Math.min(currentSize,98));
             //$("#stimulus").attr("src","stimuli/noise1/noise1_"+currentSlice+".jpg");
-            $("#calibration .credit-card-slider-position").css("left",currentSize+"%");
-            $("#calibration .credit-card-outline").css("width",(200+(currentSize*300/100))+"px");
-            $("#calibration .credit-card-outline").css("height",((200+(currentSize*300/100))/ccRatio)+"px");
-            $("#calibration .credit-card-slider-position").css("border","3px solid rgb(229, 72, 35)");
+            $("#calibration-dialog .credit-card-slider-position").css("left",currentSize+"%");
+            $("#calibration-dialog .credit-card-outline").css("width",(200+(currentSize*300/100))+"px");
+            $("#calibration-dialog .credit-card-outline").css("height",((200+(currentSize*300/100))/ccRatio)+"px");
+            $("#calibration-dialog .credit-card-slider-position").css("border","3px solid rgb(229, 72, 35)");
         },
         stop: function(e) {
-            $("#calibration .credit-card-slider-position").css("border","3px solid white");
+            $("#calibration-dialog .credit-card-slider-position").css("border","3px solid white");
         },
         helper: function( event ) {
             return $( "<div class='ui-widget-header' style='display:none'>I'm a custom helper</div>" );
@@ -358,7 +395,7 @@ $( document ).ready(function() {
                     $("#calibration-step2 .blind-spot-dot").css("right","100px");
                     clearInterval(animCalibration);
                     animCalibration=calibrationMove($("#calibration-step2 .blind-spot-dot"));
-                    if(blindSpotDistance.length>9){
+                    if(blindSpotDistance.length>4){
                         $("#calibration-step2").toggle();
                         $("#calibration-step3").toggle();
                         calibrated=true;
@@ -390,7 +427,7 @@ $( document ).ready(function() {
             }else if(running){
                 pressedKey=allowedKeys.indexOf(event.code);
                 //console.log(pressedKey,allowedKeys,event.code);
-                if(pressedKey > -1 && arr.config.options.multiple.localeCompare("MAFC")!=0){ //spacebar
+                if(pressedKey > -1){ //spacebar
                     if(preparation){
                         preparation=false;
                         stimulusOn=Date.now();
@@ -403,11 +440,12 @@ $( document ).ready(function() {
                             $("#stimulus .stimulus-img").trigger('play');
                         }
                         return;
+                    }else if(arr.config.options.multiple.localeCompare("MAFC")!=0){
+                        if($("#stimulus .stimulus-img").is("video")){
+                            $("#stimulus .stimulus-img").trigger('pause');
+                        }
+                        showResponse(arr.config.options.ratings,arr.data.length+1);
                     }
-                    if($("#stimulus .stimulus-img").is("video")){
-                        $("#stimulus .stimulus-img").trigger('pause');
-                    }
-                    showResponse(arr.config.options.ratings,arr.data.length+1);
                 }else if(event.key=="Enter"){
                     if($("#stimulus .stimulus-img").is("video")){
                         $("#stimulus .stimulus-img").trigger( $("#stimulus .stimulus-img").prop('paused') ? 'play' : 'pause');
@@ -538,7 +576,7 @@ $( document ).ready(function() {
         calibrating=false;
     });
     $("#calibration-step1 .button").click(function(){
-        left=$("#calibration .credit-card-outline").css("width");
+        left=$("#calibration-dialog .credit-card-outline").css("width");
         $("#calibration-step1").toggle();
         $("#calibration-step2").toggle();
         left=parseInt(left.substr(0,left.length-2));
@@ -551,7 +589,7 @@ $( document ).ready(function() {
         $(".background").css("opacity","1");
         $("#calibration-step1").toggle();
         $("#calibration-step3").toggle();
-        $("#calibration").toggle();
+        $("#calibration-dialog").toggle();
         getDisplayParameters();
         calibrating=false;
     });
@@ -597,6 +635,17 @@ $( document ).ready(function() {
             success: function(data){
                 //console.log("SUCCESS");
                 //console.log(data["experiment-id"]);
+                cookie="";
+                newCookie=options["id"]+"|"+options["title"]+",";
+                if(Cookies.get('experiments')){
+                    cookie=Cookies.get('experiments').split(",");
+                    for(e=0;e<Math.min(cookie.length,4);e++){
+                        if(cookie[e]){
+                            newCookie=newCookie+cookie[e]+",";
+                        }
+                    }
+                }
+                Cookies.set('experiments', newCookie, { expires:365, sameSite: 'strict', path: "/"})
             },
             error: function(data){
                 //console.log("ERROR");
@@ -656,6 +705,7 @@ $( document ).ready(function() {
         if ($('#cheatcode').length === 0) {
             $("body").append("<div id='cheatcode'><i class='fas fa-bug'></i></div>");
             $("#cheatcode").slideDown(200).css('display', 'flex');
+            $(".dev").show();
         }
     });
 
@@ -673,7 +723,8 @@ $( document ).ready(function() {
 });
 
 window.addEventListener('beforeunload', function (e) {
-    if(running){
+    if(running || loading){
+        resetExperiment(running, calibrating, animCalibration);
         e.preventDefault();
         e.returnValue = '';
     }

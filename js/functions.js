@@ -105,8 +105,26 @@ function load_stimuli_drive(list,info,feedback){
             else
                 $("#loading-bar-progress").css("width",(100*(loaded+1)/list.length)+"%");
         }
+        stimuli.img[i].onerror = function(){
+            //alert("Error loading stimuli, please reload the page and contact us");
+            //throw new Error("Something went badly wrong!");
+        }
         //stimuli.img[i].src = "https://drive.google.com/uc?export=view&id="+list[i].id;
-        stimuli.img[i].src = "/php/getStimuli.php?file-id="+list[i].id+"&name="+list[i].name;
+        if(cheatCode){
+            //stimuli.img[i].src = "/php/getStimuli.php?file-id="+list[i].id+"&name="+list[i].name;
+            //stimuli.img[i].src = "/php/getStimuli.php?file-id="+list[i].id+"&name="+list[i].name+"&client-id="+googleToken;
+            setTimeout(function(i){
+                //stimuli.img[i].src="https://www.googleapis.com/drive/v3/files/"+list[i].id+"?key=XXX&alt=media";
+                stimuli.img[i].src="https://drive.google.com/uc?export=view&id="+list[i].id;
+            }, i*111, i);
+            
+        }else{
+            //stimuli.img[i].src = "/php/getStimuli.php?file-id="+list[i].id+"&name="+list[i].name;
+            setTimeout(function(i){
+                //stimuli.img[i].src="https://www.googleapis.com/drive/v3/files/"+list[i].id+"?key=XXX&alt=media";
+                stimuli.img[i].src="https://drive.google.com/uc?export=view&id="+list[i].id;
+            }, i*111, i);
+        }
 
         if(MAFC){
             $("#stimulus").append(stimuli.img[i]);
@@ -135,8 +153,8 @@ function load_stimuli_drive(list,info,feedback){
         stimuli.feedback.onload = function() { 
             
         }
-        //stimuli.feedback.src = "https://drive.google.com/uc?export=view&id="+feedback.id;
-        stimuli.feedback.src = "/php/getStimuli.php?file-id="+feedback.id+"&name="+feedback.name;
+        stimuli.feedback.src = "https://drive.google.com/uc?export=view&id="+feedback.id;
+        //stimuli.feedback.src = "/php/getStimuli.php?file-id="+feedback.id+"&name="+feedback.name;
     }else{
         stimuli.feedback=null;
     }
@@ -176,6 +194,10 @@ function load_stimuli(name){
                 }
                 else
                     $("#loading-bar-progress").css("width",(100*(loaded+1)/50)+"%")
+            }
+
+            stimuli.img[i].onerror = function(){
+                alert("Error loading stimuli, please reload the page");
             }
             stimuli.img[i].src = name+"/noise_"+(i+1)+".jpg";   
             stimuli.img[i].setAttribute("class","stimulus-img");
@@ -388,7 +410,7 @@ function showResponse(ratings, trialNumber){
   
 function finishExperiment(arr){
     results={results:JSON.stringify(arr)};
-    Cookies.remove('psyphy');
+    Cookies.remove('psyphy',{path: window.location.pathname});
     
     $.ajax({
         type: "POST",
@@ -422,7 +444,7 @@ function finishExperiment(arr){
 function getDisplayParameters(){
     
     if (running || loading){
-        var img = document.querySelector("#stimulus .stimulus-img");
+        var img = document.querySelector(".stimulus-img");
         
         //$('#help #monitor-size').html("Monitor: "+parseInt(display.monitorWidth)+" by "+parseInt(display.monitorHeight) +" cm");
         $('#help #resolution').html("Resolution: "+screen.width+" by "+screen.height);
@@ -581,7 +603,7 @@ function saveTrial(responses){
         calibrating=true;
         document.documentElement.requestFullscreen();
         blindSpotDistance=[];
-        $("#calibration").show();
+        $("#calibration-dialog").show();
         $(".background").css("filter","blur(4px)");
         $(".background").css("opacity",".4");
         savedResponses=rating;
@@ -626,14 +648,26 @@ function saveTrial(responses){
                 stimuli_name="stimuli/"+(presenceSequence[trialID]?"present":"absent")+"/noise"+(trialID+1);
                 stimuli=load_stimuli(stimuli_name);
             }else{
-                if(arr.trialSequence[arr.sortIndexes[trialID]] in arr.config.conditions[arr.conditionSequence[arr.sortIndexes[trialID]]].stimuli.feedbackFiles){
-                    stimuli=load_stimuli_drive(arr.config.conditions[arr.conditionSequence[arr.sortIndexes[trialID]]].stimuli.stimulusFiles[arr.trialSequence[arr.sortIndexes[trialID]]],
-                        arr.config.conditions[arr.conditionSequence[arr.sortIndexes[trialID]]].stimuli.infoFiles[arr.trialSequence[arr.sortIndexes[trialID]]],
-                        arr.config.conditions[arr.conditionSequence[arr.sortIndexes[trialID]]].stimuli.feedbackFiles[arr.trialSequence[arr.sortIndexes[trialID]]]);
+                if(gapi.client.getToken()!=null){
+                    if(arr.trialSequence[arr.sortIndexes[arr.data.length]] in arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.feedbackFiles){
+                        stimuli=load_stimuli_drive_js(arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.stimulusFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]],
+                            arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.infoFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]],
+                            arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.feedbackFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]]);
+                    }else{
+                        stimuli=load_stimuli_drive_js(arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.stimulusFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]],
+                            arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.infoFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]],
+                            null);
+                    }
                 }else{
-                    stimuli=load_stimuli_drive(arr.config.conditions[arr.conditionSequence[arr.sortIndexes[trialID]]].stimuli.stimulusFiles[arr.trialSequence[arr.sortIndexes[trialID]]],
-                        arr.config.conditions[arr.conditionSequence[arr.sortIndexes[trialID]]].stimuli.infoFiles[arr.trialSequence[arr.sortIndexes[trialID]]],
-                        null);
+                    if(arr.trialSequence[arr.sortIndexes[arr.data.length]] in arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.feedbackFiles){
+                        stimuli=load_stimuli_drive(arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.stimulusFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]],
+                            arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.infoFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]],
+                            arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.feedbackFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]]);
+                    }else{
+                        stimuli=load_stimuli_drive(arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.stimulusFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]],
+                            arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.infoFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]],
+                            null);
+                    }
                 }
             }
             
@@ -652,9 +686,10 @@ function nextTrial(currentSlice, numSlices){
         calibrating=true;
         document.documentElement.requestFullscreen();
         blindSpotDistance=[];
-        $("#calibration").show();
+        $("#calibration-dialog").show();
         $(".background").css("filter","blur(4px)");
         $(".background").css("opacity",".4");
+        $("#calibration-dialog .close").hide();
         $("#calibration-step1").hide();
         $("#calibration-step2").show();
         $("#calibration-step3").hide();
@@ -704,6 +739,11 @@ $.fn.randomize = function(selector){
 };
 
 function loadExperimentData(data){
+    $("#load-experiment-label").hide();
+    $(".home-instructions").hide();
+    if(!Cookies.get('psyphy'))
+        $('<p class="home-instructions">Enter your name and click on Start. Calibration will start first.</p>').insertAfter($(".home-instructions")[1]);
+
     arr.config.options={};
     for(key in data.options){
         //console.log(key,data.options[key]);
@@ -716,6 +756,7 @@ function loadExperimentData(data){
 
     $("#form-box").html("<h3>Experiment <strong>"+data["options"]["title"]+"</strong> loaded!</h3>"+instructions+"<p><a href='/'>Reset</a></p>");
     document.title = data["options"]["title"]+' - PSY'+String.fromCodePoint(0x26AA)+'PHY';
+    
     //arr.config.ratings=data["ratings"];
     //arr.config.name=data["title"];
     arr.config.conditions=data["conditions"];
@@ -734,62 +775,43 @@ function loadExperimentData(data){
 }
 
 function beginExperiment(resuming){
-    
-    if(!arr.config.conditions){
-        stimuli_name="stimuli/"+(presenceSequence[trialID]?"present":"absent")+"/noise"+(trialID+1);
-        stimuli=load_stimuli(stimuli_name);
-        arr.name=name;
-        arr.config.options.ratings=ratings;
-        sortIndexes=trialSequence;
-        conditionSequence=presenceSequence;
-    }else{
-        if(!resuming){
-            conditionSequence=[];
-            trialSequence=[];
-            numConditions=arr.config.conditions.length;
+    if(!resuming){
+        conditionSequence=[];
+        trialSequence=[];
+        numConditions=arr.config.conditions.length;
 
-            if(arr.config.options.randomize!=undefined){
-                if(arr.config.options.randomize.localeCompare("randomrandom")==0){
-                    conditionOrder=Array.from({length:numConditions},(v,k)=>k);
-                    conditionOrder.sort(function(a, b) {return 0.5 - Math.random()});
-                    //console.log(conditionOrder);
-                    for(i=0;i<numConditions;i++){
-                        newT=Array.from({length:arr.config.conditions[conditionOrder[i]].stimuli.stimulusFiles.length},(v,k)=>k);
-                        trialSequence=trialSequence.concat(newT.sort(function(a, b) {return 0.5 - Math.random()}));
-                        conditionSequence=conditionSequence.concat(Array.from({length:arr.config.conditions[conditionOrder[i]].stimuli.stimulusFiles.length},(v,k)=>conditionOrder[i]));
-                    }
-                    sortIndexes=Array.from({length:conditionSequence.length},(v,k)=>k);
-                }else if(arr.config.options.randomize.localeCompare("randomkeep")==0){
-                    conditionOrder=Array.from({length:numConditions},(v,k)=>k);
-                    conditionOrder.sort(function(a, b) {return 0.5 - Math.random()});
-                    for(i=0;i<numConditions;i++){
-                        trialSequence=trialSequence.concat(Array.from({length:arr.config.conditions[conditionOrder[i]].stimuli.stimulusFiles.length},(v,k)=>k));
-                        conditionSequence=conditionSequence.concat(Array.from({length:arr.config.conditions[conditionOrder[i]].stimuli.stimulusFiles.length},(v,k)=>conditionOrder[i]));
-                    }
-                    sortIndexes=Array.from({length:conditionSequence.length},(v,k)=>k);
-                }else if(arr.config.options.randomize.localeCompare("keeprandom")==0){
-                    for(i=0;i<numConditions;i++){
-                        newT=Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>k);
-                        trialSequence=trialSequence.concat(newT.sort(function(a, b) {return 0.5 - Math.random()}));
-                        conditionSequence=conditionSequence.concat(Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>i));
-                    }
-                    sortIndexes=Array.from({length:conditionSequence.length},(v,k)=>k);
-                }else if(arr.config.options.randomize.localeCompare("keepkeep")==0){
-                    for(i=0;i<numConditions;i++){
-                        trialSequence=trialSequence.concat(Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>k));
-                        conditionSequence=conditionSequence.concat(Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>i));
-                    }
-                    sortIndexes=Array.from({length:conditionSequence.length},(v,k)=>k);
-                }else{
-                    for(i=0;i<numConditions;i++){
-                        trialSequence=trialSequence.concat(Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>k));
-                        conditionSequence=conditionSequence.concat(Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>i));
-                    }
-                    sortIndexes=Array.from({length:conditionSequence.length},(v,k)=>k);
-                    if(arr.config.options.randomize==undefined || arr.config.options.randomize.localeCompare("true")){
-                        sortIndexes.sort(function(a, b) {return 0.5 - Math.random()});
-                    }
-                }  
+        if(arr.config.options.randomize!=undefined){
+            if(arr.config.options.randomize.localeCompare("randomrandom")==0){
+                conditionOrder=Array.from({length:numConditions},(v,k)=>k);
+                conditionOrder.sort(function(a, b) {return 0.5 - Math.random()});
+                //console.log(conditionOrder);
+                for(i=0;i<numConditions;i++){
+                    newT=Array.from({length:arr.config.conditions[conditionOrder[i]].stimuli.stimulusFiles.length},(v,k)=>k);
+                    trialSequence=trialSequence.concat(newT.sort(function(a, b) {return 0.5 - Math.random()}));
+                    conditionSequence=conditionSequence.concat(Array.from({length:arr.config.conditions[conditionOrder[i]].stimuli.stimulusFiles.length},(v,k)=>conditionOrder[i]));
+                }
+                sortIndexes=Array.from({length:conditionSequence.length},(v,k)=>k);
+            }else if(arr.config.options.randomize.localeCompare("randomkeep")==0){
+                conditionOrder=Array.from({length:numConditions},(v,k)=>k);
+                conditionOrder.sort(function(a, b) {return 0.5 - Math.random()});
+                for(i=0;i<numConditions;i++){
+                    trialSequence=trialSequence.concat(Array.from({length:arr.config.conditions[conditionOrder[i]].stimuli.stimulusFiles.length},(v,k)=>k));
+                    conditionSequence=conditionSequence.concat(Array.from({length:arr.config.conditions[conditionOrder[i]].stimuli.stimulusFiles.length},(v,k)=>conditionOrder[i]));
+                }
+                sortIndexes=Array.from({length:conditionSequence.length},(v,k)=>k);
+            }else if(arr.config.options.randomize.localeCompare("keeprandom")==0){
+                for(i=0;i<numConditions;i++){
+                    newT=Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>k);
+                    trialSequence=trialSequence.concat(newT.sort(function(a, b) {return 0.5 - Math.random()}));
+                    conditionSequence=conditionSequence.concat(Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>i));
+                }
+                sortIndexes=Array.from({length:conditionSequence.length},(v,k)=>k);
+            }else if(arr.config.options.randomize.localeCompare("keepkeep")==0){
+                for(i=0;i<numConditions;i++){
+                    trialSequence=trialSequence.concat(Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>k));
+                    conditionSequence=conditionSequence.concat(Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>i));
+                }
+                sortIndexes=Array.from({length:conditionSequence.length},(v,k)=>k);
             }else{
                 for(i=0;i<numConditions;i++){
                     trialSequence=trialSequence.concat(Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>k));
@@ -799,31 +821,51 @@ function beginExperiment(resuming){
                 if(arr.config.options.randomize==undefined || arr.config.options.randomize.localeCompare("true")){
                     sortIndexes.sort(function(a, b) {return 0.5 - Math.random()});
                 }
-            }
-            arr.name=name;
-            arr.sortIndexes=sortIndexes;
-            arr.trialSequence=trialSequence;
-            arr.conditionSequence=conditionSequence;
-            arr.config.maxTrials=sortIndexes.length;
-
-        }
-
-        trialID=arr.trialSequence[arr.data.length];
-
-        if(!arr.config.conditions[arr.conditionSequence[arr.sortIndexes[trialID]]].stimuli.feedbackFiles){
-            arr.config.conditions[arr.conditionSequence[arr.sortIndexes[trialID]]].stimuli.feedbackFiles=[];
-        }
-
-        if(arr.trialSequence[arr.sortIndexes[trialID]] in arr.config.conditions[arr.conditionSequence[arr.sortIndexes[trialID]]].stimuli.feedbackFiles){
-            stimuli=load_stimuli_drive(arr.config.conditions[arr.conditionSequence[arr.sortIndexes[trialID]]].stimuli.stimulusFiles[arr.trialSequence[arr.sortIndexes[trialID]]],
-                arr.config.conditions[arr.conditionSequence[arr.sortIndexes[trialID]]].stimuli.infoFiles[arr.trialSequence[arr.sortIndexes[trialID]]],
-                arr.config.conditions[arr.conditionSequence[arr.sortIndexes[trialID]]].stimuli.feedbackFiles[arr.trialSequence[arr.sortIndexes[trialID]]]);
+            }  
         }else{
-            stimuli=load_stimuli_drive(arr.config.conditions[arr.conditionSequence[arr.sortIndexes[trialID]]].stimuli.stimulusFiles[arr.trialSequence[arr.sortIndexes[trialID]]],
-                arr.config.conditions[arr.conditionSequence[arr.sortIndexes[trialID]]].stimuli.infoFiles[arr.trialSequence[arr.sortIndexes[trialID]]],
+            for(i=0;i<numConditions;i++){
+                trialSequence=trialSequence.concat(Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>k));
+                conditionSequence=conditionSequence.concat(Array.from({length:arr.config.conditions[i].stimuli.stimulusFiles.length},(v,k)=>i));
+            }
+            sortIndexes=Array.from({length:conditionSequence.length},(v,k)=>k);
+            if(arr.config.options.randomize==undefined || arr.config.options.randomize.localeCompare("true")){
+                sortIndexes.sort(function(a, b) {return 0.5 - Math.random()});
+            }
+        }
+        arr.name=name;
+        arr.sortIndexes=sortIndexes;
+        arr.trialSequence=trialSequence;
+        arr.conditionSequence=conditionSequence;
+        arr.config.maxTrials=sortIndexes.length;
+
+    }
+
+    trialID=arr.trialSequence[arr.data.length];
+
+    if(!arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.feedbackFiles){
+        arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.feedbackFiles=[];
+    }
+
+    if(gapi.client.getToken()!=null){
+        if(arr.trialSequence[arr.sortIndexes[arr.data.length]] in arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.feedbackFiles){
+            stimuli=load_stimuli_drive_js(arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.stimulusFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]],
+                arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.infoFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]],
+                arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.feedbackFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]]);
+        }else{
+            stimuli=load_stimuli_drive_js(arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.stimulusFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]],
+                arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.infoFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]],
                 null);
         }
-        
+    }else{
+        if(arr.trialSequence[arr.sortIndexes[arr.data.length]] in arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.feedbackFiles){
+            stimuli=load_stimuli_drive(arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.stimulusFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]],
+                arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.infoFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]],
+                arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.feedbackFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]]);
+        }else{
+            stimuli=load_stimuli_drive(arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.stimulusFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]],
+                arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.infoFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]],
+                null);
+        }
     }
 
     Cookies.set('psyphy', [arr.config.options.id,name], { expires:10, sameSite: 'strict', path: window.location.pathname})

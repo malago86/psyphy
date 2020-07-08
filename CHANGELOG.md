@@ -3,9 +3,18 @@ All notable changes to this project will be documented in this file.
  
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.6.0] - 2020-07-06
+- Added a list of created experiments
+- Fixed some bugs with cookies and experiment resume
+- Blocked mouse wheel when running experiment
+- Fixed test/default experiment
+- Cleaned up the home screen when an experiment is loaded
+- Images loaded directly from Google Drive with a delay
+- Added FTP integration with Gitlab
+
 ## [1.5.1] - 2020-06-24
 - Recalibration shows a continue screen when finished
-- Pressing Enter for video stimuli will record the time and status of the video
+- Pressing `Enter` for video stimuli will record the time and status of the video
 
 ## [1.5.0] - 2020-06-23
 - Added option to download results in `CSV` format

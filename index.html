@@ -19,8 +19,8 @@
         <div id="form-container">
             <img src="/images/psyphy.png" class="logo" width="600">
             
-            <p><strong>Try the test experiment: </strong>Enter your name and click on Start. Calibration will start first.</p>
-            <p><strong>Load your experiment:</strong> Upload an experiment file to load experiment configuration. <br>Enter your name and click on Start. Calibration will start first.</p>
+            <p class="home-instructions"><strong>Try the test experiment: </strong>Enter your name and click on Start. Calibration will start first.</p>
+            <p class="home-instructions"><strong>Load your experiment:</strong> Upload an experiment file to load experiment configuration. <br>Enter your name and click on Start. Calibration will start first.</p>
             
             <div class="credits">Developed by <a href="javascript:location='mailto:\u006c\u0061\u0067\u006f\u0040\u0070\u0073\u0079\u0063\u0068\u002e\u0075\u0063\u0073\u0062\u002e\u0065\u0064\u0075';void 0">Miguel Lago</a><br>
                 for <a href="https://viu.psych.ucsb.edu" target="_blank">VIU lab at UCSB</a>
@@ -29,17 +29,15 @@
             </div> 
             
             <div class="error"></div>
+
+            <div class="dev">
+                <button id="authorize_button" onclick="handleAuthClick();" style="padding:5px"><i class="fab fa-google"></i> Login with Google</button>
+                <button id="signout_button" style="display: none;" onclick="handleSignoutClick();"><i class="fas fa-sign-out-alt"></i> Sign Out</button>
+
+    <pre id="content" style="white-space: pre-wrap;"></pre>
+            </div>
             
-            <input id="name" type="text" placeholder="Name" value="" />
-            <!--Screen size (<span class="question-mark">&#10067;</span>): <input id="width" type="text" placeholder="width" value="23" /> by <input id="height" type="text" placeholder="height" value="13" /> 
-            <select id="units">
-                <option>inches</option>
-                <option>cm</option>
-            </select>-->
-            
-            
-            <input type="button" id="start-experiment" value="Start!" />
-            <br>
+            <p><input id="name" type="text" placeholder="Name" value="" /> <input type="button" id="start-experiment" value="Start!" /></p>
             <p>By clicking on Start you accept the experiment conditions and consent form (if given).</p>
             <label id="load-experiment-label" for="load-experiment"><i class="fas fa-file-upload"></i> Upload experiment file</label>
             
@@ -48,6 +46,16 @@
             
             
             <form class="form-box" id="form-box">
+                <div class="created">
+                    <p style="font-weight: bold;
+                border-bottom: 2px solid white;
+                margin: auto;
+                margin-bottom: 15px;
+                width: 80%;"><i class="fas fa-search"></i></i> Your latest created experiments</p>
+                    <ul class="created-list">
+
+                    </ul>
+                </div>
                 <p style="font-weight: bold;
                 border-bottom: 2px solid white;
                 margin: auto;
@@ -188,7 +196,7 @@
         </div>
     </div>
 
-    <div id="calibration" class="popup">
+    <div id="calibration-dialog" class="popup">
         <div class="close">&#10060;</div>
         <div id="calibration-step1">
             <p>Place a credit card in the top left corner of the square.</p>
@@ -228,4 +236,9 @@
         <div id="google-drive-result"></div>
         <div class="button">Finish</div>
     </div>
+
+    <script async defer src="https://apis.google.com/js/api.js"
+      onload="this.onload=function(){};handleClientLoad()"
+      onreadystatechange="if (this.readyState === 'complete') this.onload()">
+    </script>
 </body>

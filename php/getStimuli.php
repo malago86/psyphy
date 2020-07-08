@@ -18,25 +18,42 @@ function initializeClient() {
         'signing_algorithm'   => 'HS256',
         'signing_key'         => $private_key
     );
-
     $client = new Google_Client( $client_parameters );
     $client->useApplicationDefaultCredentials();
     $client->setClientId( getenv('client_id') ); 
+    
+    
     //$client->setScopes(['https://www.googleapis.com/auth/analytics.readonly']);
     return $client;
 }
 
 
 if(file_exists("../credentials/credentials.json")){
-    $client = new Google_Client();
-    $client->setAuthConfig('../credentials/credentials.json');
+    if(isset($_GET['client-id'])){
+        $client_id=json_decode(file_get_contents("../credentials/client_id.json"));
+        $client = new Google_Client(['client_id' => $client_id->client_id]);
+        $payload = $client->verifyIdToken($_GET['client-id']);
+        
+    }else{
+        $client = new Google_Client();
+        $client->setAuthConfig('../credentials/credentials.json');
+    }
+    
 }else{
-    $client = initializeClient();
+    if(isset($_GET['client-id'])){
+        $client_id=json_decode(file_get_contents("../credentials/client_id.json"));
+        $client = new Google_Client(['client_id' => $client_id->client_id]);
+        $payload = $client->verifyIdToken($_GET['client-id']);
+    }else{
+        $client = initializeClient();
+    }
 }
 $client->addScope('https://www.googleapis.com/auth/drive.readonly');
 
 $service = new Google_Service_Drive($client);
-
+if(isset($_GET['client-id'])){
+    var_dump($service);
+}
 if(isset($_GET['file-id'])){
     $fileId=$_GET['file-id'];
 

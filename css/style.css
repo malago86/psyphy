@@ -38,6 +38,24 @@ strong{
     font-size:20px;
     position: relative;
 }
+.form-box .created {
+    display:none;
+}
+.created li{
+    list-style: none;
+    font-size: 23px;
+    line-height: 34px;
+}
+.created li a{
+    width: 50px;
+    float:right;
+}
+.created li a[href*="experiment"]:hover{
+    color:greenyellow;
+}
+.created li a[href*="results"]:hover{
+    color:cyan;
+}
 .credits{
 	position:fixed;
 	bottom:5%;
@@ -94,7 +112,7 @@ input[id="name"]{
     width:200px;
 }
 
-input[type="button"], .button, input[type="submit"]{
+input[type="button"], .button, input[type="submit"],button{
 	border: 3px solid rgb(229, 72, 35);
 	background: rgb(57, 48, 42);
 	color:white;
@@ -103,7 +121,7 @@ input[type="button"], .button, input[type="submit"]{
     margin: 10px;
     cursor:hand;
 }
-input[type="button"]:hover, .button:hover, input[type="submit"]:hover{
+input[type="button"]:hover, .button:hover, input[type="submit"]:hover,button:hover{
     background:rgb(229, 72, 35);
 }
 input[type="button"].disabled{
@@ -372,21 +390,21 @@ input[type="button"].disabled{
     cursor: pointer;
 }
 
-#calibration h1{
+#calibration-dialog h1{
     position: absolute;
     top: 50%;
     left: 25%;
     transform: translate(-18%, -50%);
 }
 
-#calibration .credit-card-slider{
+#calibration-dialog .credit-card-slider{
     width:60%;
     height:5px;
     background:white;
     margin-left:20%;
     position: relative;
 }
-#calibration .credit-card-slider-position{
+#calibration-dialog .credit-card-slider-position{
     height:20px;
     width:20px;
     background:white;
@@ -397,11 +415,11 @@ input[type="button"].disabled{
     border:3px solid white;
     margin-right:10px;
 }
-#calibration .credit-card-slider-position:hover{
+#calibration-dialog .credit-card-slider-position:hover{
     border:3px solid rgb(229, 72, 35) !important;
 }
 
-#calibration .credit-card-outline{
+#calibration-dialog .credit-card-outline{
     /* 1.5857725083364208966283808818081 */
     border:2px solid white;
     border-radius: 4px;
@@ -416,7 +434,7 @@ input[type="button"].disabled{
     right:5%;
 }
 
-#calibration .blind-spot-container{
+#calibration-dialog .blind-spot-container{
     position: relative;
     width:80%;
     height:140px;
@@ -425,7 +443,7 @@ input[type="button"].disabled{
     margin-top:10%;
 }
 
-#calibration .blind-spot-cross{
+#calibration-dialog .blind-spot-cross{
     background-image:url(../images/cross.png);
     width:50px;
     height:50px;
@@ -435,7 +453,7 @@ input[type="button"].disabled{
     background-size:cover;
 }
 
-#calibration .blind-spot-dot{
+#calibration-dialog .blind-spot-dot{
     background:white;
     width:20px;
     height:20px;
@@ -636,5 +654,9 @@ hr{
     font-size: 30px;
     justify-content: center;
     align-items: center;
+    display:none;
+}
+
+.dev{
     display:none;
 }
