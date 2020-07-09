@@ -19,6 +19,10 @@ strong{
     text-align: center;
 }
 
+.hidden{
+    display:none !important;
+}
+
 #form-container, #form-data{
     margin:auto;
     width:fit-content;
@@ -654,9 +658,6 @@ hr{
     font-size: 30px;
     justify-content: center;
     align-items: center;
-    display:none;
+    display:flex;
 }
 
-.dev{
-    display:none;
-}

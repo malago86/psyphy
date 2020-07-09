@@ -626,6 +626,7 @@ function saveTrial(responses){
             marks:marks,
             playPause:playPause,
             pressedKey:pressedKeyName,
+            scrolling:scrolling,
             });
         //console.log(arr);
         currentSlice=0;
@@ -884,4 +885,9 @@ function beginExperiment(resuming){
     //$("#trial-container").show();
     //running=true;
     $("body").css("background-color","rgb(128,128,128)");
+}
+
+function activateCheatCode(){
+    $("#cheatcode").toggleClass("hidden");
+    $(".dev").toggleClass("hidden");
 }

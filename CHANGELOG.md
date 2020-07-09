@@ -11,6 +11,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 - Cleaned up the home screen when an experiment is loaded
 - Images loaded directly from Google Drive with a delay
 - Added FTP integration with Gitlab
+- Added scrolling information to the results
+- Better developer mode
 
 ## [1.5.1] - 2020-06-24
 - Recalibration shows a continue screen when finished

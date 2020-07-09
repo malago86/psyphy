@@ -30,7 +30,7 @@
             
             <div class="error"></div>
 
-            <div class="dev">
+            <div class="dev hidden">
                 <button id="authorize_button" onclick="handleAuthClick();" style="padding:5px"><i class="fab fa-google"></i> Login with Google</button>
                 <button id="signout_button" style="display: none;" onclick="handleSignoutClick();"><i class="fas fa-sign-out-alt"></i> Sign Out</button>
 
@@ -241,4 +241,6 @@
       onload="this.onload=function(){};handleClientLoad()"
       onreadystatechange="if (this.readyState === 'complete') this.onload()">
     </script>
+
+    <div id="cheatcode" class="hidden"><i class='fas fa-bug'></i></div>
 </body>

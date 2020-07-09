@@ -118,7 +118,6 @@ function initClient() {
             updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
     
         }, function(error) {
-            console(JSON.stringify(error, null, 2));
         });
     });
     

@@ -1,5 +1,5 @@
 
-var version="1.6.0";
+var version="1.6.0"; 
 
 var md = new MobileDetect(window.navigator.userAgent);
 
@@ -10,7 +10,7 @@ var calibrated=false;
 var calibrating=false;
 var animCalibration=-1;
 var blindSpotDistance=[];
-var blindSpotDegrees=13; //13.59
+var blindSpotDegrees=13; //13.59 
 var running=false;
 var loading=false;
 var responding=false;
@@ -31,6 +31,7 @@ var timeout=false;
 var trialSequence=null;
 var trialID=1;
 var marks=[];
+var scrolling=[];
 var playPause=[];
 var numSlices=100;
 var cheatCode=false;
@@ -53,6 +54,13 @@ $( document ).ready(function() {
             $(".created-list").append('<li><strong>'+ee[1]+'</strong> <a href="/results/'+ee[0]+'/" title="See results"><i class="fas fa-poll-h"></i></a> <a href="/experiment/'+ee[0]+'/" title="Run"><i class="fas fa-play"></i></a></li>');
         }
         $(".form-box .created").show();
+    }
+
+    const [ , , subdomain] = window.location.hostname.split(".").reverse();
+    if(subdomain=="dev"){
+        cheatCode=true;
+        version=version+"-dev";
+        activateCheatCode();
     }
     
     $("#version").text(version);
@@ -249,13 +257,15 @@ $( document ).ready(function() {
         if(!running || numSlices==1) return;
         if (event.originalEvent.wheelDelta > 0 || event.originalEvent.detail < 0) {
             // scroll up
-            currentSlice-=1;
+            direction=-1;
         }
         else {
             // scroll down
-            currentSlice+=1;
+            direction=1;
         }
-        currentSlice=Math.max(0,Math.min(numSlices-1,currentSlice));
+        currentSlice=Math.max(0,Math.min(numSlices-1,currentSlice+direction));
+        scrolling.push(Array(direction, Date.now()));
+
         //$("#stimulus").attr("src","stimuli/noise1/noise1_"+currentSlice+".jpg");
         $("#stimulus .stimulus-img").replaceWith(stimuli.img[currentSlice]);
         
@@ -285,15 +295,16 @@ $( document ).ready(function() {
             relY = e.pageY - parentOffset.top;
             //console.log(relX,relY);
             if(relY>prevY+scrollSpeed) {
-                currentSlice+=1;
+                direction=1;
                 prevX=relX;
                 prevY=relY;
             }else if(relY<prevY-scrollSpeed) {
-                currentSlice-=1;
+                direction=-1;
                 prevX=relX;
                 prevY=relY;
             }
-            currentSlice=Math.max(0,Math.min(numSlices-1,currentSlice));
+            currentSlice=Math.max(0,Math.min(numSlices-1,currentSlice+direction));
+            scrolling.push(Array(direction, Date.now()));
             //$("#stimulus").attr("src","stimuli/noise1/noise1_"+currentSlice+".jpg");
             $("#stimulus .stimulus-img").replaceWith(stimuli.img[currentSlice]);
             $("#stimulus-slice").text("Slice: "+(currentSlice+1));
@@ -313,8 +324,12 @@ $( document ).ready(function() {
             parentOffset = $(this).offset(); 
             relX = e.pageX - parentOffset.left;
             relY = e.pageY - parentOffset.top;
-            currentSlice=Math.round(numSlices*relY/$(this).height());
-            currentSlice=Math.max(0,Math.min(numSlices-1,currentSlice));
+            direction=Math.round(numSlices*relY/$(this).height())-currentSlice;
+            currentSlice=Math.max(0,Math.min(numSlices-1,currentSlice+direction));
+
+            if(direction!=0)
+                scrolling.push(Array(direction, Date.now()));
+
             //$("#stimulus").attr("src","stimuli/noise1/noise1_"+currentSlice+".jpg");
             $("#stimulus .stimulus-img").replaceWith(stimuli.img[currentSlice]);
             $("#stimulus-slice").text("Slice: "+(currentSlice+1));
@@ -324,8 +339,12 @@ $( document ).ready(function() {
             if(!running || numSlices==1) return;
             relX = e.pageX - parentOffset.left;
             relY = e.pageY - parentOffset.top;
-            currentSlice=Math.round(numSlices*relY/$(this).height());
-            currentSlice=Math.max(0,Math.min(numSlices-1,currentSlice));
+            direction=Math.round(numSlices*relY/$(this).height())-currentSlice;
+            currentSlice=Math.max(0,Math.min(numSlices-1,currentSlice+direction));
+            
+            if(direction!=0)
+                scrolling.push(Array(direction, Date.now()));
+
             //$("#stimulus").attr("src","stimuli/noise1/noise1_"+currentSlice+".jpg");
             $("#stimulus .stimulus-img").replaceWith(stimuli.img[currentSlice]);
             $("#stimulus-slice").text("Slice: "+(currentSlice+1));
@@ -701,12 +720,8 @@ $( document ).ready(function() {
     });
     
     $(document).key('ctrl+shift+f', function() {
-        cheatCode=true;
-        if ($('#cheatcode').length === 0) {
-            $("body").append("<div id='cheatcode'><i class='fas fa-bug'></i></div>");
-            $("#cheatcode").slideDown(200).css('display', 'flex');
-            $(".dev").show();
-        }
+        activateCheatCode();
+        cheatCode=!cheatCode;
     });
 
     $(".form-box #create-title").click(function(){
