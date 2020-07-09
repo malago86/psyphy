@@ -102,7 +102,7 @@ function handleClientLoad() {
  *  listeners.
  */
 function initClient() {
-    $.getJSON("/credentials/client_id.json",function( data ) {
+    $.getJSON("/client_id.json",function( data ) {
         var CLIENT_ID = data["client_id"];
         var API_KEY = data["api_key"];
         gapi.client.init({

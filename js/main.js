@@ -1,5 +1,5 @@
 
-var version="1.6.0"; 
+var version="1.6.1"; 
 
 var md = new MobileDetect(window.navigator.userAgent);
 
@@ -20,6 +20,7 @@ var loaded=0;
 var preparation=false;
 var showingFeedback=false;
 var loadingInfo=false;
+var resumingExperiment=false;
 
 var display=null;
  
@@ -60,6 +61,7 @@ $( document ).ready(function() {
     if(subdomain=="dev"){
         cheatCode=true;
         version=version+"-dev";
+        $(".credits").append("<div style='font-size:12px'>"+getLastModified()+"</div>");
         activateCheatCode();
     }
     
@@ -107,9 +109,11 @@ $( document ).ready(function() {
     }
 
     if(params[0]=="experiment"){
+        resumingExperiment=true;
         $("#form-box").html("<i class='fas fa-hourglass fa-spin'></i>");
         $.getJSON("/experiment/"+params[1]+".json",function( data ) {
             loadExperimentData(data);
+            resumingExperiment=false;
             //console.log(arr.config.options);
         })
         .fail(function() {
@@ -120,8 +124,10 @@ $( document ).ready(function() {
                 dataType: "json",
                 success: function(data){
                     loadExperimentData(data);
+                    resumingExperiment=false;
                 },
                 error: function(data){
+                    resumingExperiment=false;
                     //console.log("ERROR");
                     //console.log(data);
                 }
@@ -130,6 +136,9 @@ $( document ).ready(function() {
     }
 
     $("#start-experiment").click(function(e){
+
+        if(resumingExperiment) return;
+
         if(arr.config.options.calibration<=0)
             calibrated=true;
 
@@ -341,7 +350,7 @@ $( document ).ready(function() {
             relY = e.pageY - parentOffset.top;
             direction=Math.round(numSlices*relY/$(this).height())-currentSlice;
             currentSlice=Math.max(0,Math.min(numSlices-1,currentSlice+direction));
-            
+
             if(direction!=0)
                 scrolling.push(Array(direction, Date.now()));
 

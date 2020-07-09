@@ -4,6 +4,7 @@ RewriteEngine On
 #RewriteCond %{HTTP_HOST} !^www\.
 #RewriteRule ^(.*)$ http://www.%{HTTP_HOST}/$1 [R=301,L]
 
+RewriteRule ^credentials/(.*)$ \/ [R=301,L]
 RewriteRule ^results/(.*).zip$ \php/viewResults.php?experiment-id=$1&zip [L]
 RewriteRule ^results/(.*)/$ \php/viewResults.php?experiment-id=$1 [L]
 RewriteRule ^experiment/(.*)/$ \index.html?experiment-id=$1 [L]

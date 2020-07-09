@@ -891,3 +891,32 @@ function activateCheatCode(){
     $("#cheatcode").toggleClass("hidden");
     $(".dev").toggleClass("hidden");
 }
+
+function fetchHeader(url, wch) {
+    try {
+        var req=new XMLHttpRequest();
+        req.open("HEAD", url, false);
+        req.send(null);
+        if(req.status== 200){
+            return new Date(req.getResponseHeader(wch));
+        }
+        else return false;
+    } catch(er) {
+        return er.message;
+    }
+}
+
+function getLastModified(){
+    d= new Date(Math.max(fetchHeader("/js/main.js",'Last-Modified'),
+                    fetchHeader("/js/functions.js",'Last-Modified'),
+                    fetchHeader("/js/google_drive.js",'Last-Modified'),
+                    fetchHeader("/php/createExperiment.php",'Last-Modified'),
+                    fetchHeader("/php/getFiles.php",'Last-Modified'),
+                    fetchHeader("/php/getJson.php",'Last-Modified'),
+                    fetchHeader("/php/getStimuli.php",'Last-Modified'),
+                    fetchHeader("/php/upload.php",'Last-Modified'),
+                    fetchHeader("/php/viewResults.php",'Last-Modified'),
+                    fetchHeader("/css/style.css",'Last-Modified'),
+                    fetchHeader("/index.html",'Last-Modified')));
+    return d.getFullYear()+"/"+(d.getMonth()+1)+"/"+d.getDate()+" "+d.getHours()+":"+d.getMinutes();
+}
