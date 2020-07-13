@@ -36,6 +36,7 @@ var scrolling=[];
 var playPause=[];
 var numSlices=100;
 var cheatCode=false;
+var cookieName="";
 
 var markColors=["white","lime","red","blue"];
 
@@ -61,7 +62,9 @@ $( document ).ready(function() {
     if(subdomain=="dev"){
         cheatCode=true;
         version=version+"-dev";
-        $(".credits").append("<div style='font-size:12px'>"+getLastModified()+"</div>");
+        $.get("/compilation",function(d){
+            $(".credits").append("<div style='font-size:12px'>"+d+"</div>");
+        });
         activateCheatCode();
     }
     
@@ -94,7 +97,6 @@ $( document ).ready(function() {
     var ccWidthCM=8.560;
     
     var params = window.location.pathname.split('/').slice(1);
-    var cookieName;
 
     if(Cookies.get('psyphy')){
         cookie=Cookies.get('psyphy').split(",");
@@ -179,6 +181,11 @@ $( document ).ready(function() {
 
         name=name+"-"+(new Date().getTime());
         
+        resuming=false;
+        if(arr.data.length>0){
+            resuming=true;
+            name=arr.name;
+        }
 
         arr={config: {
                 maxTrials: maxTrials,
@@ -203,9 +210,13 @@ $( document ).ready(function() {
         if(!cheatCode)
             document.documentElement.requestFullscreen();
 
-        resuming=false;
-        if(cookieName!=undefined){
-            name=cookieName;
+        
+        if(resuming || cookieName!=""){
+            if(cookieName==""){
+                params[1]=arr.config.options.id;
+            }else{
+                name=cookieName;
+            }
             $.ajax({
                 type: "POST",
                 url: "/php/createExperiment.php",

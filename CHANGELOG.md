@@ -3,8 +3,9 @@ All notable changes to this project will be documented in this file.
  
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.6.1]
+## [1.6.1] - 2020-07-13
 - Block Start button until experiment is loaded
+- Fixed bug when restarting after experiment is cancelled
 
 ## [1.6.0] - 2020-07-06
 - Added a list of created experiments
