@@ -224,6 +224,7 @@ function calculate_time_span($seconds)
 <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/mobile-detect@1.4.4/mobile-detect.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/js-cookie@rc/dist/js.cookie.min.js"></script>
 <script src="/js/jquery.key.js"></script>
 <script src="/js/functions.js"></script>
 <script src="/js/main.js"></script>
@@ -233,6 +234,7 @@ function calculate_time_span($seconds)
 <link href="/css/fontawesome.css" rel="stylesheet"> 
 </head>
 <body>
+    <div id="trial-container"></div>
     <div class="background">
         <div id="form-data">
             <a href='../../'><img src="../../images/psyphy.png" class="logo" width="300"></a>

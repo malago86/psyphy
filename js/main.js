@@ -1,5 +1,5 @@
 
-var version="1.6.1"; 
+var version="1.7.0"; 
 
 var md = new MobileDetect(window.navigator.userAgent);
 
@@ -62,7 +62,7 @@ $( document ).ready(function() {
     if(subdomain=="dev"){
         cheatCode=true;
         version=version+"-dev";
-        $.get("/compilation",function(d){
+        $.get("/compilation.txt",function(d){
             $(".credits").append("<div style='font-size:12px'>"+d+"</div>");
         });
         activateCheatCode();
@@ -479,7 +479,7 @@ $( document ).ready(function() {
                             $("#stimulus .stimulus-img").trigger('play');
                         }
                         return;
-                    }else if(arr.config.options.multiple.localeCompare("MAFC")!=0){
+                    }else if(!arr.config.options.multiple.startsWith("MAFC")){
                         if($("#stimulus .stimulus-img").is("video")){
                             $("#stimulus .stimulus-img").trigger('pause');
                         }
@@ -512,7 +512,7 @@ $( document ).ready(function() {
     $("#stimulus").dblclick(function(event){ //double click event
         //console.log(event.target, event.offsetX,event.offsetY);
         et=$(event.target);
-        if(arr.config.options.multiple.localeCompare("MAFC")==0){
+        if(arr.config.options.multiple.startsWith("MAFC")){
             marks.push(parseInt(et.attr("numImg")));
             showResponse(arr.config.options.ratings,arr.data.length+1);
         }else if(arr.config.options.mark.localeCompare("true")==0){

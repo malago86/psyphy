@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
  
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.7.0] - 2020-07-17
+- MAFC trials can be placed in a circle
+- Fixed bug with condition change and slice number
+
 ## [1.6.1] - 2020-07-13
 - Block Start button until experiment is loaded
 - Fixed bug when restarting after experiment is cancelled

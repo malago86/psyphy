@@ -1,5 +1,9 @@
 
-
+/**
+ * Function to move the progress bar while loading a set of images.
+ * @param {integer} loaded - The current iteration of the loading bar
+ * @param {integer} max - The maximum iteration of the loading bar
+ */
 function moveLoadingBar(loaded, max){
     loaded++;
     if(loaded==max){
@@ -25,12 +29,22 @@ function moveLoadingBar(loaded, max){
         $("#loading-bar-progress").css("width",(100*(loaded+1)/max)+"%");
 }
 function load_stimuli_drive(list,info,feedback){
+
+    //list.push(...list);
+
     MAFC=false;
     if(arr.config.options.multiple.localeCompare("first")==0)
         list=[list[0]];
-    else if(arr.config.options.multiple.localeCompare("MAFC")==0){
-        $("#stimulus").html("");
-        $("#stimulus").addClass("mafc"+list.length);
+    else if(arr.config.options.multiple.startsWith("MAFC")){
+        $("#stimulus").html("");       
+        if(arr.config.options.multiple == "MAFCcircle"){
+            angle=360/list.length;
+            MAFCdistance=20;
+            $("#stimulus").addClass("circle");
+            $("#stimulus-container").css("width","100%");
+            $("#stimulus-container").css("height","100%");
+        }else
+            $("#stimulus").addClass("mafc"+list.length);
         MAFC=true;
     }
     
@@ -67,6 +81,7 @@ function load_stimuli_drive(list,info,feedback){
     }
 
     
+
     for(i=0;i<list.length;i++){
         if(list[i].name.includes("mp4") || list[i].name.includes("webm")){
             stimuli.img[i]=document.createElement("video");
@@ -82,8 +97,11 @@ function load_stimuli_drive(list,info,feedback){
         }
         stimuli.img[i].setAttribute("class","stimulus-img");
         stimuli.img[i].setAttribute("numImg",i+1);
+        if($("#stimulus").hasClass("circle")){            
+            stimuli.img[i].setAttribute("style","left:calc(50% + "+(Math.cos(i*angle * Math.PI/180)*MAFCdistance)+"em);top:calc(50% + "+(Math.sin(i*angle * Math.PI/180)*MAFCdistance)+"em)");
+        }
         
-        stimuli.img[i].onload = function() { 
+        stimuli.img[i].onload = function(){
             loaded++;
             if(loaded==list.length && loading){
                 $("#loading-bar").hide();
@@ -91,6 +109,16 @@ function load_stimuli_drive(list,info,feedback){
                 $("#loading-bar-progress").css("width","0%")
                 $("#stimulus-scroll-position").css("height",100*(currentSlice+1)/list.length+"%");
                 window.scrollTo(0, 0);
+                
+                if($("#stimulus").hasClass("circle")){ 
+                    sel=document.querySelectorAll(".stimulus-img");
+                    $(".stimulus-img").css("margin-left","-"+sel[0].width/2+"px");
+                    $(".stimulus-img").css("margin-top","-"+sel[0].width/2+"px");
+                    /*for(i=0;i<sel.length;i++){
+                        $(sel[i]).css("margin-left","-"+sel[i].width/2+"px");
+                        $(sel[i]).css("margin-top","-"+sel[i].height/2+"px");
+                    }*/
+                }
                 stimulusOn=Date.now();
                 if(arr.config.options.timeout>0 && loading){
                     timeout=setTimeout(
@@ -135,7 +163,9 @@ function load_stimuli_drive(list,info,feedback){
         $("#stimulus").randomize(".stimulus-img");
     }else{
         stimuli.slices=list.length;
+        numSlices=list.length;
         $("#stimulus .stimulus-img").replaceWith(stimuli.img[0]);
+        
     }
 
     
@@ -701,7 +731,6 @@ function nextTrial(currentSlice, numSlices){
     $("#stimulus-slice").text("Slice: "+(currentSlice+1));
     $("#stimulus-scroll-position").css("height",100*(currentSlice+1)/numSlices+"%");
     $("#trial-number").text("Trial: "+(arr.data.length+1));
-
 }
 
 function validURL(str) {
