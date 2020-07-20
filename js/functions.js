@@ -680,7 +680,7 @@ function saveTrial(responses){
                 stimuli_name="stimuli/"+(presenceSequence[trialID]?"present":"absent")+"/noise"+(trialID+1);
                 stimuli=load_stimuli(stimuli_name);
             }else{
-                if(gapi.client.getToken()!=null){
+                /*if(gapi.client.getToken()!=null){
                     if(arr.trialSequence[arr.sortIndexes[arr.data.length]] in arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.feedbackFiles){
                         stimuli=load_stimuli_drive_js(arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.stimulusFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]],
                             arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.infoFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]],
@@ -690,7 +690,7 @@ function saveTrial(responses){
                             arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.infoFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]],
                             null);
                     }
-                }else{
+                }else{*/
                     if(arr.trialSequence[arr.sortIndexes[arr.data.length]] in arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.feedbackFiles){
                         stimuli=load_stimuli_drive(arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.stimulusFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]],
                             arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.infoFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]],
@@ -700,7 +700,7 @@ function saveTrial(responses){
                             arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.infoFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]],
                             null);
                     }
-                }
+                //}
             }
             
             if(arr.config.options.calibration>0 && (Date.now()-arr.config.display.pixelsPerDegree.slice(-1)[0][1]) > arr.config.options.calibration*1000*60){ // recalibrate every 10 minutes
@@ -877,7 +877,7 @@ function beginExperiment(resuming){
         arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.feedbackFiles=[];
     }
 
-    if(gapi.client.getToken()!=null){
+    /*if(gapi.client.getToken()!=null){
         if(arr.trialSequence[arr.sortIndexes[arr.data.length]] in arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.feedbackFiles){
             stimuli=load_stimuli_drive_js(arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.stimulusFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]],
                 arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.infoFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]],
@@ -887,7 +887,7 @@ function beginExperiment(resuming){
                 arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.infoFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]],
                 null);
         }
-    }else{
+    }else{*/
         if(arr.trialSequence[arr.sortIndexes[arr.data.length]] in arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.feedbackFiles){
             stimuli=load_stimuli_drive(arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.stimulusFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]],
                 arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.infoFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]],
@@ -897,7 +897,7 @@ function beginExperiment(resuming){
                 arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.infoFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]],
                 null);
         }
-    }
+    //}
 
     Cookies.set('psyphy', [arr.config.options.id,name], { expires:10, sameSite: 'strict', path: window.location.pathname})
 

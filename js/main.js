@@ -130,6 +130,9 @@ $( document ).ready(function() {
                     resumingExperiment=false;
                 },
                 error: function(data){
+                    $(".error").html("<i class='fas fa-exclamation-circle'></i> There has been a problem loading your experiment, please contact the experimenter!");
+                    $(".error").show();
+                    $("#form-box").hide();
                     resumingExperiment=false;
                     //console.log("ERROR");
                     //console.log(data);
