@@ -126,6 +126,7 @@ $( document ).ready(function() {
                 dataType: "json",
                 success: function(data){
                     loadExperimentData(data);
+                    //console.log(data);
                     resumingExperiment=false;
                 },
                 error: function(data){
@@ -673,7 +674,7 @@ $( document ).ready(function() {
             dataType: "json",
             success: function(data){
                 //console.log("SUCCESS");
-                //console.log(data["experiment-id"]);
+                console.log(data["experiment-id"]);
                 cookie="";
                 newCookie=options["id"]+"|"+options["title"]+",";
                 if(Cookies.get('experiments')){
@@ -688,7 +689,7 @@ $( document ).ready(function() {
             },
             error: function(data){
                 //console.log("ERROR");
-                //console.log(data["experiment-id"]);
+                console.log(data);
             }
         });
 

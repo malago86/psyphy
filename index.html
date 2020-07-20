@@ -31,8 +31,6 @@
             <div class="error"></div>
 
             <div class="dev hidden">
-                <button id="authorize_button" onclick="handleAuthClick();" style="padding:5px"><i class="fab fa-google"></i> Login with Google</button>
-                <button id="signout_button" style="display: none;" onclick="handleSignoutClick();"><i class="fas fa-sign-out-alt"></i> Sign Out</button>
 
     <pre id="content" style="white-space: pre-wrap;"></pre>
             </div>
@@ -237,11 +235,6 @@
         <div id="google-drive-result"></div>
         <div class="button">Finish</div>
     </div>
-
-    <script async defer src="https://apis.google.com/js/api.js"
-      onload="this.onload=function(){};handleClientLoad()"
-      onreadystatechange="if (this.readyState === 'complete') this.onload()">
-    </script>
 
     <div id="cheatcode" class="hidden"><i class='fas fa-bug'></i></div>
 </body>
