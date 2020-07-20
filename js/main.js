@@ -589,7 +589,7 @@ $( document ).ready(function() {
     $('body').on('click', '.rating',function(e) { //click on confidence rating
         rating = $(this).attr("num");
         $(this).parent().attr("value",rating);
-        $(".rating").removeClass("selected");
+        $(this).parent().find(".rating").removeClass("selected");
         $(this).toggleClass("selected");
         return false;
     });
