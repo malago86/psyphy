@@ -67,17 +67,16 @@ function getStimuli(data, id, thisElement){
         stimulusImages=[];
         for(j=0;j<dataIn.length;j++){
           if(dataIn[j].name.includes(".json"))
-          folder_ids[id].stimuli.infoFiles[folder_ids[id].stimuli.stimulusFiles.length]=dataIn[j];
+            folder_ids[id].stimuli.infoFiles[i]=dataIn[j];
           else if(dataIn[j].name.includes("feedback"))
-          folder_ids[id].stimuli.feedbackFiles[folder_ids[id].stimuli.stimulusFiles.length]=dataIn[j];
+            folder_ids[id].stimuli.feedbackFiles[i]=dataIn[j];
           else
-          stimulusImages.push(dataIn[j]);
+            stimulusImages.push(dataIn[j]);
         }
-        folder_ids[id].stimuli.stimulusFiles.push(stimulusImages);
+        folder_ids[id].stimuli.stimulusFiles[i]=stimulusImages;
         if (folder_ids[id].stimuli.stimulusFiles.length<data.length){
-          thisElement.children(".files-found").children("span").html(folder_ids[id].stimuli.stimulusFiles.length+" stimuli found");
-        }
-        else{
+          thisElement.children(".files-found").children("span").html(i+" stimuli found");
+        }else{
           thisElement.children(".files-found").html('<i class="fas fa-check-square"></i>&nbsp;&nbsp;&nbsp;'+data.length+" stimuli found");
           thisElement.css("background-color","green");
         }
