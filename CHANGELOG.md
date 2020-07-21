@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
  
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.8.0 - 2020-07-21]
+- Added the option `correctKey` to give feedback
+
 ## [1.7.0] - 2020-07-17
 - MAFC trials can be placed in a circle
 - Fixed bug with condition change and slice number
