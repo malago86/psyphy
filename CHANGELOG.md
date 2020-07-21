@@ -5,6 +5,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ## [1.8.0 - 2020-07-21]
 - Added the option `correctKey` to give feedback
+- Added the option `correctResponse` to give feedback
 
 ## [1.7.0] - 2020-07-17
 - MAFC trials can be placed in a circle

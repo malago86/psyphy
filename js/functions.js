@@ -617,6 +617,7 @@ function selectStimuli(files) {
 	return Math.sqrt( xs + ys );
 };
 var savedResponses=-1;
+var correctResponse=-1;
 function saveTrial(responses){
     $("#response-container").hide();
 
@@ -626,8 +627,20 @@ function saveTrial(responses){
         showingFeedback=true;
         savedResponses=responses;
         return false;
-    }else if(!showingFeedback && stimuli.info.correctKey){
-        if(allowedKeys[pressedKey]==stimuli.info.correctKey){
+    }else if(!showingFeedback && (stimuli.info.correctKey || stimuli.info.correctResponse)){
+        correctResponse=true;
+        if(stimuli.info.correctKey && allowedKeys[pressedKey]!=stimuli.info.correctKey){
+            correctResponse=false;
+        }
+        if(correctResponse && stimuli.info.correctResponse){
+            for(i=0;i<stimuli.info.correctResponse.length;i++){
+                if(!isNaN(parseFloat(responses[i])) && !eval(responses[i]+stimuli.info.correctResponse[i]) || isNaN(parseFloat(responses[i])) && responses[i]!=stimuli.info.correctResponse[i]){
+                    correctResponse=false;
+                    break;
+                }
+            }
+        }
+        if(correctResponse){
             $("#feedback-container .cell .stimulus-img").replaceWith("<div class='stimulus-img correct'>CORRECT</div>");
         }else{
             $("#feedback-container .cell .stimulus-img").replaceWith("<div class='stimulus-img incorrect'>INCORRECT</div>");
@@ -667,6 +680,7 @@ function saveTrial(responses){
             playPause:playPause,
             pressedKey:pressedKeyName,
             scrolling:scrolling,
+            correctResponse:correctResponse,
             });
         //console.log(arr);
         currentSlice=0;
