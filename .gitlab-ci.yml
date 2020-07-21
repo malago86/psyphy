@@ -5,7 +5,7 @@ deploy:
       stage: deploy
       script:
         - apt-get update -qq && apt-get install -y -qq lftp
-        - lftp sftp://$USERNAME:$PASS@$HOST -e 'set sftp:auto-confirm yes;set ssl:verify-certificate no;mirror -Rv ./ $DIRECTORY --ignore-time --parallel=10 --exclude-glob .git* --exclude .git/; CHMOD 0775 $DIRECTORY/experiment; CHMOD 0775 $DIRECTORY/results; exit;'
+        - lftp sftp://$USERNAME:$PASS@$HOST -e 'set sftp:auto-confirm yes;set ssl:verify-certificate no;mirror -Rv ./ $DIRECTORY --ignore-time --parallel=10 --exclude-glob .git* --exclude .git/; CHMOD 775 "$DIRECTORY/experiment"; CHMOD 775 "$DIRECTORY/results"; exit;'
         - echo "deployment complete"
       only:
         - master
