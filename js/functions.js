@@ -349,7 +349,6 @@ function showResponse(ratings, trialNumber){
     responding=true;
     $("#trial-container").hide();
     $("#confidence-scale").text("");
-
     if(stimuli.info.customResponse){
         if(!Array.isArray(stimuli.info.customResponse))
             stimuli.info.customResponse=Array(stimuli.info.customResponse);
@@ -626,6 +625,16 @@ function saveTrial(responses){
         $("#feedback-container").css("display","table");
         showingFeedback=true;
         savedResponses=responses;
+        return false;
+    }else if(!showingFeedback && stimuli.info.correctKey){
+        if(allowedKeys[pressedKey]==stimuli.info.correctKey){
+            $("#feedback-container .cell .stimulus-img").replaceWith("<div class='stimulus-img correct'>CORRECT</div>");
+        }else{
+            $("#feedback-container .cell .stimulus-img").replaceWith("<div class='stimulus-img incorrect'>INCORRECT</div>");
+        }
+        $("#feedback-container").css("display","table");
+        showingFeedback=true;
+
         return false;
     }
     

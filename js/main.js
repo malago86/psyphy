@@ -468,22 +468,23 @@ $( document ).ready(function() {
                 saveTrial(responses);
                 responding=false;
             }else if(running){
+                if(preparation){
+                    preparation=false;
+                    stimulusOn=Date.now();
+                    $("#trial-container .text").hide();
+                    $("#stimulus-container").show();
+                    window.scrollTo(0, 0);
+                    if($("#stimulus .stimulus-img").is("video")){
+                        //console.log("restart");
+                        $("#stimulus .stimulus-img")[0].currentTime=0;
+                        $("#stimulus .stimulus-img").trigger('play');
+                    }
+                    return;
+                }
                 pressedKey=allowedKeys.indexOf(event.code);
                 //console.log(pressedKey,allowedKeys,event.code);
                 if(pressedKey > -1){ //spacebar
-                    if(preparation){
-                        preparation=false;
-                        stimulusOn=Date.now();
-                        $("#trial-container .text").hide();
-                        $("#stimulus-container").show();
-                        window.scrollTo(0, 0);
-                        if($("#stimulus .stimulus-img").is("video")){
-                            //console.log("restart");
-                            $("#stimulus .stimulus-img")[0].currentTime=0;
-                            $("#stimulus .stimulus-img").trigger('play');
-                        }
-                        return;
-                    }else if(!arr.config.options.multiple.startsWith("MAFC")){
+                    if(!arr.config.options.multiple.startsWith("MAFC")){
                         if($("#stimulus .stimulus-img").is("video")){
                             $("#stimulus .stimulus-img").trigger('pause');
                         }

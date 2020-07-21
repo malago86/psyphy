@@ -225,6 +225,17 @@ input[type="button"].disabled{
     width: 100%;
 }
 
+#feedback-container .cell .correct{
+    font-size: 200%;
+    margin: 10%;
+    color: lime;
+}
+#feedback-container .cell .incorrect{
+    font-size: 200%;
+    margin: 10%;
+    color: #ff8080;
+}
+
 #stimulus .stimulus-img{
     float:left;
     margin:10px;
