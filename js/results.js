@@ -14,7 +14,7 @@ function loadParticipantCloud(p,experimentid,password){
             num=$(".results li").length-$(".results li .loading").length;
             progress=0;
             name=p.split('-').slice(0, -1).join('-');
-            elem="<div class='name'><i class='fas fa-user'></i><br> #"+(num)+"</div>"+name+" <div class='date'>"+parseInt(100*data.progress)+"%</div>";
+            elem="<div class='name'><i class='fas fa-user'></i><br> #"+(num+1)+"</div>"+name+" <div class='date'>"+parseInt(100*data.progress)+"%</div>";
             $(".results #loading-"+num).replaceWith(elem);
         },
         error: function(data){
