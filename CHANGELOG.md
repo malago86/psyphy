@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
  
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
-Ver## [1.9.0] - 2020-07-23
+## [1.9.0] - 2020-07-23
 - Results backend has been completely rewritten
 - Added more security measures
 - Revamped Results page to speed up loading time
