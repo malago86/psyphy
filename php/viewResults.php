@@ -261,11 +261,11 @@ function calculate_time_span($seconds)
 <link rel="stylesheet" type="text/css" href="/css/style.css">
 <link rel="icon" href="favicon.ico" type="image/x-icon" />
 <link href="/css/fontawesome.css" rel="stylesheet"> 
-<? if($password){ ?>
+<?php if($password){ ?>
     <script>
     $( document ).ready(function() {
         var participants=[
-    <?
+    <?php
         foreach($participants as $p){
             echo ("'".$p."',");
         }
@@ -277,7 +277,7 @@ function calculate_time_span($seconds)
         }
     });
     </script>
-<? } ?>
+<?php } ?>
 </head>
 <body>
     <div id="trial-container"></div>
