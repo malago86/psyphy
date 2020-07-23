@@ -273,7 +273,7 @@ function calculate_time_span($seconds)
         ];
 
         for(i=0;i<participants.length;i++){
-            loadParticipantCloud(participants[i],<? echo("'".$experiment_id."'"); ?>,<? echo("'".$_POST['password']."'"); ?>);
+            loadParticipantCloud(participants[i],<?php echo("'".$experiment_id."'"); ?>,<?php echo("'".$_POST['password']."'"); ?>);
         }
     });
     </script>
