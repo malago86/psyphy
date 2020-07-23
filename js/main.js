@@ -1,5 +1,5 @@
 
-var version="1.8.0"; 
+var version="1.9.0"; 
 
 var md = new MobileDetect(window.navigator.userAgent);
 
@@ -186,9 +186,10 @@ $( document ).ready(function() {
         name=name+"-"+(new Date().getTime());
         
         resuming=false;
-        if(arr.data.length>0){
+        if(arr.continueFrom>0){
             resuming=true;
             name=arr.name;
+            trialID=trialSequence[arr.continueFrom];
         }
 
         arr={config: {
@@ -208,6 +209,7 @@ $( document ).ready(function() {
                 options:arr.config.options,
                 version:version,
             },
+            continueFrom:0,
             startTime:Date.now(),
             data:[]
         };
@@ -231,9 +233,9 @@ $( document ).ready(function() {
                     beginExperiment(true);
                 },
                 error: function(data){
-                    //console.log("ERROR");
-                    //console.log(data);
-                    beginExperiment(false);
+                    console.log("ERROR");
+                    console.log(data["responseText"]);
+                    //beginExperiment(false);
                 }
             });
         }else{
@@ -488,7 +490,8 @@ $( document ).ready(function() {
                         if($("#stimulus .stimulus-img").is("video")){
                             $("#stimulus .stimulus-img").trigger('pause');
                         }
-                        showResponse(arr.config.options.ratings,arr.data.length+1);
+                        if(arr.config.options.timeout<=0)
+                            showResponse(arr.config.options.ratings,arr.continueFrom+1);
                     }
                 }else if(event.key=="Enter"){
                     if($("#stimulus .stimulus-img").is("video")){
@@ -519,7 +522,7 @@ $( document ).ready(function() {
         et=$(event.target);
         if(arr.config.options.multiple.startsWith("MAFC")){
             marks.push(parseInt(et.attr("numImg")));
-            showResponse(arr.config.options.ratings,arr.data.length+1);
+            showResponse(arr.config.options.ratings,arr.continueFrom+1);
         }else if(arr.config.options.mark.localeCompare("true")==0){
             //console.log(et,"double");
             if(et.is("circle") || et.is("svg")) {
@@ -693,7 +696,7 @@ $( document ).ready(function() {
             },
             error: function(data){
                 //console.log("ERROR");
-                console.log(data);
+                //console.log(data);
             }
         });
 

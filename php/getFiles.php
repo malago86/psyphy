@@ -8,6 +8,7 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
+require_once("functions.php");
 
 if(file_exists("../vendor/autoload.php"))
     require_once("../vendor/autoload.php");
@@ -42,7 +43,7 @@ $client->addScope('https://www.googleapis.com/auth/drive.readonly');
 $service = new Google_Service_Drive($client);
 
 if(isset($_GET['drive-folder-id'])){
-    $driveFolderId=$_GET['drive-folder-id'];
+    $driveFolderId=sanitize_participant($_GET['drive-folder-id']);
     $driveFolderId=explode("/",$driveFolderId);
     $driveFolderId=end($driveFolderId);
     $optParams = array(
@@ -69,7 +70,7 @@ if(isset($_GET['drive-folder-id'])){
 
     echo json_encode($result);
 }elseif(isset($_GET['drive-file-id'])){
-    $driveFolderId=$_GET['drive-file-id'];
+    $driveFolderId=sanitize_participant($_GET['drive-file-id']);
     $driveFolderId=explode("/",$driveFolderId);
     $driveFolderId=end($driveFolderId);
     $optParams = array(

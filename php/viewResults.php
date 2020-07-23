@@ -6,6 +6,8 @@ error_reporting(E_ALL);
 if(file_exists("../vendor/autoload.php"))
     require_once("../vendor/autoload.php");
 
+require_once("functions.php");
+
 use Kreait\Firebase\Factory;
 use Kreait\Firebase\ServiceAccount;
     
@@ -62,13 +64,12 @@ function calculate_time_span($seconds)
 	 else $time = ($year==1)? $year." year":$year." years";
 	return $time." ago"; 
 }  
-
-
     if(isset($_GET['experiment-id'])){
         if(strpos($_GET['experiment-id'],".") !== false){
             exit();
         }
-        $folder="results/".$_GET['experiment-id'];
+        $experiment_id=sanitize_id($_GET['experiment-id']);
+        $folder="results/".$experiment_id;
 
         if(!is_dir("../".$folder))
             mkdir("../".$folder);
@@ -111,6 +112,28 @@ function calculate_time_span($seconds)
 
         }
 
+        if(isset($_POST['download'])){
+            $participant=sanitize_participant($_POST['download']);
+            if (!file_exists("../".$folder."/".$participant)) 
+                mkdir("../".$folder."/".$participant);
+            
+
+            $objects = $defaultBucket->objects([
+                'prefix' => $folder."/".$participant,
+            ]);
+            foreach ($objects as $object) {
+                $object->downloadToFile("../".$object->name());
+            }
+
+            $json=json_decode(file_get_contents("../".$folder."/".$participant."/".$participant.".pso"));
+
+            $ret=array("progress"=>$json->continueFrom/count($json->sortIndexes));
+
+            header("HTTP/1.1 200 OK");
+            echo(json_encode($ret));
+            exit();
+        }
+
         try{
             $defaultBucket->object($folder."/title.txt")->downloadToFile("../".$folder."/title.txt");
         }catch(Exception $e) {
@@ -122,37 +145,24 @@ function calculate_time_span($seconds)
         }
         
 
-        /*$files = array();
-        $filemtimes=array();
-        foreach (glob($folder."/*.pso") as $file) {
-            $files[] = $file;
-        }*/
-
         $objects = $defaultBucket->objects([
             'prefix' => $folder,
         ]);
-        $files=array();
+        $participants=array();
         foreach ($objects as $object) {
-            //echo $object->name()." | " . PHP_EOL;
-            $object->downloadToFile("../".$object->name());
-            array_push($files,"../".$object->name());
+            $path=explode("/",$object->name());
+            if(count($path)==4){
+                if(!in_array($path[2],$participants))
+                    array_push($participants,$path[2]);
+            }
         }
 
-        $files = glob("../".$folder."/*.pso");
-            array_multisort(
-                array_map( 'filemtime', $files ),
-                SORT_NUMERIC,
-                SORT_ASC,
-                $files
-            );
-
         if(isset($_GET['zip'])){
-            $filename="../".$folder.'/'.$_GET['experiment-id'].'.zip';
+            $filename="../".$folder.'/'.$experiment_id.'.zip';
             array_map('unlink', glob("../".$folder."/*.zip"));
-            //echo('cd '.$folder.'; zip -q '.$_GET['experiment-id'].'.zip *.pso');
 
             if(isset($_POST['JSON'])){
-                exec('cd "../'.$folder.'"; zip -q '.$_GET['experiment-id'].'.zip *.pso');
+                exec('cd "../'.$folder.'"; zip -qR '.$experiment_id.'.zip *.pso');
                 //echo('tar zcf '.$filename.' '.$folder.'/*.pso');
             
                 if (file_exists($filename)) {
@@ -167,40 +177,58 @@ function calculate_time_span($seconds)
             
                 }
             }elseif(isset($_POST['CSV'])){
-                array_map('unlink', glob("../".$folder."/*.csv"));
-                foreach($files as $f){
-                    $participant=json_decode(file_get_contents($f));
+                
+                foreach($participants as $p){
+                    
+                    array_map('unlink', glob("../".$folder."/".$p."/*.csv"));
+                    $trials=glob("../".$folder."/".$p."/trial*.pso");
+                    if(count($trials)==0)
+                        continue;
+                    $trials_json=array();
+                    foreach ($trials as $t) {
+                        $r=json_decode(file_get_contents($t));
+                        array_push($trials_json,$r[0]);
+                    }
                     //var_dump($participant->data);
-                    $vars=$participant->data;
-                    if(count($vars)){
-                        $keys=array_keys((array)$vars[0]);
+                    
+                    
+                    if(count($trials_json)){
+                        
+                        $keys=array_keys((array)$trials_json[0]);
                         $keysCSV="";
                         foreach($keys as $key){
-                            if(!is_object($vars[0]->$key)){
+                            if(!is_object($trials_json[0]->$key)){
                                 $keysCSV=$keysCSV.$key.",";
                             }
                         }
+                        
                         $keysCSV=substr($keysCSV, 0, -1);
                         $valuesCSV="";
-                        foreach($vars as $trial){
+
+                        
+                        
+                        foreach($trials_json as $trial){
                             foreach($keys as $key){
                                 if(!is_object($trial->$key)){
                                     if(is_array($trial->$key))
                                         $k=recursive_implode($trial->$key,";");
                                     else
                                         $k=$trial->$key;
-                                    $valuesCSV=$valuesCSV.$k.",";
+                                    if(strlen($k)<32768)
+                                        $valuesCSV=$valuesCSV.$k.",";
+                                    else
+                                    $valuesCSV=$valuesCSV."TOO LONG! DOWNLOAD JSON TO ANALYZE THIS FIELD,";
                                 }
                             }
                             $valuesCSV=substr($valuesCSV, 0, -1)."\n";
                         }
                         //echo $keysCSV."\n".$valuesCSV;
-                        file_put_contents("../".$folder."/".$participant->name.".csv",$keysCSV."\n".$valuesCSV);
+                        file_put_contents("../".$folder."/".$p.".csv",$keysCSV."\n".$valuesCSV);
                     }
                     
                 }
 
-                exec('cd "../'.$folder.'"; zip -q '.$_GET['experiment-id'].'.zip *.csv');
+                exec('cd "../'.$folder.'"; zip -q '.$experiment_id.'.zip *.csv');
                 //echo('tar zcf '.$filename.' '.$folder.'/*.pso');
             
                 if (file_exists($filename)) {
@@ -228,10 +256,28 @@ function calculate_time_span($seconds)
 <script src="/js/jquery.key.js"></script>
 <script src="/js/functions.js"></script>
 <script src="/js/main.js"></script>
+<script src="/js/results.js"></script>
 <script src="/js/google_drive.js"></script>
 <link rel="stylesheet" type="text/css" href="/css/style.css">
 <link rel="icon" href="favicon.ico" type="image/x-icon" />
 <link href="/css/fontawesome.css" rel="stylesheet"> 
+<? if($password){ ?>
+    <script>
+    $( document ).ready(function() {
+        var participants=[
+    <?
+        foreach($participants as $p){
+            echo ("'".$p."',");
+        }
+    ?>
+        ];
+
+        for(i=0;i<participants.length;i++){
+            loadParticipantCloud(participants[i],<? echo("'".$experiment_id."'"); ?>,<? echo("'".$_POST['password']."'"); ?>);
+        }
+    });
+    </script>
+<? } ?>
 </head>
 <body>
     <div id="trial-container"></div>
@@ -254,8 +300,8 @@ function calculate_time_span($seconds)
         <p>You will need to <strong>create a password</strong> to download the data.</p>
         <form class="form-box" method="POST" style="width:33%">
             <i class="fas fa-key" style="position: absolute; top: 20px; left: 20px;"></i> 
-            <?php if($password) echo '<input id="old-password" type="password" name="old-password" placeholder="old password" /><br>'; ?>            
-            <input id="password" type="password" name="password" placeholder="new password"/>
+            <?php if($password) echo '<input id="old-password" type="password" name="old-password" placeholder="old password" />'; ?><br>     
+            <input id="password" type="password" name="password" placeholder="new password"/><br>
             <input type="submit" class='download-results' id="create-password" value="set password">
         </form>
         <hr>
@@ -263,28 +309,32 @@ function calculate_time_span($seconds)
 
 echo("<h1>Participants in experiment <strong>".$title."</strong></h1>");
 
-        echo("<ul class='results'>");
-        $i=1;
-        foreach($files as $f){
-            $participant=json_decode(file_get_contents($f));
-            //print_r($participant);
-            //$f=end(explode("/",$f));
-            if(!property_exists($participant,"stopTime"))
-                $stopTime="unfinished";
-            else
-                $stopTime=calculate_time_span(date("U")-intval($participant->stopTime)/1000);
-            echo("<li><div class='name'><i class='fas fa-user'></i><br> #".$i."</div> <div class='date'>".$stopTime."</div></li>");
-            $i++;
-        }
-        echo("</ul><br><br>");
         if(!$password){
             echo "<h2 class='error'><i class='fas fa-lock'></i> Set a password to download your data <i class='fas fa-lock'></i></h2>";
-        }elseif(count($files)>0){ ?>
-            <form class="form-box" method="POST" action=<?php echo "../".$_GET['experiment-id'].".zip" ?> style="width:33%">   
+        }elseif(count($participants)>0){ 
+            echo("<ul class='results'>");
+            $i=1;
+            foreach($participants as $f){
+                /*$participant=json_decode(file_get_contents("../".$folder."/".$f."/".$f.".pso"));
+                //$f=end(explode("/",$f));
+                if(!property_exists($participant,"stopTime"))
+                    $stopTime=intval(100*intval($participant->continueFrom)/intval(count($participant->sortIndexes)))."%";
+                else
+                    $stopTime=calculate_time_span(date("U")-intval($participant->stopTime)/1000);
+                $name=sanitize_participant($participant->name);
+
+                $name=substr($name,0,strrpos($name,"-") );
+                echo("<li><div class='name'><i class='fas fa-user'></i><br> #".$i."</div>".$name." <div class='date'>".$stopTime."</div></li>");
+                */
+                //echo("<li>P".$i."</li>");
+                $i++;
+            }
+            echo("</ul>"); ?>
+            <form class="form-box" method="POST" action=<?php echo "../".$experiment_id.".zip" ?> style="width:33%">   
                 <i class="fas fa-download" style="position: absolute; top: 20px; left: 20px"></i> 
                 <input id="password" type="password" name="password" placeholder="repeat password"/>
-                Download results: <input type="submit" class='download-results json' value="JSON" name="JSON" >
-                <input type="submit" class='download-results csv' value="CSV" name="CSV">
+                <div>Download results: <input type="submit" class='download-results json' value="JSON" name="JSON" >
+                <input type="submit" class='download-results csv' value="CSV" name="CSV"></div>
             </form>
         <?php } ?>
         </div>

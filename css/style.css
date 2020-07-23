@@ -626,11 +626,16 @@ input[type="file"] {
     border: 1px solid rgb(229, 72, 35);
     padding:5px;
     float:left;
-    margin:10px;
+    margin:5px;
+    height: 100px;
+    width: 100px;
+    overflow: hidden;
 }
 
 #form-data ul{
     list-style: none;
+    display:inline-block;
+    margin: 0;
 }
 .download-results{
     clear:both;

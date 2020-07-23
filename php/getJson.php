@@ -4,6 +4,7 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
+require_once("functions.php");
 
 if(file_exists("../vendor/autoload.php"))
     require_once("../vendor/autoload.php");
@@ -38,7 +39,7 @@ $client->addScope('https://www.googleapis.com/auth/drive.readonly');
 $service = new Google_Service_Drive($client);
 
 if(isset($_GET['id'])){
-    $fileId=$_GET['id'];
+    $fileId=sanitize_participant($_GET['id']);
 
     $file=$service->files->get($fileId, array('alt' => 'media'));
     /*$results = $service->files->get($fileId, array("alt" => "media"));

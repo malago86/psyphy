@@ -4,6 +4,8 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
+require_once("functions.php");
+
 if(file_exists("../vendor/autoload.php"))
     require_once("../vendor/autoload.php");
 elseif(file_exists("google-api-php-client-2.4.1/vendor/autoload.php"))
@@ -55,7 +57,7 @@ if(isset($_GET['client-id'])){
     var_dump($service);
 }
 if(isset($_GET['file-id'])){
-    $fileId=$_GET['file-id'];
+    $fileId=sanitize_participant($_GET['file-id']);
 
     $file=$service->files->get($fileId, array('alt' => 'media'));
     /*$results = $service->files->get($fileId, array("alt" => "media"));

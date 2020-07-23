@@ -20,7 +20,7 @@ function moveLoadingBar(loaded, max){
                 showResponse,
                 arr.config.options.timeout,
                 arr.config.options.ratings,
-                arr.data.length+1
+                arr.continueFrom+1
                 );
         }
         running=true; loading=false;
@@ -125,7 +125,7 @@ function load_stimuli_drive(list,info,feedback){
                         showResponse,
                         arr.config.options.timeout,
                         arr.config.options.ratings,
-                        arr.data.length+1
+                        arr.continueFrom+1
                         );
                 }
                 running=true; loading=false;
@@ -409,7 +409,10 @@ function showResponse(ratings, trialNumber){
         if(arr.config.options.ratings==1){
             //calibrated=false;
             responding=false;
-            saveTrial(-1);
+            if(arr.data.length>0)
+                saveTrial(-1);
+            else
+                nextTrial(currentSlice,numSlices);
             return;
         }
 
@@ -537,6 +540,47 @@ function cancelPopup(animCalibration){
     clearInterval(animCalibration);
 }
 
+function uploadTrial(){
+    results={results:JSON.stringify(arr)};
+    //delete results.results.config;
+    //console.log(arr);
+    $.ajax({
+        type: "POST",
+        url: "/php/upload.php",
+        data: results,
+        success: function(data){
+            //console.log("SUCCESS");
+            //console.log(data);
+        },
+        error: function(data){
+            //console.log("ERROR");
+            //console.log(data);
+            //console.log(data);
+        }
+    });
+    arr.data=[];
+}
+
+function uploadParticipant(){
+    participant={participant:JSON.stringify(arr)};
+    //delete participant.participant.data;
+    //console.log(participant);
+    $.ajax({
+        type: "POST",
+        url: "/php/upload.php",
+        data: participant,
+        success: function(data){
+            //console.log("SUCCESSP");
+            //console.log(data);
+        },
+        error: function(data){
+            //console.log("ERRORP");
+            //console.log(data);
+            //console.log(data);
+        }
+    });
+}
+
 function resetExperiment(running, calibrating, animCalibration){
     if (running || loading){
         if(timeout!=false)
@@ -552,23 +596,7 @@ function resetExperiment(running, calibrating, animCalibration){
         $(".error").html("<i class='fas fa-exclamation-circle'></i> Please keep fullscreen mode and do not leave the browser, experiment has been reset!");
         $(".error").show();
 
-        results={results:JSON.stringify(arr)};
-        
-        $.ajax({
-            type: "POST",
-            url: "/php/upload.php",
-            data: results,
-            dataType: "json",
-            success: function(data){
-                //console.log("SUCCESS");
-                //console.log(data["responseText"]);
-            },
-            error: function(data){
-                //console.log("ERROR");
-                //console.log(data["responseText"]);
-                //console.log(data);
-            }
-        });
+        //uploadTrial();        
     }
     if(calibrating){
         cancelPopup(animCalibration);
@@ -670,21 +698,22 @@ function saveTrial(responses){
             pressedKeyName=allowedKeys[pressedKey];
         
         arr.data.push({
-            trialID:arr.trialSequence[arr.data.length],
+            trialID:arr.trialSequence[arr.continueFrom],
             responses:responses,
             info:stimuli.info,
             stimulusOn:stimulusOn,
             stimulusOff:stimulusOff,
-            condition:arr.conditionSequence[arr.data.length],
+            condition:arr.conditionSequence[arr.continueFrom],
             marks:marks,
             playPause:playPause,
             pressedKey:pressedKeyName,
             scrolling:scrolling,
             correctResponse:correctResponse,
             });
+        arr.continueFrom=arr.continueFrom+1;
         //console.log(arr);
         currentSlice=0;
-        if(arr.data.length==arr.config.maxTrials){
+        if(arr.continueFrom==arr.config.maxTrials){
             //finish
             arr.stopTime=Date.now();
             running=false;
@@ -692,7 +721,7 @@ function saveTrial(responses){
             $("#finished-container").show();
             finishExperiment(arr);
         }else{
-            trialID=arr.trialSequence[arr.data.length];
+            trialID=arr.trialSequence[arr.continueFrom];
             marks=[];
             $(".mark").remove();
             //console.log(trialSequence);
@@ -704,23 +733,23 @@ function saveTrial(responses){
                 stimuli=load_stimuli(stimuli_name);
             }else{
                 /*if(gapi.client.getToken()!=null){
-                    if(arr.trialSequence[arr.sortIndexes[arr.data.length]] in arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.feedbackFiles){
-                        stimuli=load_stimuli_drive_js(arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.stimulusFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]],
-                            arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.infoFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]],
-                            arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.feedbackFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]]);
+                    if(arr.trialSequence[arr.sortIndexes[arr.continueFrom]] in arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.feedbackFiles){
+                        stimuli=load_stimuli_drive_js(arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.stimulusFiles[arr.trialSequence[arr.sortIndexes[arr.continueFrom]]],
+                            arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.infoFiles[arr.trialSequence[arr.sortIndexes[arr.continueFrom]]],
+                            arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.feedbackFiles[arr.trialSequence[arr.sortIndexes[arr.continueFrom]]]);
                     }else{
-                        stimuli=load_stimuli_drive_js(arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.stimulusFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]],
-                            arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.infoFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]],
+                        stimuli=load_stimuli_drive_js(arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.stimulusFiles[arr.trialSequence[arr.sortIndexes[arr.continueFrom]]],
+                            arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.infoFiles[arr.trialSequence[arr.sortIndexes[arr.continueFrom]]],
                             null);
                     }
                 }else{*/
-                    if(arr.trialSequence[arr.sortIndexes[arr.data.length]] in arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.feedbackFiles){
-                        stimuli=load_stimuli_drive(arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.stimulusFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]],
-                            arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.infoFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]],
-                            arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.feedbackFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]]);
+                    if(arr.trialSequence[arr.sortIndexes[arr.continueFrom]] in arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.feedbackFiles){
+                        stimuli=load_stimuli_drive(arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.stimulusFiles[arr.trialSequence[arr.sortIndexes[arr.continueFrom]]],
+                            arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.infoFiles[arr.trialSequence[arr.sortIndexes[arr.continueFrom]]],
+                            arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.feedbackFiles[arr.trialSequence[arr.sortIndexes[arr.continueFrom]]]);
                     }else{
-                        stimuli=load_stimuli_drive(arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.stimulusFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]],
-                            arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.infoFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]],
+                        stimuli=load_stimuli_drive(arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.stimulusFiles[arr.trialSequence[arr.sortIndexes[arr.continueFrom]]],
+                            arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.infoFiles[arr.trialSequence[arr.sortIndexes[arr.continueFrom]]],
                             null);
                     }
                 //}
@@ -736,7 +765,8 @@ function saveTrial(responses){
 }
 
 function nextTrial(currentSlice, numSlices){
-    
+    if(arr.data.length>0)
+        uploadTrial();
     if(!calibrated && !cheatCode){
         calibrating=true;
         document.documentElement.requestFullscreen();
@@ -753,7 +783,7 @@ function nextTrial(currentSlice, numSlices){
     }
     $("#stimulus-slice").text("Slice: "+(currentSlice+1));
     $("#stimulus-scroll-position").css("height",100*(currentSlice+1)/numSlices+"%");
-    $("#trial-number").text("Trial: "+(arr.data.length+1));
+    $("#trial-number").text("Trial: "+(arr.continueFrom+1));
 }
 
 function validURL(str) {
@@ -826,6 +856,7 @@ function loadExperimentData(data){
         allowedKeys=arr.config.options.keys.split(',');
     else
         allowedKeys=["Space"];
+
 }
 
 function beginExperiment(resuming){
@@ -891,33 +922,33 @@ function beginExperiment(resuming){
         arr.trialSequence=trialSequence;
         arr.conditionSequence=conditionSequence;
         arr.config.maxTrials=sortIndexes.length;
-
+        uploadParticipant();
     }
 
-    trialID=arr.trialSequence[arr.data.length];
+    trialID=arr.trialSequence[arr.continueFrom];
 
-    if(!arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.feedbackFiles){
-        arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.feedbackFiles=[];
+    if(!arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.feedbackFiles){
+        arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.feedbackFiles=[];
     }
 
     /*if(gapi.client.getToken()!=null){
-        if(arr.trialSequence[arr.sortIndexes[arr.data.length]] in arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.feedbackFiles){
-            stimuli=load_stimuli_drive_js(arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.stimulusFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]],
-                arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.infoFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]],
-                arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.feedbackFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]]);
+        if(arr.trialSequence[arr.sortIndexes[arr.continueFrom]] in arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.feedbackFiles){
+            stimuli=load_stimuli_drive_js(arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.stimulusFiles[arr.trialSequence[arr.sortIndexes[arr.continueFrom]]],
+                arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.infoFiles[arr.trialSequence[arr.sortIndexes[arr.continueFrom]]],
+                arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.feedbackFiles[arr.trialSequence[arr.sortIndexes[arr.continueFrom]]]);
         }else{
-            stimuli=load_stimuli_drive_js(arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.stimulusFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]],
-                arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.infoFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]],
+            stimuli=load_stimuli_drive_js(arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.stimulusFiles[arr.trialSequence[arr.sortIndexes[arr.continueFrom]]],
+                arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.infoFiles[arr.trialSequence[arr.sortIndexes[arr.continueFrom]]],
                 null);
         }
     }else{*/
-        if(arr.trialSequence[arr.sortIndexes[arr.data.length]] in arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.feedbackFiles){
-            stimuli=load_stimuli_drive(arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.stimulusFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]],
-                arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.infoFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]],
-                arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.feedbackFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]]);
+        if(arr.trialSequence[arr.sortIndexes[arr.continueFrom]] in arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.feedbackFiles){
+            stimuli=load_stimuli_drive(arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.stimulusFiles[arr.trialSequence[arr.sortIndexes[arr.continueFrom]]],
+                arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.infoFiles[arr.trialSequence[arr.sortIndexes[arr.continueFrom]]],
+                arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.feedbackFiles[arr.trialSequence[arr.sortIndexes[arr.continueFrom]]]);
         }else{
-            stimuli=load_stimuli_drive(arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.stimulusFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]],
-                arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.data.length]]].stimuli.infoFiles[arr.trialSequence[arr.sortIndexes[arr.data.length]]],
+            stimuli=load_stimuli_drive(arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.stimulusFiles[arr.trialSequence[arr.sortIndexes[arr.continueFrom]]],
+                arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.infoFiles[arr.trialSequence[arr.sortIndexes[arr.continueFrom]]],
                 null);
         }
     //}

@@ -2,8 +2,16 @@
 All notable changes to this project will be documented in this file.
  
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
+Ver## [1.9.0] - 2020-07-23
+- Results backend has been completely rewritten
+- Added more security measures
+- Revamped Results page to speed up loading time
 
-## [1.8.0 - 2020-07-21]
+## [1.8.1] - 2020-07-22
+- Timeout trials will not terminate when pressing a key
+- Input fields are now sanitized
+
+## [1.8.0] - 2020-07-21
 - Added the option `correctKey` to give feedback
 - Added the option `correctResponse` to give feedback
 

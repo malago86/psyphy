@@ -3,6 +3,8 @@
 if(file_exists("../vendor/autoload.php"))
     require_once("../vendor/autoload.php");
 
+require_once("functions.php");
+
 use Kreait\Firebase\Factory;
 use Kreait\Firebase\ServiceAccount;
     
@@ -19,45 +21,40 @@ if(isset($_POST['experiment-id']) && isset($_POST['title']) && isset($_POST['exp
     //echo($_POST['experiment-id']);
     $jsondata = json_decode($_POST['experiment-data']);
     $title=substr($_POST['title'],0,100);
-    $id=substr($_POST['experiment-id'],0,100);
+    $id=sanitize_id($_POST['experiment-id'],0,100);
     if(strpos($id,".") == false){
         $result=Array("experiment-id"=>$id);
         if(!is_dir("../results/".$id))
             mkdir("../results/".$id);
-        file_put_contents("../results/".$id."/title.txt", $_POST['title']);
+        file_put_contents("../results/".$id."/title.txt", $title);
         file_put_contents("../experiment/".$id.".json", json_encode($jsondata));
 
-        $defaultBucket->upload(json_encode($jsondata),
-        [
-            'name' => "experiment/".$id.".json"
-        ]);
+        $object = $defaultBucket->object("experiment/".$id.".json");
+        if(!$object->exists()){ //we don't want to replace the file
+            $defaultBucket->upload(json_encode($jsondata),
+            [
+                'name' => "experiment/".$id.".json"
+            ]);
 
-        $defaultBucket->upload($_POST['title'],
-        [
-            'name' => "results/".$id."/title.txt"
-        ]);
-
+            $defaultBucket->upload($title,
+            [
+                'name' => "results/".$id."/title.txt"
+            ]);
+        }
         echo json_encode($result);
     }
 }elseif(isset($_POST['load-id']) && isset($_POST['participant-id'])){
-    $id=$_POST['load-id'];
+    $id=sanitize_id($_POST['load-id']);
+    $participant=sanitize_participant($_POST['participant-id']);
     if(strpos($id,".") == false){
-        $participant=$_POST['participant-id'];
-        $object=$defaultBucket->object("results/".$id."/".$participant.".pso");
-        if($object->exists()){
-            $object->downloadToFile("../results/".$id."/".$participant.".pso");
-            echo file_get_contents("../results/".$id."/".$participant.".pso");
-        }
+        $participant=($_POST['participant-id']);
+        echo getFileCloud("results/".$id."/".$participant."/".$participant.".pso",$defaultBucket);
     }
 }elseif(isset($_POST['load-id'])){
-    $id=$_POST['load-id'];
+    $id=sanitize_id($_POST['load-id']);
     if(strpos($id,".") == false){
         if(!is_dir("../results/".$id))
             mkdir("../results/".$id);
-        $object=$defaultBucket->object("experiment/".$id.".json");
-        if($object->exists()){
-            $object->downloadToFile("../experiment/".$id.".json");
-            echo file_get_contents("../experiment/".$id.".json");
-        }
+        echo getFileCloud("experiment/".$id.".json",$defaultBucket);
     }
 }
