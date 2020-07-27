@@ -335,10 +335,12 @@ input[type="button"].disabled{
 }
 
 .absent{
-    border: 2px solid red
+    /*border: 2px solid red*/
+    border: 2px solid greenyellow;
 }
 .absent:hover, .absent.selected{
-    background-color:rgb(160, 0, 0);;
+    /*background-color:rgb(160, 0, 0);*/
+    background-color:green
 }
 
 .question {

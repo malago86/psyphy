@@ -158,7 +158,7 @@ $defaultBucket = $storage->getBucket();
             array_map('unlink', glob("../".$folder."/*.zip"));
 
             if(isset($_POST['JSON'])){
-                exec('cd "../'.$folder.'"; zip -qR '.$experiment_id.'.zip *.pso');
+                exec('cd "../'.$folder.'"; zip -R -o -q '.$experiment_id.'.zip *.pso');
                 //echo('tar zcf '.$filename.' '.$folder.'/*.pso');
             
                 if (file_exists($filename)) {
