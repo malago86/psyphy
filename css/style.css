@@ -630,6 +630,18 @@ input[type="file"] {
     height: 100px;
     width: 100px;
     overflow: hidden;
+    position:relative;
+    display: grid;
+}
+
+.results .delete{
+    right: 5px;
+    position: absolute;
+}
+
+.results .delete:hover{
+    color:black;
+    cursor: pointer;
 }
 
 #form-data ul{
@@ -645,6 +657,10 @@ input[type="file"] {
     border: 3px solid rgb(229, 72, 35);
     margin:2px;
     padding:10px;
+}
+
+#download-form{
+    display:none;
 }
 
 hr{

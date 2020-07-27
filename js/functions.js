@@ -136,6 +136,7 @@ function load_stimuli_drive(list,info,feedback){
         stimuli.img[i].onerror = function(){
             //alert("Error loading stimuli, please reload the page and contact us");
             //throw new Error("Something went badly wrong!");
+            resetExperiment(1, calibrating, animCalibration,"There was an error loading the trial, please try again");
         }
         //stimuli.img[i].src = "https://drive.google.com/uc?export=view&id="+list[i].id;
         if(cheatCode){
@@ -227,7 +228,8 @@ function load_stimuli(name){
             }
 
             stimuli.img[i].onerror = function(){
-                alert("Error loading stimuli, please reload the page");
+                //alert("Error loading stimuli, please reload the page");
+                resetExperiment(1, calibrating, animCalibration,"There was an error loading the trial, please try again");
             }
             stimuli.img[i].src = name+"/noise_"+(i+1)+".jpg";   
             stimuli.img[i].setAttribute("class","stimulus-img");
@@ -457,10 +459,11 @@ function finishExperiment(arr){
             //console.log("ERROR");
             //console.log(data["responseText"]);
             //console.log(data);
+            resetExperiment(1, calibrating, animCalibration,"There was an error uploading your data, please try again");
         }
     });
 
-    var hiddenElement = document.createElement('a');
+    /*var hiddenElement = document.createElement('a');
 
     hiddenElement.href = 'data:attachment/text,' + JSON.stringify(arr);
     hiddenElement.target = '_blank';
@@ -470,7 +473,7 @@ function finishExperiment(arr){
 
     hiddenElement.text='You can also download your data here';
 
-    $("#download-data").html(hiddenElement);
+    $("#download-data").html(hiddenElement);*/
 }
 
 function getDisplayParameters(){
@@ -556,6 +559,7 @@ function uploadTrial(){
             //console.log("ERROR");
             //console.log(data);
             //console.log(data);
+            resetExperiment(1, calibrating, animCalibration,"There was an error uploading your data, please try again");
         }
     });
     arr.data=[];
@@ -577,11 +581,12 @@ function uploadParticipant(){
             //console.log("ERRORP");
             //console.log(data);
             //console.log(data);
+            resetExperiment(1, calibrating, animCalibration,"There was an error uploading your data, please try again");
         }
     });
 }
 
-function resetExperiment(running, calibrating, animCalibration){
+function resetExperiment(running, calibrating, animCalibration, text=""){
     if (running || loading){
         if(timeout!=false)
             clearTimeout(timeout);
@@ -593,7 +598,9 @@ function resetExperiment(running, calibrating, animCalibration){
         $("#form-container").show();
         //$("#name").val("");
         $("body").css("background-color","#39302a");
-        $(".error").html("<i class='fas fa-exclamation-circle'></i> Please keep fullscreen mode and do not leave the browser, experiment has been reset!");
+        if(text=="")
+            text = "Please keep fullscreen mode and do not leave the browser, experiment has been reset!";
+        $(".error").html("<i class='fas fa-exclamation-circle'></i> "+text);
         $(".error").show();
 
         //uploadTrial();        

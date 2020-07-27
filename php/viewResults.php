@@ -25,45 +25,7 @@ $defaultBucket = $storage->getBucket();
 [
     'name' => "uploaded_title.txt"
 ]);*/
-
-function recursive_implode(array $array, $glue = ',', $include_keys = false, $trim_all = true){
-	$glued_string = '';
-
-	// Recursively iterates array and adds key/value to glued string
-	array_walk_recursive($array, function($value, $key) use ($glue, $include_keys, &$glued_string)
-	{
-		$include_keys and $glued_string .= $key.$glue;
-		$glued_string .= $value.$glue;
-	});
-
-	// Removes last $glue from string
-	strlen($glue) > 0 and $glued_string = substr($glued_string, 0, -strlen($glue));
-
-	// Trim ALL whitespace
-	$trim_all and $glued_string = preg_replace("/(\s)/ixsm", '', $glued_string);
-
-	return (string) $glued_string;
-}
-
-
-function calculate_time_span($seconds)
-{  
-	$year = floor($seconds /31556926);
-	$months = floor($seconds /2629743);
-	$week=floor($seconds /604800);
-	$day = floor($seconds /86400); 
-	$hours = floor($seconds / 3600);
-	$mins = floor(($seconds - ($hours*3600)) / 60); 
-	$secs = floor($seconds % 60);
-	 if($seconds < 60) $time = $secs." seconds";
-	 else if($seconds < 3600 ) $time =($mins==1)?$mins." minute":$mins." minutes";
-	 else if($seconds < 86400) $time = ($hours==1)?$hours." hour":$hours." hours";
-	 else if($seconds < 604800) $time = ($day==1)?$day." day":$day." days";
-	 else if($seconds < 2629743) $time = ($week==1)?$week." week":$week." weeks";
-	 else if($seconds < 31556926) $time =($months==1)? $months." month":$months." months";
-	 else $time = ($year==1)? $year." year":$year." years";
-	return $time." ago"; 
-}  
+ 
     if(isset($_GET['experiment-id'])){
         if(strpos($_GET['experiment-id'],".") !== false){
             exit();
@@ -71,8 +33,7 @@ function calculate_time_span($seconds)
         $experiment_id=sanitize_id($_GET['experiment-id']);
         $folder="results/".$experiment_id;
 
-        if(!is_dir("../".$folder))
-            mkdir("../".$folder);
+        
 
         try{
             $defaultBucket->object($folder."/password.txt")->downloadToFile("../".$folder."/password.txt");
@@ -85,6 +46,10 @@ function calculate_time_span($seconds)
         }
         //echo($_POST['password']."-".password_hash($_POST['password'], PASSWORD_BCRYPT));
 
+
+        if(isset($_COOKIE['password']) && !isset($_POST['password'])){
+            $_POST['password']=$_COOKIE['password'];
+        }
 
         if($password){
             if(isset($_POST['old-password']) && password_verify($_POST['old-password'],$password)){
@@ -116,23 +81,53 @@ function calculate_time_span($seconds)
             $participant=sanitize_participant($_POST['download']);
             if (!file_exists("../".$folder."/".$participant)) 
                 mkdir("../".$folder."/".$participant);
-            
 
             $objects = $defaultBucket->objects([
                 'prefix' => $folder."/".$participant,
+                'orderBy' => 'name_natural',
             ]);
+            $allDates=array();
             foreach ($objects as $object) {
                 $object->downloadToFile("../".$object->name());
+                array_push($allDates,strtotime($object->info()["updated"]));
             }
+            $mostRecent=max($allDates);
+            $mostRecent=calculate_time_span(date("U")-$mostRecent);
 
             $json=json_decode(file_get_contents("../".$folder."/".$participant."/".$participant.".pso"));
 
-            $ret=array("progress"=>$json->continueFrom/count($json->sortIndexes));
+            $ret=array("progress"=>$json->continueFrom/count($json->sortIndexes),"mostRecent"=>$mostRecent);
+
+            header("HTTP/1.1 200 OK");
+            echo(json_encode($ret));
+            exit();
+        }else if(isset($_POST['delete'])){
+            $participant=sanitize_participant($_POST['delete']);
+
+            if (!file_exists("../".$folder."/".$participant)) {
+                $response=false;
+            }else{
+                $objects = $defaultBucket->objects([
+                    'prefix' => $folder."/".$participant,
+                    'orderBy' => 'name_natural',
+                ]);
+                foreach ($objects as $object) {
+                    //print_r("unlink ../".$object->name());
+                    unlink("../".$object->name());
+                    $object->delete();
+                }
+                rmdir("../".$folder."/".$participant);
+                $response=true;
+            }
+            $ret=array("response"=>$response);
 
             header("HTTP/1.1 200 OK");
             echo(json_encode($ret));
             exit();
         }
+
+        setcookie("password", $_POST['password'],0,'/');
+
 
         try{
             $defaultBucket->object($folder."/title.txt")->downloadToFile("../".$folder."/title.txt");
@@ -147,6 +142,7 @@ function calculate_time_span($seconds)
 
         $objects = $defaultBucket->objects([
             'prefix' => $folder,
+            'orderBy' => 'name_natural',
         ]);
         $participants=array();
         foreach ($objects as $object) {
@@ -177,10 +173,8 @@ function calculate_time_span($seconds)
             
                 }
             }elseif(isset($_POST['CSV'])){
-                
+                array_map('unlink', glob("../".$folder."/*.csv"));
                 foreach($participants as $p){
-                    
-                    array_map('unlink', glob("../".$folder."/".$p."/*.csv"));
                     $trials=glob("../".$folder."/".$p."/trial*.pso");
                     if(count($trials)==0)
                         continue;
@@ -238,6 +232,8 @@ function calculate_time_span($seconds)
                 
                     flush();
                     readfile($filename);
+                }else{
+                    echo "There is no data to download yet.";
                 }
             }
              exit();
@@ -256,12 +252,13 @@ function calculate_time_span($seconds)
 <script src="/js/jquery.key.js"></script>
 <script src="/js/functions.js"></script>
 <script src="/js/main.js"></script>
-<script src="/js/results.js"></script>
+
 <script src="/js/google_drive.js"></script>
 <link rel="stylesheet" type="text/css" href="/css/style.css">
 <link rel="icon" href="favicon.ico" type="image/x-icon" />
 <link href="/css/fontawesome.css" rel="stylesheet"> 
 <?php if($password){ ?>
+    <script src="/js/results.js"></script>
     <script>
     $( document ).ready(function() {
         var participants=[
@@ -273,15 +270,15 @@ function calculate_time_span($seconds)
         ];
 
         for(i=0;i<participants.length;i++){
-            loadParticipantCloud(participants[i],<?php echo("'".$experiment_id."'"); ?>,<?php echo("'".$_POST['password']."'"); ?>);
+            loadParticipantCloud(participants[i],<?php echo("'".$experiment_id."'"); ?>);
         }
     });
     </script>
 <?php } ?>
 </head>
 <body>
-    <div id="trial-container"></div>
     <div class="background">
+        <div id="trial-container"></div>
         <div id="form-data">
             <a href='../../'><img src="../../images/psyphy.png" class="logo" width="300"></a>
             <div class="credits">Developed by <a href="mailto:lago@psych.ucsb.edu">Miguel Lago</a><br>
@@ -289,12 +286,6 @@ function calculate_time_span($seconds)
                 <br>
                 version <a id="version" href="https://gitlab.com/malago/psyphy" target="_blank"></a>
             </div> 
-<?php
-
-
-        
-
-        ?>
         <p>Here, you will find a list of participants on your experiment.</p>
         <p>Download all data by clicking the button at the end, old participant data will be erased periodically so be sure to download your data.</p>
         <p>You will need to <strong>create a password</strong> to download the data.</p>
@@ -307,12 +298,12 @@ function calculate_time_span($seconds)
         <hr>
         <?php
 
-echo("<h1>Participants in experiment <strong>".$title."</strong></h1>");
+echo("<h1>Participants in experiment <strong><a href='/experiment/".$experiment_id."/'>".$title."</a></strong></h1>");
 
         if(!$password){
             echo "<h2 class='error'><i class='fas fa-lock'></i> Set a password to download your data <i class='fas fa-lock'></i></h2>";
         }elseif(count($participants)>0){ 
-            echo("<ul class='results'>");
+            echo("<ul class='results' id='".$experiment_id."'>");
             $i=1;
             foreach($participants as $f){
                 /*$participant=json_decode(file_get_contents("../".$folder."/".$f."/".$f.".pso"));
@@ -330,9 +321,9 @@ echo("<h1>Participants in experiment <strong>".$title."</strong></h1>");
                 $i++;
             }
             echo("</ul>"); ?>
-            <form class="form-box" method="POST" action=<?php echo "../".$experiment_id.".zip" ?> style="width:33%">   
+            <form class="form-box" method="POST" action=<?php echo "../".$experiment_id.".zip" ?> style="width:33%" id="download-form">   
                 <i class="fas fa-download" style="position: absolute; top: 20px; left: 20px"></i> 
-                <input id="password" type="password" name="password" placeholder="repeat password"/>
+                <input id="password-download" type="password" name="password" placeholder="repeat password"/>
                 <div>Download results: <input type="submit" class='download-results json' value="JSON" name="JSON" >
                 <input type="submit" class='download-results csv' value="CSV" name="CSV"></div>
             </form>

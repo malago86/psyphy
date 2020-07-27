@@ -1,5 +1,5 @@
 
-var version="1.9.0"; 
+var version="1.9.1"; 
 
 var md = new MobileDetect(window.navigator.userAgent);
 
@@ -90,8 +90,6 @@ $( document ).ready(function() {
     
     var presenceSequence=null;
     
-    
-    var degreesPerPixel=0.022;
     var monitorHeight,monitorWidth;
 
     var ccWidthCM=8.560;
@@ -195,7 +193,6 @@ $( document ).ready(function() {
         arr={config: {
                 maxTrials: maxTrials,
                 display:{
-                    degreesPerPixel:degreesPerPixel,
                     stimulusHeight:null,
                     stimulusWidth:null,
                     distance:[],
@@ -233,9 +230,10 @@ $( document ).ready(function() {
                     beginExperiment(true);
                 },
                 error: function(data){
-                    console.log("ERROR");
-                    console.log(data["responseText"]);
+                    //console.log("ERROR");
+                    //console.log(data["responseText"]);
                     //beginExperiment(false);
+                    resetExperiment(1, calibrating, animCalibration,"There was an error loading your data, please delete your data and try again");
                 }
             });
         }else{
@@ -695,6 +693,7 @@ $( document ).ready(function() {
                 Cookies.set('experiments', newCookie, { expires:365, sameSite: 'strict', path: "/"})
             },
             error: function(data){
+                resetExperiment(1, calibrating, animCalibration,"There was an error creating the experiment, please try again");
                 //console.log("ERROR");
                 //console.log(data);
             }
