@@ -566,6 +566,7 @@ function uploadTrial(){
 }
 
 function uploadParticipant(){
+    getDisplayParameters();
     participant={participant:JSON.stringify(arr)};
     //delete participant.participant.data;
     //console.log(participant);

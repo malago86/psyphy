@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 ## [1.9.1] - 2020-07-27
 - Added option to delete participants
 - Added some error handling when loading participant data and trials
-- Fix bug with downloading results
+- Fix bug with saving distance
 
 ## [1.9.0] - 2020-07-23
 - Results backend has been completely rewritten
