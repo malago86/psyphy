@@ -544,6 +544,7 @@ function cancelPopup(animCalibration){
 }
 
 function uploadTrial(){
+    getDisplayParameters();
     results={results:JSON.stringify(arr)};
     //delete results.results.config;
     //console.log(arr);
@@ -566,7 +567,6 @@ function uploadTrial(){
 }
 
 function uploadParticipant(){
-    getDisplayParameters();
     participant={participant:JSON.stringify(arr)};
     //delete participant.participant.data;
     //console.log(participant);
