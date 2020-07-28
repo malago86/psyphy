@@ -489,7 +489,7 @@ $( document ).ready(function() {
                         if($("#stimulus .stimulus-img").is("video")){
                             $("#stimulus .stimulus-img").trigger('pause');
                         }
-                        if(!arr.config.options.timeout || arr.config.options.timeout[currentSlice]<=0){
+                        if(!arr.config.options.timeout[currentSlice] || arr.config.options.timeout[currentSlice]<=0){
                             if(arr.config.options.multiple=="first"){
                                 if(numSlices-1==currentSlice){
                                     showResponse(arr.config.options.ratings,arr.continueFrom+1);
