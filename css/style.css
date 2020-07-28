@@ -650,6 +650,7 @@ input[type="file"] {
     list-style: none;
     display:inline-block;
     margin: 0;
+    padding: 0;
 }
 .download-results{
     clear:both;
@@ -659,6 +660,18 @@ input[type="file"] {
     border: 3px solid rgb(229, 72, 35);
     margin:2px;
     padding:10px;
+}
+
+#force-reload {
+    font-size: 200%;
+    width: fit-content;
+    margin: auto;
+    margin-bottom: 20px;
+}
+
+#force-reload:hover {
+    cursor: pointer;
+    color:rgb(229, 72, 35);
 }
 
 #download-form{

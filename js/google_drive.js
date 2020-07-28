@@ -12,7 +12,7 @@ $( document ).ready(function() {
     folder_ids=[];
     $.getJSON( "php/getFiles.php", { "drive-folder-id": $("#google-drive-url").val()} )
     .done(function( data ) {
-      //console.log(data.length,data);
+      console.log(data);
       var html="<h2>Select the folder for condition #1</h2><ul>";
       for(f=0;f<data.length;f++){
         html+="<li google-folder-id="+data[f].id+">"+data[f].name+"<span class='files-found'></span></li>";
@@ -21,6 +21,9 @@ $( document ).ready(function() {
       //console.log(html);
       selecting_folder=1;
       $("#google-drive-result").html(html);
+    })
+    .fail(function(data){
+      console.log(data);
     });
   });
   $('body').on('click', "#google-drive-result ul li",function(e) {

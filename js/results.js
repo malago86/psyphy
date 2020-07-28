@@ -2,9 +2,10 @@ $( document ).ready(function() {
     $('body').on('click', '.results .delete',function(e) {
         id=$(this).parent().attr('name');
         experimentid=$(".results").attr("id");
-        payload={"delete":id};
+        payload={"delete":id,"password":Cookies.get('password')};
         elem=$(this);
         elem.parent().parent().hide();
+        participants.splice(participants.indexOf(id), 1);
         $.ajax({
             type: "POST",
             data: payload,
@@ -12,19 +13,20 @@ $( document ).ready(function() {
             url: "/php/viewResults.php?experiment-id="+experimentid,
             success: function(data){
                 //console.log(data);
-                //console.log("SUCCESS",elem);
+                //console.log("SUCCESS",data);
                 elem.parent().parent().remove();
             },
             error: function(data){
                 //console.log("ERROR",data);
+                participants.push(id);
                 elem.parent().parent().show();
             }
         })
     });
 });
 
-function loadParticipantCloud(p){
-    payload={"download":p};
+function loadParticipantCloud(p,force=0){
+    payload={"download":p,"force":force,"password":Cookies.get('password')};
     experimentid=$(".results").attr("id");
     $.ajax({
         type: "POST",
@@ -32,24 +34,34 @@ function loadParticipantCloud(p){
         data: payload,
         dataType: "json",
         beforeSend: function(){
-            num=$(".results li").length;
-            elem="<li><div id='loading-"+num+"' class='loading name'><i class='fas fa-hourglass fa-spin'></i></div></li>";
+            if(force)
+                $("#force-reload").addClass("fa-spin");
+            num=$(".results li").length+1;
+            elem="<li><div num='"+num+"' class='loading name' name='"+p+"'><i class='fas fa-hourglass fa-spin'></i></div></li>";
             $(".results").append(elem);
+            $("#download-form").hide();
         },
         success: function(data){            
-            num=$(".results li").length-$(".results li .loading").length;
+            num=$(".results .loading[name='"+p+"']").attr("num");
             name=p.split('-').slice(0, -1).join('-');
-            elem="<div class='name' name='"+p+"'><div class='delete' title='Delete'><i class='fas fa-trash-alt'></i></div><i class='fas fa-user'></i><br> #"+(num+1)+"</div>"+name+" <div class='date'>"+parseInt(100*data.progress)+"%</div><div class='date'>"+data.mostRecent+"</div>";
-            $(".results #loading-"+num).replaceWith(elem);
+            elem="<div class='name' name='"+p+"'><div class='delete' title='Delete'><i class='fas fa-trash-alt'></i></div><i class='fas fa-user'></i><br> #"+(num)+"</div>"+name+" <div class='date'>"+parseInt(100*data.progress)+"%</div><div class='date'>"+data.mostRecent+"</div>";
+            $(".results .loading[name='"+p+"']").replaceWith(elem);
             
             if($(".results li .loading").length==0){
                 $("#download-form").show();
             }
+            $("#force-reload").removeClass("fa-spin");
         },
         error: function(data){
             console.log("ERROR");
-            console.log(data["responseText"]);
-            //console.log(data);
+            num=$(".results .loading[name='"+p+"']").attr("num");
+            name=p.split('-').slice(0, -1).join('-');
+            elem="<div class='name' name='"+p+"'><div class='delete' title='Delete'><i class='fas fa-trash-alt'></i></div><i class='fas fa-user'></i></div>Missing participant! Please force reload</div>";
+            $(".results .loading[name='"+p+"']").replaceWith(elem);
+            if($(".results li .loading").length==0){
+                $("#download-form").show();
+            }
+            $("#force-reload").removeClass("fa-spin");
         }
     });
 }

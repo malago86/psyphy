@@ -40,6 +40,7 @@ if(isset($_POST['results'])){
         putFileCloud($myFile.$name."/"."trial".($participant->continueFrom+1).".pso",json_encode($jsondata->data),$defaultBucket);
 
         $participant->continueFrom=$participant->continueFrom+1;
+        $participant->config=$jsondata->config;
 
         putFileCloud($myFile.$name."/".$name.".pso",json_encode($participant),$defaultBucket);
     }

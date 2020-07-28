@@ -14,11 +14,12 @@ function moveLoadingBar(loaded, max){
         if(!loadingInfo)
             $("#stimulus-container").show();
         window.scrollTo(0, 0);
+        getDisplayParameters();
         stimulusOn=Date.now();
-        if(arr.config.options.timeout>0 && loading){
+        if(arr.config.options.timeout[currentSlice]>0 && loading){
             timeout=setTimeout(
                 showResponse,
-                arr.config.options.timeout,
+                arr.config.options.timeout[currentSlice]*1000,
                 arr.config.options.ratings,
                 arr.continueFrom+1
                 );
@@ -33,9 +34,9 @@ function load_stimuli_drive(list,info,feedback){
     //list.push(...list);
 
     MAFC=false;
-    if(arr.config.options.multiple.localeCompare("first")==0)
-        list=[list[0]];
-    else if(arr.config.options.multiple.startsWith("MAFC")){
+    if(arr.config.options.multiple.localeCompare("first")==0){
+        //list=[list[0]];
+    }else if(arr.config.options.multiple.startsWith("MAFC")){
         $("#stimulus").html("");       
         if(arr.config.options.multiple == "MAFCcircle"){
             angle=360/list.length;
@@ -119,11 +120,12 @@ function load_stimuli_drive(list,info,feedback){
                         $(sel[i]).css("margin-top","-"+sel[i].height/2+"px");
                     }*/
                 }
+                getDisplayParameters();
                 stimulusOn=Date.now();
-                if(arr.config.options.timeout>0 && loading){
+                if(arr.config.options.timeout[currentSlice]>0 && loading){
                     timeout=setTimeout(
                         showResponse,
-                        arr.config.options.timeout,
+                        arr.config.options.timeout[currentSlice]*1000,
                         arr.config.options.ratings,
                         arr.continueFrom+1
                         );
@@ -190,7 +192,7 @@ function load_stimuli_drive(list,info,feedback){
         stimuli.feedback=null;
     }
 
-    if(stimuli.slices>1){
+    if(stimuli.slices>1 && arr.config.options.multiple!="first"){
         $("#stimulus-scroll-bar").show();
         $("#stimulus-slice").show();
     }else{
@@ -221,6 +223,7 @@ function load_stimuli(name){
                     $("#trial-container .text div").html(stimuli.info.text);
                     preparation=true;
                     window.scrollTo(0, 0);
+                    getDisplayParameters();
                     stimulusOn=Date.now();
                 }
                 else
@@ -345,6 +348,27 @@ function imageExists(image_url){
 }
 
 function showResponse(ratings, trialNumber){
+    if(arr.config.options.multiple=="first" && numSlices-1>currentSlice && stimulusOn!=-1){
+        //show the next image (if any)
+        console.log("A",loading,running);
+        if (stimulusOn!=-1){
+            currentSlice=Math.max(0,Math.min(numSlices-1,currentSlice+1));
+            scrolling.push(Array(1, Date.now()));
+        }
+        //$("#stimulus").attr("src","stimuli/noise1/noise1_"+currentSlice+".jpg");
+        $("#stimulus .stimulus-img").replaceWith(stimuli.img[currentSlice]);
+        if(arr.config.options.timeout[currentSlice]>0){
+            $("#stimulus .stimulus-img").replaceWith(stimuli.img[currentSlice]);
+            timeout=setTimeout(
+                showResponse,
+                arr.config.options.timeout[currentSlice]*1000,
+                arr.config.options.ratings,
+                arr.continueFrom+1
+                );
+        }
+        return;
+    }
+
     stimulusOff=Date.now();
     if(!running) return;
     
@@ -450,7 +474,6 @@ function finishExperiment(arr){
         type: "POST",
         url: "/php/upload.php",
         data: results,
-        dataType: "json",
         success: function(data){
             //console.log("SUCCESS");
             //console.log(data["responseText"]);
@@ -459,7 +482,7 @@ function finishExperiment(arr){
             //console.log("ERROR");
             //console.log(data["responseText"]);
             //console.log(data);
-            resetExperiment(1, calibrating, animCalibration,"There was an error uploading your data, please try again");
+            resetExperiment(1, calibrating, animCalibration,"There was an error uploading your data, please try again (F)");
         }
     });
 
@@ -477,8 +500,7 @@ function finishExperiment(arr){
 }
 
 function getDisplayParameters(){
-    
-    if (running || loading){
+    if (running || loading || responding){
         var img = document.querySelector(".stimulus-img");
         
         //$('#help #monitor-size').html("Monitor: "+parseInt(display.monitorWidth)+" by "+parseInt(display.monitorHeight) +" cm");
@@ -544,7 +566,6 @@ function cancelPopup(animCalibration){
 }
 
 function uploadTrial(){
-    getDisplayParameters();
     results={results:JSON.stringify(arr)};
     //delete results.results.config;
     //console.log(arr);
@@ -559,8 +580,8 @@ function uploadTrial(){
         error: function(data){
             //console.log("ERROR");
             //console.log(data);
-            //console.log(data);
-            resetExperiment(1, calibrating, animCalibration,"There was an error uploading your data, please try again");
+            console.log(data);
+            resetExperiment(1, calibrating, animCalibration,"There was an error uploading your data, please try again (T)");
         }
     });
     arr.data=[];
@@ -580,9 +601,9 @@ function uploadParticipant(){
         },
         error: function(data){
             //console.log("ERRORP");
+            console.log(data);
             //console.log(data);
-            //console.log(data);
-            resetExperiment(1, calibrating, animCalibration,"There was an error uploading your data, please try again");
+            resetExperiment(1, calibrating, animCalibration,"There was an error uploading your data, please try again (P)");
         }
     });
 }
@@ -665,7 +686,7 @@ function saveTrial(responses){
         return false;
     }else if(!showingFeedback && (stimuli.info.correctKey || stimuli.info.correctResponse)){
         correctResponse=true;
-        if(stimuli.info.correctKey && allowedKeys[pressedKey]!=stimuli.info.correctKey){
+        if(stimuli.info.correctKey && pressedKey[0]!=stimuli.info.correctKey){
             correctResponse=false;
         }
         if(correctResponse && stimuli.info.correctResponse){
@@ -701,9 +722,6 @@ function saveTrial(responses){
             responses=savedResponses;
             savedResponses=-1;
         }
-        pressedKeyName="Spacebar";
-        if(arr.config.options.keys!=undefined)
-            pressedKeyName=allowedKeys[pressedKey];
         
         arr.data.push({
             trialID:arr.trialSequence[arr.continueFrom],
@@ -714,7 +732,7 @@ function saveTrial(responses){
             condition:arr.conditionSequence[arr.continueFrom],
             marks:marks,
             playPause:playPause,
-            pressedKey:pressedKeyName,
+            pressedKey:pressedKey,
             scrolling:scrolling,
             correctResponse:correctResponse,
             });
@@ -731,6 +749,9 @@ function saveTrial(responses){
         }else{
             trialID=arr.trialSequence[arr.continueFrom];
             marks=[];
+            pressedKey=[];
+            scrolling=[];
+            stimulusOn=-1;
             $(".mark").remove();
             //console.log(trialSequence);
             //$("#trial-container").show();
@@ -841,6 +862,7 @@ function loadExperimentData(data){
         //console.log(key,data.options[key]);
         arr.config.options[key]=data.options[key];
     }
+    arr.config.options.timeout=arr.config.options.timeout.split(",").map(Number);
     instructions="";
     if(validURL(arr.config.options.instructions)){
         instructions="<h2><a href='"+arr.config.options.instructions+"' target='popup' onclick=\"popupWindow('"+arr.config.options.instructions+"', 'popup', window, 800, 800);\">Read instructions for this experiment</a></h2>"

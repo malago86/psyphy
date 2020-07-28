@@ -54,192 +54,197 @@ $defaultBucket = $storage->getBucket();
         if($password){
             if(isset($_POST['old-password']) && password_verify($_POST['old-password'],$password)){
                 //file_put_contents($folder."/password.txt",password_hash($_POST['password'], PASSWORD_BCRYPT));
+                putFileCloud($folder."/password.txt",password_hash($_POST['password'], PASSWORD_BCRYPT),$defaultBucket);
 
             }elseif(!isset($_POST['password']) || isset($_POST['password'])==""){
-                echo('<h1>Introduce your password</h1><form class="form-box" method="POST">
-                    <input id="password" type="password" name="password"/>
-                    <input type="submit" class="download-results" id="create-password" value="submit">
-                </form>');
-                exit();
+                $errorstr='<h1>Introduce your password</h1>';
+                $password=false;
+                $title="Introduce password";
             }elseif(!password_verify($_POST['password'],$password)){
-                exit("password error");
+                $errorstr='<h1 class="error" style="display:block;width:auto">Password not valid</h1>';
+                $password=false;
+                $title="Password error";
             }
         }elseif(isset($_POST['password'])){
-            $hash=password_hash($_POST['password'], PASSWORD_BCRYPT);
-            file_put_contents("../".$folder."/password.txt",$hash);
-            
-            $defaultBucket->upload($hash,
-            [
-                'name' => $folder."/password.txt"
-            ]);
-            
+            putFileCloud($folder."/password.txt",password_hash($_POST['password'], PASSWORD_BCRYPT),$defaultBucket);
             $password=true;
-
         }
+        if($password){
 
-        if(isset($_POST['download'])){
-            $participant=sanitize_participant($_POST['download']);
-            if (!file_exists("../".$folder."/".$participant)) 
-                mkdir("../".$folder."/".$participant);
+            if(isset($_POST['download'])){
+                $participant=sanitize_participant($_POST['download']);
+                $force=false;
+                if(isset($_POST['force']))
+                    $force=boolval($_POST['force']);
+                if (!file_exists("../".$folder."/".$participant)) 
+                    mkdir("../".$folder."/".$participant);
+
+                if($force){
+                    $objects = $defaultBucket->objects([
+                        'prefix' => $folder."/".$participant,
+                        'orderBy' => 'name_natural',
+                    ]);
+                    $allDates=array();
+                    foreach ($objects as $object) {
+                        $object->downloadToFile("../".$object->name());
+                        array_push($allDates,strtotime($object->info()["updated"]));
+                    }
+                    $mostRecent=max($allDates);
+                    $mostRecent=calculate_time_span(date("U")-$mostRecent);
+                }
+
+                $json=json_decode(file_get_contents("../".$folder."/".$participant."/".$participant.".pso"));
+                if(!$force){
+                    if(file_exists("../".$folder."/".$participant."/trial".($json->continueFrom).".pso")){
+                        $mostRecent=json_decode(file_get_contents("../".$folder."/".$participant."/trial".($json->continueFrom).".pso"))[0];
+                        $mostRecent=calculate_time_span(date("U")-$mostRecent->stimulusOff/1000);
+                    }else
+                        $mostRecent=calculate_time_span(date("U")-$json->startTime/1000);
+                    
+                }
+
+                $ret=array("progress"=>$json->continueFrom/count($json->sortIndexes),"mostRecent"=>$mostRecent);
+
+                header("HTTP/1.1 200 OK");
+                echo(json_encode($ret));
+                exit();
+            }else if(isset($_POST['delete'])){
+                $participant=sanitize_participant($_POST['delete']);
+
+                if (!file_exists("../".$folder."/".$participant)) {
+                    $response=false;
+                }else{
+                    $objects = $defaultBucket->objects([
+                        'prefix' => $folder."/".$participant,
+                        'orderBy' => 'name_natural',
+                    ]);
+                    foreach ($objects as $object) {
+                        //print_r("unlink ../".$object->name());
+                        unlink("../".$object->name());
+                        $object->delete();
+                    }
+                    rmdir("../".$folder."/".$participant);
+                    $response=true;
+                }
+                $ret=array("response"=>$response);
+
+                header("HTTP/1.1 200 OK");
+                echo(json_encode($ret));
+                exit();
+            }
+
+            if(isset($_POST['password']))
+                setcookie("password", $_POST['password'],0,'/results/'.$experiment_id);
+
+
+            try{
+                $title=getFileCloud($folder."/title.txt",$defaultBucket);
+            }catch(Exception $e) {
+            }
+            
+            if($title==""){
+                $title="Experiment";
+            }        
 
             $objects = $defaultBucket->objects([
-                'prefix' => $folder."/".$participant,
+                'prefix' => $folder,
                 'orderBy' => 'name_natural',
             ]);
-            $allDates=array();
+            $participants=array();
             foreach ($objects as $object) {
-                $object->downloadToFile("../".$object->name());
-                array_push($allDates,strtotime($object->info()["updated"]));
-            }
-            $mostRecent=max($allDates);
-            $mostRecent=calculate_time_span(date("U")-$mostRecent);
-
-            $json=json_decode(file_get_contents("../".$folder."/".$participant."/".$participant.".pso"));
-
-            $ret=array("progress"=>$json->continueFrom/count($json->sortIndexes),"mostRecent"=>$mostRecent);
-
-            header("HTTP/1.1 200 OK");
-            echo(json_encode($ret));
-            exit();
-        }else if(isset($_POST['delete'])){
-            $participant=sanitize_participant($_POST['delete']);
-
-            if (!file_exists("../".$folder."/".$participant)) {
-                $response=false;
-            }else{
-                $objects = $defaultBucket->objects([
-                    'prefix' => $folder."/".$participant,
-                    'orderBy' => 'name_natural',
-                ]);
-                foreach ($objects as $object) {
-                    //print_r("unlink ../".$object->name());
-                    unlink("../".$object->name());
-                    $object->delete();
+                $path=explode("/",$object->name());
+                if(count($path)==4){
+                    if(!in_array($path[2],$participants))
+                        array_push($participants,$path[2]);
                 }
-                rmdir("../".$folder."/".$participant);
-                $response=true;
             }
-            $ret=array("response"=>$response);
 
-            header("HTTP/1.1 200 OK");
-            echo(json_encode($ret));
-            exit();
-        }
+            if(isset($_GET['zip'])){
+                $filename="../".$folder.'/'.$experiment_id.'.zip';
+                array_map('unlink', glob("../".$folder."/*.zip"));
 
-        setcookie("password", $_POST['password'],0,'/');
-
-
-        try{
-            $defaultBucket->object($folder."/title.txt")->downloadToFile("../".$folder."/title.txt");
-        }catch(Exception $e) {
-        }
-
-        $title=@file_get_contents("../".$folder."/title.txt");
-        if($title==""){
-            $title="Experiment";
-        }
-        
-
-        $objects = $defaultBucket->objects([
-            'prefix' => $folder,
-            'orderBy' => 'name_natural',
-        ]);
-        $participants=array();
-        foreach ($objects as $object) {
-            $path=explode("/",$object->name());
-            if(count($path)==4){
-                if(!in_array($path[2],$participants))
-                    array_push($participants,$path[2]);
-            }
-        }
-
-        if(isset($_GET['zip'])){
-            $filename="../".$folder.'/'.$experiment_id.'.zip';
-            array_map('unlink', glob("../".$folder."/*.zip"));
-
-            if(isset($_POST['JSON'])){
-                exec('cd "../'.$folder.'"; zip -R -o -q '.$experiment_id.'.zip *.pso');
-                //echo('tar zcf '.$filename.' '.$folder.'/*.pso');
-            
-                if (file_exists($filename)) {
-                    header('Content-Type: application/zip');
-                    header('Content-Disposition: attachment; filename="'.basename($filename).'"');
-                    header('Content-Length: ' . filesize($filename));
+                if(isset($_POST['JSON'])){
+                    exec('cd "../'.$folder.'"; zip -R -o -q '.$experiment_id.'.zip *.pso');
+                    //echo('tar zcf '.$filename.' '.$folder.'/*.pso');
                 
-                    flush();
-                    readfile($filename);
-                    // delete file
-                    //unlink($filename);
-            
-                }
-            }elseif(isset($_POST['CSV'])){
-                array_map('unlink', glob("../".$folder."/*.csv"));
-                foreach($participants as $p){
-                    $trials=glob("../".$folder."/".$p."/trial*.pso");
-                    if(count($trials)==0)
-                        continue;
-                    $trials_json=array();
-                    foreach ($trials as $t) {
-                        $r=json_decode(file_get_contents($t));
-                        array_push($trials_json,$r[0]);
+                    if (file_exists($filename)) {
+                        header('Content-Type: application/zip');
+                        header('Content-Disposition: attachment; filename="'.basename($filename).'"');
+                        header('Content-Length: ' . filesize($filename));
+                    
+                        flush();
+                        readfile($filename);
+                        // delete file
+                        //unlink($filename);
+                
                     }
-                    //var_dump($participant->data);
-                    
-                    
-                    if(count($trials_json)){
-                        
-                        $keys=array_keys((array)$trials_json[0]);
-                        $keysCSV="";
-                        foreach($keys as $key){
-                            if(!is_object($trials_json[0]->$key)){
-                                $keysCSV=$keysCSV.$key.",";
-                            }
+                }elseif(isset($_POST['CSV'])){
+                    array_map('unlink', glob("../".$folder."/*.csv"));
+                    foreach($participants as $p){
+                        $trials=glob("../".$folder."/".$p."/trial*.pso");
+                        if(count($trials)==0)
+                            continue;
+                        $trials_json=array();
+                        foreach ($trials as $t) {
+                            $r=json_decode(file_get_contents($t));
+                            array_push($trials_json,$r[0]);
                         }
-                        
-                        $keysCSV=substr($keysCSV, 0, -1);
-                        $valuesCSV="";
-
+                        //var_dump($participant->data);
                         
                         
-                        foreach($trials_json as $trial){
+                        if(count($trials_json)){
+                            
+                            $keys=array_keys((array)$trials_json[0]);
+                            $keysCSV="";
                             foreach($keys as $key){
-                                if(!is_object($trial->$key)){
-                                    if(is_array($trial->$key))
-                                        $k=recursive_implode($trial->$key,";");
-                                    else
-                                        $k=$trial->$key;
-                                    if(strlen($k)<32768)
-                                        $valuesCSV=$valuesCSV.$k.",";
-                                    else
-                                    $valuesCSV=$valuesCSV."TOO LONG! DOWNLOAD JSON TO ANALYZE THIS FIELD,";
+                                if(!is_object($trials_json[0]->$key)){
+                                    $keysCSV=$keysCSV.$key.",";
                                 }
                             }
-                            $valuesCSV=substr($valuesCSV, 0, -1)."\n";
+                            
+                            $keysCSV=substr($keysCSV, 0, -1);
+                            $valuesCSV="";
+
+                            
+                            
+                            foreach($trials_json as $trial){
+                                foreach($keys as $key){
+                                    if(!is_object($trial->$key)){
+                                        if(is_array($trial->$key))
+                                            $k=recursive_implode($trial->$key,";");
+                                        else
+                                            $k=$trial->$key;
+                                        if(strlen($k)<32768)
+                                            $valuesCSV=$valuesCSV.$k.",";
+                                        else
+                                        $valuesCSV=$valuesCSV."TOO LONG! DOWNLOAD JSON TO ANALYZE THIS FIELD,";
+                                    }
+                                }
+                                $valuesCSV=substr($valuesCSV, 0, -1)."\n";
+                            }
+                            //echo $keysCSV."\n".$valuesCSV;
+                            file_put_contents("../".$folder."/".$p.".csv",$keysCSV."\n".$valuesCSV);
                         }
-                        //echo $keysCSV."\n".$valuesCSV;
-                        file_put_contents("../".$folder."/".$p.".csv",$keysCSV."\n".$valuesCSV);
+                        
                     }
-                    
-                }
 
-                exec('cd "../'.$folder.'"; zip -q '.$experiment_id.'.zip *.csv');
-                //echo('tar zcf '.$filename.' '.$folder.'/*.pso');
-            
-                if (file_exists($filename)) {
-                    header('Content-Type: application/zip');
-                    header('Content-Disposition: attachment; filename="'.basename($filename).'"');
-                    header('Content-Length: ' . filesize($filename));
+                    exec('cd "../'.$folder.'"; zip -q '.$experiment_id.'.zip *.csv');
+                    //echo('tar zcf '.$filename.' '.$folder.'/*.pso');
                 
-                    flush();
-                    readfile($filename);
-                }else{
-                    echo "There is no data to download yet.";
+                    if (file_exists($filename)) {
+                        header('Content-Type: application/zip');
+                        header('Content-Disposition: attachment; filename="'.basename($filename).'"');
+                        header('Content-Length: ' . filesize($filename));
+                    
+                        flush();
+                        readfile($filename);
+                    }else{
+                        echo "There is no data to download yet.";
+                    }
                 }
+                exit();
             }
-             exit();
-        }
-
-        
+        }       
 
 ?>
 <head>
@@ -260,18 +265,25 @@ $defaultBucket = $storage->getBucket();
 <?php if($password){ ?>
     <script src="/js/results.js"></script>
     <script>
-    $( document ).ready(function() {
         var participants=[
-    <?php
-        foreach($participants as $p){
-            echo ("'".$p."',");
-        }
-    ?>
+            <?php
+                foreach($participants as $p){
+                    echo ("'".$p."',");
+                }
+            ?>
         ];
-
+    $( document ).ready(function() {
         for(i=0;i<participants.length;i++){
-            loadParticipantCloud(participants[i],<?php echo("'".$experiment_id."'"); ?>);
+            loadParticipantCloud(participants[i]);
         }
+        $("#force-reload").click(function(){
+            if(!$("#force-reload").hasClass("fa-spin")){
+                $(".results li").remove();
+                for(i=0;i<participants.length;i++){
+                    loadParticipantCloud(participants[i],1);
+                }
+            }
+        })
     });
     </script>
 <?php } ?>
@@ -286,48 +298,42 @@ $defaultBucket = $storage->getBucket();
                 <br>
                 version <a id="version" href="https://gitlab.com/malago/psyphy" target="_blank"></a>
             </div> 
-        <p>Here, you will find a list of participants on your experiment.</p>
-        <p>Download all data by clicking the button at the end, old participant data will be erased periodically so be sure to download your data.</p>
-        <p>You will need to <strong>create a password</strong> to download the data.</p>
-        <form class="form-box" method="POST" style="width:33%">
+        <?php if($password){ 
+            echo("<p>Here, you will find a list of participants on your experiment.</p>
+            <p>Download all data by clicking the button at the end, old participant data will be erased periodically so be sure to download your data.</p>");
+        }else{
+            if(!isset($errorstr))
+                echo("<p>You will need to <strong>create a password</strong> to download the data.</p>");
+            else
+                echo($errorstr);
+        }
+            ?>
+        
+        <form class="form-box" method="POST">
             <i class="fas fa-key" style="position: absolute; top: 20px; left: 20px;"></i> 
-            <?php if($password) echo '<input id="old-password" type="password" name="old-password" placeholder="old password" />'; ?><br>     
-            <input id="password" type="password" name="password" placeholder="new password"/><br>
-            <input type="submit" class='download-results' id="create-password" value="set password">
+            <?php if($password) echo '<p>Change your password</p><input id="old-password" type="password" name="old-password" placeholder="Old password" />'; ?><br>     
+            <input id="password" type="password" name="password" placeholder="Password"/><br>
+            <input type="submit" class='download-results' id="create-password" value="Submit">
         </form>
-        <hr>
+        
         <?php
-
-echo("<h1>Participants in experiment <strong><a href='/experiment/".$experiment_id."/'>".$title."</a></strong></h1>");
 
         if(!$password){
             echo "<h2 class='error'><i class='fas fa-lock'></i> Set a password to download your data <i class='fas fa-lock'></i></h2>";
         }elseif(count($participants)>0){ 
-            echo("<ul class='results' id='".$experiment_id."'>");
-            $i=1;
-            foreach($participants as $f){
-                /*$participant=json_decode(file_get_contents("../".$folder."/".$f."/".$f.".pso"));
-                //$f=end(explode("/",$f));
-                if(!property_exists($participant,"stopTime"))
-                    $stopTime=intval(100*intval($participant->continueFrom)/intval(count($participant->sortIndexes)))."%";
-                else
-                    $stopTime=calculate_time_span(date("U")-intval($participant->stopTime)/1000);
-                $name=sanitize_participant($participant->name);
-
-                $name=substr($name,0,strrpos($name,"-") );
-                echo("<li><div class='name'><i class='fas fa-user'></i><br> #".$i."</div>".$name." <div class='date'>".$stopTime."</div></li>");
-                */
-                //echo("<li>P".$i."</li>");
-                $i++;
-            }
-            echo("</ul>"); ?>
+            echo("<hr><h1>Participants in experiment <strong><a href='/experiment/".$experiment_id."/'>".$title."</a></strong></h1>");
+            echo("<p id='force-reload'><i class='fas fa-sync-alt' title='Force reload'></i></p>");
+            echo("<ul class='results' id='".$experiment_id."'></ul>");
+             ?>
             <form class="form-box" method="POST" action=<?php echo "../".$experiment_id.".zip" ?> style="width:33%" id="download-form">   
                 <i class="fas fa-download" style="position: absolute; top: 20px; left: 20px"></i> 
                 <input id="password-download" type="password" name="password" placeholder="repeat password"/>
                 <div>Download results: <input type="submit" class='download-results json' value="JSON" name="JSON" >
                 <input type="submit" class='download-results csv' value="CSV" name="CSV"></div>
             </form>
-        <?php } ?>
+        <?php }else{
+            echo("<hr><h1>There is no participants yet!</h1>");
+        } ?>
         </div>
     </div>
 </body>

@@ -1,5 +1,5 @@
 
-var version="1.9.1"; 
+var version="1.10.0"; 
 
 var md = new MobileDetect(window.navigator.userAgent);
 
@@ -14,7 +14,7 @@ var blindSpotDegrees=13; //13.59
 var running=false;
 var loading=false;
 var responding=false;
-var pressedKey=-1;
+var pressedKey=[];
 var allowedKeys=[];
 var loaded=0;
 var preparation=false;
@@ -24,7 +24,7 @@ var resumingExperiment=false;
 
 var display=null;
  
-var stimulusOn=null;
+var stimulusOn=-1;
 var stimulusOff=null;
 var currentSlice=0;
 
@@ -278,7 +278,7 @@ $( document ).ready(function() {
 
     $("#stimulus-scroll-position").css("height",100*(currentSlice+1)/numSlices+"%");
     $(window).bind('mousewheel DOMMouseScroll', function(event){
-        if(!running || numSlices==1) return;
+        if(!running || numSlices==1 || arr.config.options.multiple=="first") return;
         if (event.originalEvent.wheelDelta > 0 || event.originalEvent.detail < 0) {
             // scroll up
             direction=-1;
@@ -306,7 +306,7 @@ $( document ).ready(function() {
 
     $("#stimulus").draggable({
         start: function(e) {
-            if(!running) return;
+            if(!running || numSlices==1 || arr.config.options.multiple=="first") return;
             parentOffset = $(this).offset(); 
             relX = e.pageX - parentOffset.left;
             relY = e.pageY - parentOffset.top;
@@ -314,7 +314,7 @@ $( document ).ready(function() {
             prevY=relY;
         },
         drag: function(e) {
-            if(!running || numSlices==1) return;
+            if(!running || numSlices==1 || arr.config.options.multiple=="first") return;
             relX = e.pageX - parentOffset.left;
             relY = e.pageY - parentOffset.top;
             //console.log(relX,relY);
@@ -344,7 +344,7 @@ $( document ).ready(function() {
 
     $("#stimulus-scroll-bar").draggable({
         start: function(e) {
-            if(!running || numSlices==1) return;
+            if(!running || numSlices==1 || arr.config.options.multiple=="first") return;
             parentOffset = $(this).offset(); 
             relX = e.pageX - parentOffset.left;
             relY = e.pageY - parentOffset.top;
@@ -360,7 +360,7 @@ $( document ).ready(function() {
             $("#stimulus-scroll-position").css("height",100*(currentSlice+1)/numSlices+"%");
         },
         drag: function(e) {
-            if(!running || numSlices==1) return;
+            if(!running || numSlices==1 || arr.config.options.multiple=="first") return;
             relX = e.pageX - parentOffset.left;
             relY = e.pageY - parentOffset.top;
             direction=Math.round(numSlices*relY/$(this).height())-currentSlice;
@@ -481,15 +481,29 @@ $( document ).ready(function() {
                     }
                     return;
                 }
-                pressedKey=allowedKeys.indexOf(event.code);
-                //console.log(pressedKey,allowedKeys,event.code);
-                if(pressedKey > -1){ //spacebar
+                pressedKeyNow=allowedKeys.indexOf(event.code);
+                
+                if(pressedKeyNow > -1){ //spacebar
+                    pressedKey.push(Array(allowedKeys[pressedKeyNow], Date.now()));
                     if(!arr.config.options.multiple.startsWith("MAFC")){
                         if($("#stimulus .stimulus-img").is("video")){
                             $("#stimulus .stimulus-img").trigger('pause');
                         }
-                        if(arr.config.options.timeout<=0)
-                            showResponse(arr.config.options.ratings,arr.continueFrom+1);
+                        if(!arr.config.options.timeout || arr.config.options.timeout[currentSlice]<=0){
+                            if(arr.config.options.multiple=="first"){
+                                if(numSlices-1==currentSlice){
+                                    showResponse(arr.config.options.ratings,arr.continueFrom+1);
+                                }else{
+                                    //show the next image (if any)
+                                    currentSlice=Math.max(0,Math.min(numSlices-1,currentSlice+1));
+                                    scrolling.push(Array(1, Date.now()));
+
+                                    //$("#stimulus").attr("src","stimuli/noise1/noise1_"+currentSlice+".jpg");
+                                    $("#stimulus .stimulus-img").replaceWith(stimuli.img[currentSlice]);
+                                }
+                            }else
+                                showResponse(arr.config.options.ratings,arr.continueFrom+1);
+                        }
                     }
                 }else if(event.key=="Enter"){
                     if($("#stimulus .stimulus-img").is("video")){
@@ -679,7 +693,7 @@ $( document ).ready(function() {
             dataType: "json",
             success: function(data){
                 //console.log("SUCCESS");
-                console.log(data["experiment-id"]);
+                //console.log(data["experiment-id"]);
                 cookie="";
                 newCookie=options["id"]+"|"+options["title"]+",";
                 if(Cookies.get('experiments')){

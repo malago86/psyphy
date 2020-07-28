@@ -103,10 +103,10 @@
                             <th><abbr title="Behavior if several images are found in each stimulus folder">Multiple stimulus</abbr></th>
                             <td>
                                 <select id="multiple" style="margin-top:0;height:26px;font-size:16px;width:100%">
-                                    <option value="first">Show first</option>
-                                    <option value="MAFC">MAFC (grid)</option>
-                                    <option value="MAFCcircle">MAFC (circle)</option>
-                                    <option value="3D">3D scroll</option>
+                                    <option value="first" title="Trial images will be displayed sequentially">Sequential</option>
+                                    <option value="MAFC" title="Trial images will be shown in a 2D grid">MAFC (grid)</option>
+                                    <option value="MAFCcircle" title="Trial images will be shown in a circle">MAFC (circle)</option>
+                                    <option value="3D" title="Trial images will be shown as a stack of 2D images">3D scroll</option>
                                 </select>
                             </td>
                         </tr>
@@ -116,7 +116,7 @@
                         </tr>
                         <tr>
                             <th>Trial timeout (<abbr title="milliseconds, set to empty or 0 to disable">ms</abbr>)</th>
-                            <td><input id="timeout" type="number" placeholder="optional" style="font-size:20px; width:100%;text-align:center"/></td>
+                            <td><input id="timeout" type="text" placeholder="optional" style="font-size:20px; width:100%;text-align:center"/></td>
                         </tr>
                     </table>
                     <br><input type="button" id="google-drive-select" value="Find stimuli on Google Drive" /><br>
