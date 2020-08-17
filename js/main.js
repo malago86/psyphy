@@ -811,6 +811,12 @@ $( document ).ready(function() {
         cheatCode=!cheatCode;
     });
 
+    $(document).key('ctrl+g', function(e) {
+        $("#google-login").toggleClass("hidden");
+        e.preventDefault();
+        return false;
+    });
+
     $(".form-box #create-title").click(function(){
         $("#create-toggle").toggle();
         $("#create-title").children(".icon").toggleClass("fas fa-plus-square");
