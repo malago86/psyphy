@@ -16,10 +16,10 @@ function moveLoadingBar(loaded, max){
         window.scrollTo(0, 0);
         getDisplayParameters();
         stimulusOn=Date.now();
-        if(arr.config.options.timeout[currentSlice]>0 && loading){
+        if(arr.config.options.timeout[currentSlice]>0 && loading && !("text" in stimuli.info)){
             timeout=setTimeout(
                 showResponse,
-                arr.config.options.timeout[currentSlice]*1000,
+                arr.config.options.timeout[currentSlice],
                 arr.config.options.ratings,
                 arr.continueFrom+1
                 );
@@ -30,177 +30,65 @@ function moveLoadingBar(loaded, max){
         $("#loading-bar-progress").css("width",(100*(loaded+1)/max)+"%");
 }
 function load_stimuli_drive(list,info,feedback){
+    return new Promise((resolve,reject)=>{
+        //list.push(...list);
 
-    //list.push(...list);
-
-    MAFC=false;
-    if(arr.config.options.multiple.localeCompare("first")==0){
-        //list=[list[0]];
-    }else if(arr.config.options.multiple.startsWith("MAFC")){
-        $("#stimulus").html("");       
-        if(arr.config.options.multiple == "MAFCcircle"){
-            angle=360/list.length;
-            MAFCdistance=20;
-            $("#stimulus").addClass("circle");
-            $("#stimulus-container").css("width","100%");
-            $("#stimulus-container").css("height","100%");
-        }else
-            $("#stimulus").addClass("mafc"+list.length);
-        MAFC=true;
-    }
-    
-
-    $("#loading-bar").show();
-    $("#trial-container").hide();
-    loaded=0;
-    loading=true;
-    running=false;
-    var stimuli = {img:[],info:null};
-
-    stimuli.info={};
-    
-    if(info){
-        loadingInfo=true;
-        $("#stimulus-container").hide();
+        MAFC=false;
+        if(arr.config.options.multiple.localeCompare("first")==0){
+            //list=[list[0]];
+        }else if(arr.config.options.multiple.startsWith("MAFC")){
+            $("#stimulus").html("");       
+            if(arr.config.options.multiple == "MAFCcircle"){
+                angle=360/list.length;
+                MAFCdistance=20;
+                $("#stimulus").addClass("circle");
+                $("#stimulus-container").css("width","100%");
+                $("#stimulus-container").css("height","100%");
+            }else
+                $("#stimulus").addClass("mafc"+list.length);
+            MAFC=true;
+        }
         
-        $.getJSON("/php/getJson.php?id="+info.id,function( data ) {
-            stimuli.info=data;
-            if(!calibrated && !("text" in stimuli.info))
-                stimuli.info.text="Recalibration finished. Press SPACEBAR to continue";
-            if(stimuli.info.text && preparation==false){
-                $("#trial-container .text").css( "display", "table" );
-                $("#trial-container .text div").html(stimuli.info.text);
-                preparation=true;
-            }else{
+
+        $("#loading-bar").show();
+        $("#trial-container").hide();
+        loaded=0;
+        loading=true;
+        running=false;
+        var stimuli = {img:[],info:null};
+
+        stimuli.info={};
+        
+        if(info){
+            loadingInfo=true;
+            $("#stimulus-container").hide();
+            $.getJSON("/php/getJson.php?id="+info.id,function( data ) {
+                stimuli.info=data;
+                if(!calibrated && !("text" in stimuli.info))
+                    stimuli.info.text="Recalibration finished. Press SPACEBAR to continue";
+                if(stimuli.info.text && stimuli.info.text!="" && preparation==false){
+                    $("#trial-container .text").css( "display", "table" );
+                    $("#trial-container .text div").html(stimuli.info.text);
+                    preparation=true;
+                }else{
+                    $("#stimulus-container").show();
+                }
+                loadingInfo=false;
+            }).fail(function(data) {
+                loadingInfo=false;
                 $("#stimulus-container").show();
-            }
-            loadingInfo=false;
-        }).fail(function(data) {
-            loadingInfo=false;
-            $("#stimulus-container").show();
-        });
-    }
-
-    
-
-    for(i=0;i<list.length;i++){
-        if(list[i].name.includes("mp4") || list[i].name.includes("webm")){
-            stimuli.img[i]=document.createElement("video");
-            stimuli.img[i].autoplay = true;
-            //stimuli.img[i].setAttribute("controls","controls");
-            stimuli.img[i].onloadeddata = function() {
-                moveLoadingBar(loaded,list.length);
-            };
+                reject(stimuli);
+            }).always(function(data){
+                loadTrialGoogleDrive(stimuli,list,feedback,MAFC);
+                resolve(stimuli);
+            });
         }else{
-            stimuli.img[i]=new Image();
-            stimuli.img[i].stimId=i;
-            stimuli.img[i].stimMax=list.length;
+            loadTrialGoogleDrive(stimuli,list,feedback,MAFC);
+            //console.log(stimuli);
+            resolve(stimuli);
         }
-        stimuli.img[i].setAttribute("class","stimulus-img");
-        stimuli.img[i].setAttribute("numImg",i+1);
-        if($("#stimulus").hasClass("circle")){            
-            stimuli.img[i].setAttribute("style","left:calc(50% + "+(Math.cos(i*angle * Math.PI/180)*MAFCdistance)+"em);top:calc(50% + "+(Math.sin(i*angle * Math.PI/180)*MAFCdistance)+"em)");
-        }
-        
-        stimuli.img[i].onload = function(){
-            loaded++;
-            if(loaded==list.length && loading){
-                $("#loading-bar").hide();
-                $("#trial-container").css("display","table");
-                $("#loading-bar-progress").css("width","0%")
-                $("#stimulus-scroll-position").css("height",100*(currentSlice+1)/list.length+"%");
-                window.scrollTo(0, 0);
-                
-                if($("#stimulus").hasClass("circle")){ 
-                    sel=document.querySelectorAll(".stimulus-img");
-                    $(".stimulus-img").css("margin-left","-"+sel[0].width/2+"px");
-                    $(".stimulus-img").css("margin-top","-"+sel[0].width/2+"px");
-                    /*for(i=0;i<sel.length;i++){
-                        $(sel[i]).css("margin-left","-"+sel[i].width/2+"px");
-                        $(sel[i]).css("margin-top","-"+sel[i].height/2+"px");
-                    }*/
-                }
-                getDisplayParameters();
-                stimulusOn=Date.now();
-                if(arr.config.options.timeout[currentSlice]>0 && loading){
-                    timeout=setTimeout(
-                        showResponse,
-                        arr.config.options.timeout[currentSlice]*1000,
-                        arr.config.options.ratings,
-                        arr.continueFrom+1
-                        );
-                }
-                running=true; loading=false;
-            }
-            else
-                $("#loading-bar-progress").css("width",(100*(loaded+1)/list.length)+"%");
-        }
-        stimuli.img[i].onerror = function(){
-            //alert("Error loading stimuli, please reload the page and contact us");
-            //throw new Error("Something went badly wrong!");
-            resetExperiment(1, calibrating, animCalibration,"There was an error loading the trial, please try again");
-        }
-        //stimuli.img[i].src = "https://drive.google.com/uc?export=view&id="+list[i].id;
-        if(cheatCode){
-            //stimuli.img[i].src = "/php/getStimuli.php?file-id="+list[i].id+"&name="+list[i].name;
-            //stimuli.img[i].src = "/php/getStimuli.php?file-id="+list[i].id+"&name="+list[i].name+"&client-id="+googleToken;
-            setTimeout(function(i){
-                //stimuli.img[i].src="https://www.googleapis.com/drive/v3/files/"+list[i].id+"?key=XXX&alt=media";
-                stimuli.img[i].src="https://drive.google.com/uc?export=view&id="+list[i].id;
-            }, i*111, i);
-            
-        }else{
-            //stimuli.img[i].src = "/php/getStimuli.php?file-id="+list[i].id+"&name="+list[i].name;
-            setTimeout(function(i){
-                //stimuli.img[i].src="https://www.googleapis.com/drive/v3/files/"+list[i].id+"?key=XXX&alt=media";
-                stimuli.img[i].src="https://drive.google.com/uc?export=view&id="+list[i].id;
-            }, i*111, i);
-        }
-
-        if(MAFC){
-            $("#stimulus").append(stimuli.img[i]);
-        }
-    }
-    if(MAFC){
-        stimuli.slices=1;
-        $("#stimulus").randomize(".stimulus-img");
-    }else{
-        stimuli.slices=list.length;
-        numSlices=list.length;
-        $("#stimulus .stimulus-img").replaceWith(stimuli.img[0]);
-        
-    }
-
-    
-    
-    if(feedback){
-        if(feedback.name.includes("mp4") || feedback.name.includes("webm")){
-            stimuli.feedback=document.createElement("video");
-            stimuli.feedback.autoplay = true;
-        }else{
-            stimuli.feedback=new Image();
-            stimuli.feedback.stimId="feedback";
-        }
-        stimuli.feedback.setAttribute("class","stimulus-img");
-        stimuli.feedback.setAttribute("numImg","feedback");
-        stimuli.feedback.onload = function() { 
-            
-        }
-        stimuli.feedback.src = "https://drive.google.com/uc?export=view&id="+feedback.id;
-        //stimuli.feedback.src = "/php/getStimuli.php?file-id="+feedback.id+"&name="+feedback.name;
-    }else{
-        stimuli.feedback=null;
-    }
-
-    if(stimuli.slices>1 && arr.config.options.multiple!="first"){
-        $("#stimulus-scroll-bar").show();
-        $("#stimulus-slice").show();
-    }else{
-        $("#stimulus-scroll-bar").hide();
-        $("#stimulus-slice").hide();
-    }
-
-    return stimuli;
+    })
+    //return stimuli;
 }
 
 function load_stimuli(name){
@@ -347,7 +235,9 @@ function imageExists(image_url){
  
 }
 
-function showResponse(ratings, trialNumber){
+function showResponse(ratings, trialNumber, afterFixation=false){
+    if(preparation) return;
+    
     if(arr.config.options.multiple=="first" && numSlices-1>currentSlice && stimulusOn!=-1){
         //show the next image (if any)
         console.log("A",loading,running);
@@ -361,7 +251,7 @@ function showResponse(ratings, trialNumber){
             $("#stimulus .stimulus-img").replaceWith(stimuli.img[currentSlice]);
             timeout=setTimeout(
                 showResponse,
-                arr.config.options.timeout[currentSlice]*1000,
+                arr.config.options.timeout[currentSlice],
                 arr.config.options.ratings,
                 arr.continueFrom+1
                 );
@@ -369,12 +259,60 @@ function showResponse(ratings, trialNumber){
         return;
     }
 
+    if("fixationGrid" in arr.config.options && arr.config.options.fixationGrid=="true" && !afterFixation){
+        $("#stimulus").hide();
+        $("#fixation-grid").empty();
+        $("#fixation-grid").css("width",arr.config.display.stimulusWidth+"px");
+        $("#fixation-grid").css("height",arr.config.display.stimulusHeight+"px");
+
+        let minSize=100;
+        rows=arr.config.display.stimulusHeight/minSize;
+        cols=arr.config.display.stimulusWidth/minSize;
+
+        fixationGridBase.sort(() => Math.random() - 0.5);
+        fixationGrid=[];
+        count=0;
+        for(i=0;i<parseInt(rows);i++){
+            gridRow=[];
+            for(j=0;j<parseInt(cols);j++){
+                clearClass="";
+                if(j==0)
+                    clearClass="clear";
+                $("#fixation-grid").append("<div class='fixation-cell "+clearClass+"' style='width:"+(minSize+minSize*(cols%1)/10)+"px;height:"+(minSize+minSize*(rows%1)/10)+"px;line-height: "+(minSize+minSize*(rows%1)/10)+"px;'>"+
+                fixationGridBase[count]+"</div>");
+                gridRow.push(fixationGridBase[count]);
+                count++;
+            }
+            fixationGrid.push(gridRow);
+        }
+
+        $("#fixation-grid").show();
+
+        timeout=setTimeout(
+            showResponse,
+            300,
+            arr.config.options.ratings,
+            arr.continueFrom+1,
+            true
+            );
+        return;
+    }
+
+    $("#stimulus").show();
+    $("#fixation-grid").hide();
+
     stimulusOff=Date.now();
     if(!running) return;
     
     responding=true;
     $("#trial-container").hide();
     $("#confidence-scale").text("");
+    if(!stimuli.info.customResponse && arr.config.options.ratings>1){
+        stimuli.info.customResponse=[{"question":"","type":"rating","max":arr.config.options.ratings}];
+    }
+    if(afterFixation){
+        stimuli.info.customResponse.unshift({"question":"What code did you see at the end?","type":"code"});
+    }
     if(stimuli.info.customResponse){
         if(!Array.isArray(stimuli.info.customResponse))
             stimuli.info.customResponse=Array(stimuli.info.customResponse);
@@ -385,7 +323,7 @@ function showResponse(ratings, trialNumber){
                     "num": r+1,
                     "value": -1,
                 }).appendTo('#confidence-scale');
-                q.append("<div>"+stimuli.info.customResponse[r].question+"</div>");
+                q.append("<div>"+stimuli.info.customResponse[r].question+"</div><div class='options'></div>");
                 if(stimuli.info.customResponse[r].max==undefined) stimuli.info.customResponse[r].max=8;
                 if(stimuli.info.customResponse[r].max<=10){
                     for(i=0;i<stimuli.info.customResponse[r].max;i++){
@@ -397,14 +335,21 @@ function showResponse(ratings, trialNumber){
                             "num": i+1,
                             title: i+1,
                             text: i+1
-                        }).appendTo(q);
+                        }).appendTo(q.find(".options"));
                     }
                 }else{
-                    q.append('<div class="slidecontainer"> \
+                    q.find(".options").append('<div class="slidecontainer"> \
                         <div class="slider-value response" value='+Math.floor(stimuli.info.customResponse[r].max/2)+'>'+Math.floor(stimuli.info.customResponse[r].max/2)+'</div> \
                         <input type="range" min="1" max="'+stimuli.info.customResponse[r].max+'" value="'+Math.floor(stimuli.info.customResponse[r].max/2)+'" class="slider"> \
                     </div>');
                 }
+            }else if(stimuli.info.customResponse[r].type=="code"){
+                q=jQuery('<div/>', {
+                    "class": 'question',
+                    "num": r+1,
+                }).appendTo('#confidence-scale');
+                q.append("<div>"+stimuli.info.customResponse[r].question+"</div>");
+                q.append('<input type="text" class="textresponse" maxlength="100">');
             }else if(stimuli.info.customResponse[r].type=="text"){
                 q=jQuery('<div/>', {
                     "class": 'question',
@@ -412,14 +357,14 @@ function showResponse(ratings, trialNumber){
                     "value": -1,
                 }).appendTo('#confidence-scale');
                 q.append("<div>"+stimuli.info.customResponse[r].question+"</div>");
-                q.append('<input type="text" class="textresponse" maxlength="100" placeholder="Write your answer">');
+                q.append('<textarea class="textresponse" placeholder="Introduce your response" rows="4" cols="100" title="Introduce your response"></textarea>');
             }else if(stimuli.info.customResponse[r].type=="select"){
                 q=jQuery('<div/>', {
                     "class": 'question',
                     "num": r+1,
                     "value": -1,
                 }).appendTo('#confidence-scale');
-                q.append("<div>"+stimuli.info.customResponse[r].question+"</div>");
+                q.append("<div>"+stimuli.info.customResponse[r].question+"</div><div class='options'></div>");
                 for(i=0;i<stimuli.info.customResponse[r].options.length;i++){
                     //console.log('rating '+divclass);
                     jQuery('<div/>', {
@@ -427,7 +372,7 @@ function showResponse(ratings, trialNumber){
                         "num": stimuli.info.customResponse[r].options[i],
                         title: stimuli.info.customResponse[r].options[i],
                         text: stimuli.info.customResponse[r].options[i]
-                    }).appendTo(q);
+                    }).appendTo(q.find(".options"));
                 }
             }
         }
@@ -435,13 +380,13 @@ function showResponse(ratings, trialNumber){
         if(arr.config.options.ratings==1){
             //calibrated=false;
             responding=false;
-            if(arr.data.length>0)
+            //if(arr.data.length>0)
                 saveTrial(-1);
-            else
-                nextTrial(currentSlice,numSlices);
+            /*else
+                nextTrial(currentSlice,numSlices);*/
             return;
         }
-
+/*
         q=jQuery('<div/>', {
             "class": 'question',
             "num": 1,
@@ -458,7 +403,7 @@ function showResponse(ratings, trialNumber){
                 title: i+1,
                 text: i+1
             }).appendTo(q);
-        }
+        }*/
     }
     $("#response-container").css("display","table");
     $("#response-text").text("Trial: "+(trialNumber));
@@ -558,6 +503,7 @@ function mean(numbers) {
 function cancelPopup(animCalibration){
     $(".popup").hide();
     $(".background").css("filter","none");
+    $("body").css({ overflow: 'hidden' });
     $(".background").css("opacity","1");
     $("#calibration-step1").show();
     $("#calibration-step2").hide();
@@ -601,7 +547,6 @@ function uploadParticipant(){
         },
         error: function(data){
             //console.log("ERRORP");
-            console.log(data);
             //console.log(data);
             resetExperiment(1, calibrating, animCalibration,"There was an error uploading your data, please try again (P)");
         }
@@ -624,6 +569,9 @@ function resetExperiment(running, calibrating, animCalibration, text=""){
             text = "Please keep fullscreen mode and do not leave the browser, experiment has been reset!";
         $(".error").html("<i class='fas fa-exclamation-circle'></i> "+text);
         $(".error").show();
+
+        var noofTimeOuts = setTimeout('');
+        for (var i = 0 ; i < noofTimeOuts ; i++) clearTimeout(i);
 
         //uploadTrial();        
     }
@@ -677,7 +625,7 @@ var savedResponses=-1;
 var correctResponse=-1;
 function saveTrial(responses){
     $("#response-container").hide();
-
+    
     if(!showingFeedback && stimuli.feedback){
         $("#feedback-container .cell .stimulus-img").replaceWith(stimuli.feedback);
         $("#feedback-container").css("display","table");
@@ -686,12 +634,16 @@ function saveTrial(responses){
         return false;
     }else if(!showingFeedback && (stimuli.info.correctKey || stimuli.info.correctResponse)){
         correctResponse=true;
-        if(stimuli.info.correctKey && pressedKey[0]!=stimuli.info.correctKey){
+        if(stimuli.info.correctKey && stimuli.info.correctkey!="" && pressedKey[0][0]!=stimuli.info.correctKey){
             correctResponse=false;
         }
         if(correctResponse && stimuli.info.correctResponse){
             for(i=0;i<stimuli.info.correctResponse.length;i++){
-                if(!isNaN(parseFloat(responses[i])) && !eval(responses[i]+stimuli.info.correctResponse[i]) || isNaN(parseFloat(responses[i])) && responses[i]!=stimuli.info.correctResponse[i]){
+                if(!isNaN(parseFloat(stimuli.info.correctResponse[i]))) //if number, add ==
+                    stimuli.info.correctResponse[i]="=="+stimuli.info.correctResponse[i];
+                if(stimuli.info.correctResponse[i]!="" && 
+                    ((!isNaN(parseFloat(responses[i])) && !eval(responses[i]+stimuli.info.correctResponse[i])) || 
+                       isNaN(parseFloat(responses[i])) && responses[i]!=stimuli.info.correctResponse[i])){
                     correctResponse=false;
                     break;
                 }
@@ -735,6 +687,7 @@ function saveTrial(responses){
             pressedKey:pressedKey,
             scrolling:scrolling,
             correctResponse:correctResponse,
+            fixationGrid:fixationGrid
             });
         arr.continueFrom=arr.continueFrom+1;
         //console.log(arr);
@@ -773,21 +726,30 @@ function saveTrial(responses){
                     }
                 }else{*/
                     if(arr.trialSequence[arr.sortIndexes[arr.continueFrom]] in arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.feedbackFiles){
-                        stimuli=load_stimuli_drive(arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.stimulusFiles[arr.trialSequence[arr.sortIndexes[arr.continueFrom]]],
+                        load_stimuli_drive(arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.stimulusFiles[arr.trialSequence[arr.sortIndexes[arr.continueFrom]]],
                             arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.infoFiles[arr.trialSequence[arr.sortIndexes[arr.continueFrom]]],
-                            arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.feedbackFiles[arr.trialSequence[arr.sortIndexes[arr.continueFrom]]]);
+                            arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.feedbackFiles[arr.trialSequence[arr.sortIndexes[arr.continueFrom]]]).then(data =>{
+                                stimuli=data;
+                                if(arr.config.options.calibration>0 && (Date.now()-arr.config.display.pixelsPerDegree.slice(-1)[0][1]) > arr.config.options.calibration*1000*60){ // recalibrate every 10 minutes
+                                    calibrated=false;
+                                }
+                                nextTrial(currentSlice, numSlices);
+                            });
                     }else{
-                        stimuli=load_stimuli_drive(arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.stimulusFiles[arr.trialSequence[arr.sortIndexes[arr.continueFrom]]],
+                        load_stimuli_drive(arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.stimulusFiles[arr.trialSequence[arr.sortIndexes[arr.continueFrom]]],
                             arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.infoFiles[arr.trialSequence[arr.sortIndexes[arr.continueFrom]]],
-                            null);
+                            null).then(data =>{
+                                stimuli=data;
+                                if(arr.config.options.calibration>0 && (Date.now()-arr.config.display.pixelsPerDegree.slice(-1)[0][1]) > arr.config.options.calibration*1000*60){ // recalibrate every 10 minutes
+                                    calibrated=false;
+                                }
+                                nextTrial(currentSlice, numSlices);
+                            });
                     }
                 //}
             }
             
-            if(arr.config.options.calibration>0 && (Date.now()-arr.config.display.pixelsPerDegree.slice(-1)[0][1]) > arr.config.options.calibration*1000*60){ // recalibrate every 10 minutes
-                calibrated=false;
-            }
-            nextTrial(currentSlice, numSlices);
+            
             
         }
     }
@@ -972,33 +934,49 @@ function beginExperiment(resuming){
                 null);
         }
     }else{*/
+        $("body").css("background-color","rgb(128,128,128)");
         if(arr.trialSequence[arr.sortIndexes[arr.continueFrom]] in arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.feedbackFiles){
-            stimuli=load_stimuli_drive(arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.stimulusFiles[arr.trialSequence[arr.sortIndexes[arr.continueFrom]]],
+            load_stimuli_drive(arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.stimulusFiles[arr.trialSequence[arr.sortIndexes[arr.continueFrom]]],
                 arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.infoFiles[arr.trialSequence[arr.sortIndexes[arr.continueFrom]]],
-                arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.feedbackFiles[arr.trialSequence[arr.sortIndexes[arr.continueFrom]]]);
+                arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.feedbackFiles[arr.trialSequence[arr.sortIndexes[arr.continueFrom]]])
+                .then(data =>{
+                    stimuli=data;
+                    Cookies.set('psyphy', [arr.config.options.id,name], { expires:10, sameSite: 'strict', path: window.location.pathname})
+
+                    //console.log(stimuli);
+                    //document.body.appendChild(stimuli.img[1]);
+                    numSlices=stimuli.slices;
+                    if(arr.config.options.multiple.localeCompare("MAFC")==0){
+                        $("#trial-container .instructions").text("Double click on the signal-present stimulus");
+                    }else{
+                        $("#trial-container .instructions").text("Press SPACEBAR to continue");
+                    }
+                    getDisplayParameters();
+                    nextTrial(currentSlice, numSlices);                    
+                });
         }else{
-            stimuli=load_stimuli_drive(arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.stimulusFiles[arr.trialSequence[arr.sortIndexes[arr.continueFrom]]],
+            load_stimuli_drive(arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.stimulusFiles[arr.trialSequence[arr.sortIndexes[arr.continueFrom]]],
                 arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.infoFiles[arr.trialSequence[arr.sortIndexes[arr.continueFrom]]],
-                null);
+                null)
+                .then(data =>{
+                    stimuli=data;
+                    Cookies.set('psyphy', [arr.config.options.id,name], { expires:10, sameSite: 'strict', path: window.location.pathname})
+
+                    //console.log(stimuli);
+                    //document.body.appendChild(stimuli.img[1]);
+                    numSlices=stimuli.slices;
+                    if(arr.config.options.multiple.localeCompare("MAFC")==0){
+                        $("#trial-container .instructions").text("Double click on the signal-present stimulus");
+                    }else{
+                        $("#trial-container .instructions").text("Press SPACEBAR to continue");
+                    }
+                    getDisplayParameters();
+                    nextTrial(currentSlice, numSlices);
+                });
         }
     //}
 
-    Cookies.set('psyphy', [arr.config.options.id,name], { expires:10, sameSite: 'strict', path: window.location.pathname})
-
-    //console.log(stimuli);
-    //document.body.appendChild(stimuli.img[1]);
-    numSlices=stimuli.slices;
-    if(arr.config.options.multiple.localeCompare("MAFC")==0){
-        $("#trial-container .instructions").text("Double click on the signal-present stimulus");
-    }else{
-        $("#trial-container .instructions").text("Press SPACEBAR to continue");
-    }
-    getDisplayParameters();
-    nextTrial(currentSlice, numSlices);
     
-    //$("#trial-container").show();
-    //running=true;
-    $("body").css("background-color","rgb(128,128,128)");
 }
 
 function activateCheatCode(){

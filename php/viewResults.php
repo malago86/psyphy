@@ -33,8 +33,11 @@ $defaultBucket = $storage->getBucket();
         $experiment_id=sanitize_id($_GET['experiment-id']);
         $folder="results/".$experiment_id;
 
+        if(!getFileCloud("experiment/".$experiment_id.".json",$defaultBucket))
+            header('Location: /', true, 301);
         
-
+        if(!is_dir("../".$folder))
+            mkdir("../".$folder);
         try{
             $defaultBucket->object($folder."/password.txt")->downloadToFile("../".$folder."/password.txt");
         }catch(Exception $e) {
@@ -51,6 +54,8 @@ $defaultBucket = $storage->getBucket();
             $_POST['password']=$_COOKIE['password'];
         }
 
+        $title="Introduce password";
+
         if($password){
             if(isset($_POST['old-password']) && password_verify($_POST['old-password'],$password)){
                 //file_put_contents($folder."/password.txt",password_hash($_POST['password'], PASSWORD_BCRYPT));
@@ -59,7 +64,7 @@ $defaultBucket = $storage->getBucket();
             }elseif(!isset($_POST['password']) || isset($_POST['password'])==""){
                 $errorstr='<h1>Introduce your password</h1>';
                 $password=false;
-                $title="Introduce password";
+                
             }elseif(!password_verify($_POST['password'],$password)){
                 $errorstr='<h1 class="error" style="display:block;width:auto">Password not valid</h1>';
                 $password=false;
@@ -69,9 +74,37 @@ $defaultBucket = $storage->getBucket();
             putFileCloud($folder."/password.txt",password_hash($_POST['password'], PASSWORD_BCRYPT),$defaultBucket);
             $password=true;
         }
-        if($password){
+        if($password && isset($_POST['password'])){
 
-            if(isset($_POST['download'])){
+            if(isset($_POST['delete'])){
+                /*if(isset($_COOKIE['experiments'])){
+                    $expCookies=explode(",",$_COOKIE['experiments']);
+                    $newCookie="";
+                    foreach($expCookies as $exp){
+                        $nameCookies=explode("|",$exp)[0];
+                        if($nameCookies!="" && strcmp($nameCookies,$experiment_id)!=0){
+                            $newCookie.=$exp.",";
+                        }
+                    }
+                    setcookie("experiments",$newCookie,0,"/");
+                    //var_dump($newCookie);
+                }*/
+
+                recursiveDelete("../results/".$experiment_id);
+                unlink("../experiment/".$experiment_id.".json");
+
+                $objects = $defaultBucket->objects([
+                    'prefix' => "results/".$experiment_id,
+                    'orderBy' => 'name_natural',
+                ]);
+                foreach ($objects as $object) {
+                    $object->delete();
+                }
+                $defaultBucket->object("experiment/".$experiment_id.".json")->delete();                
+                
+                header('Location: /', true, 301);
+                exit();
+            }elseif(isset($_POST['download'])){
                 $participant=sanitize_participant($_POST['download']);
                 $force=false;
                 if(isset($_POST['force']))
@@ -159,7 +192,7 @@ $defaultBucket = $storage->getBucket();
                 }
             }
 
-            if(isset($_GET['zip'])){
+            if(isset($_GET['zip']) && isset($_POST['password'])){
                 $filename="../".$folder.'/'.$experiment_id.'.zip';
                 array_map('unlink', glob("../".$folder."/*.zip"));
 
@@ -248,7 +281,7 @@ $defaultBucket = $storage->getBucket();
 
 ?>
 <head>
-<title>PSY&#9898;PHY - <?php echo($title); ?></title>
+<title>Results - <?php echo($title); ?> - PSY&#9898;PHY</title>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
@@ -259,6 +292,7 @@ $defaultBucket = $storage->getBucket();
 <script src="/js/main.js"></script>
 
 <script src="/js/google_drive.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nunito">
 <link rel="stylesheet" type="text/css" href="/css/style.css">
 <link rel="icon" href="favicon.ico" type="image/x-icon" />
 <link href="/css/fontawesome.css" rel="stylesheet"> 
@@ -273,11 +307,12 @@ $defaultBucket = $storage->getBucket();
             ?>
         ];
     $( document ).ready(function() {
-        for(i=0;i<participants.length;i++){
-            loadParticipantCloud(participants[i]);
-        }
+        if(participants.length>0)
+            for(i=0;i<participants.length;i++){
+                loadParticipantCloud(participants[i]);
+            }
         $("#force-reload").click(function(){
-            if(!$("#force-reload").hasClass("fa-spin")){
+            if(!$("#force-reload").hasClass("fa-spin") && participants.length>0){
                 $(".results li").remove();
                 for(i=0;i<participants.length;i++){
                     loadParticipantCloud(participants[i],1);
@@ -320,20 +355,27 @@ $defaultBucket = $storage->getBucket();
 
         if(!$password){
             echo "<h2 class='error'><i class='fas fa-lock'></i> Set a password to download your data <i class='fas fa-lock'></i></h2>";
-        }elseif(count($participants)>0){ 
-            echo("<hr><h1>Participants in experiment <strong><a href='/experiment/".$experiment_id."/'>".$title."</a></strong></h1>");
-            echo("<p id='force-reload'><i class='fas fa-sync-alt' title='Force reload'></i></p>");
-            echo("<ul class='results' id='".$experiment_id."'></ul>");
-             ?>
-            <form class="form-box" method="POST" action=<?php echo "../".$experiment_id.".zip" ?> style="width:33%" id="download-form">   
-                <i class="fas fa-download" style="position: absolute; top: 20px; left: 20px"></i> 
-                <input id="password-download" type="password" name="password" placeholder="repeat password"/>
-                <div>Download results: <input type="submit" class='download-results json' value="JSON" name="JSON" >
-                <input type="submit" class='download-results csv' value="CSV" name="CSV"></div>
-            </form>
-        <?php }else{
-            echo("<hr><h1>There is no participants yet!</h1>");
-        } ?>
+        }else{
+                if(count($participants)>0){ 
+                echo("<hr><h1>Participants in experiment <strong><a href='/experiment/".$experiment_id."/'>".$title."</a></strong></h1>");
+                echo("<p id='force-reload'><i class='fas fa-sync-alt' title='Force reload'></i></p>");
+                echo("<ul class='results' id='".$experiment_id."'></ul>");
+                ?>
+                <form class="form-box" method="POST" action=<?php echo "../".$experiment_id.".zip" ?> style="width:33%" id="download-form">   
+                    <i class="fas fa-download" style="position: absolute; top: 20px; left: 20px"></i> 
+                    <input id="password-download" type="password" name="password" placeholder="repeat password"/>
+                    <div>Download results: <input type="submit" class='download-results json' value="JSON" name="JSON" >
+                    <input type="submit" class='download-results csv' value="CSV" name="CSV"></div>
+                </form>
+            <?php }else{
+                echo("<hr><h1>There is no participants yet!</h1>");
+            } ?>
+                <form class="form-box" method="POST" action="." style="width:33%" id="delete-form">   
+                    <i class="fas fa-bomb" style="position: absolute; top: 20px; left: 20px"></i> 
+                    <input id="password-delete" type="password" name="password" placeholder="repeat password"/>
+                    <input type="submit" class='delete-results' value="Delete experiment" name="delete" title="This will delete the experiment and all associated data">
+                </form>
+            <?php } ?>
         </div>
     </div>
 </body>

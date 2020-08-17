@@ -1,5 +1,5 @@
 
-var version="1.10.0"; 
+var version="1.11.0"; 
 
 var md = new MobileDetect(window.navigator.userAgent);
 
@@ -21,6 +21,7 @@ var preparation=false;
 var showingFeedback=false;
 var loadingInfo=false;
 var resumingExperiment=false;
+var generatingKeys=false;
 
 var display=null;
  
@@ -33,6 +34,7 @@ var trialSequence=null;
 var trialID=1;
 var marks=[];
 var scrolling=[];
+var fixationGrid=[];
 var playPause=[];
 var numSlices=100;
 var cheatCode=false;
@@ -47,6 +49,13 @@ var googleToken=null;
 
 $( document ).ready(function() {
     document.getElementById('trial-container').onwheel = function(){ if(running) return false; }
+    $( document ).tooltip({
+        position: {
+            my: "center bottom-10",
+            at: "center top",
+        }
+      });
+      $( "input[type='checkbox']" ).checkboxradio();
 
     if(Cookies.get('experiments')){
         experiments=Cookies.get('experiments').split(",");
@@ -62,8 +71,12 @@ $( document ).ready(function() {
     if(subdomain=="dev"){
         cheatCode=true;
         version=version+"-dev";
-        $.get("/compilation.txt",function(d){
-            $(".credits").append("<div style='font-size:12px'>"+d+"</div>");
+        $.ajax({url: "/js/main.js", type:"HEAD"}).done((dd, s, xhr) => {
+            let d = new Date(Date.parse(xhr.getResponseHeader("Last-Modified")));
+            var dateStr = d.getFullYear() + "-" + ("0"+(d.getMonth()+1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2)
+                + " " + ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2);
+
+            $(".credits").append("<div style='font-size:12px'>"+dateStr+"</div>");
         });
         activateCheatCode();
     }
@@ -105,7 +118,7 @@ $( document ).ready(function() {
         $(".home-instructions").hide();
         $("#load-experiment-label").hide();
         $("#form-container img").after("<p>We found an experiment already started, please finish it before proceeding.</p>");
-        $("#form-container #start-experiment").after("<input type='button' id='delete-experiment' value='Delete data and restart'>");
+        $("#form-container #start-experiment").parent().after("<input type='button' id='delete-experiment' value='Delete data and restart'>");
     }
 
     if(params[0]=="experiment"){
@@ -153,6 +166,7 @@ $( document ).ready(function() {
             $("#calibration-dialog").show();
             $("#calibration-dialog .close").show();
             $(".background").css("filter","blur(4px)");
+            $("body").css({ overflow: 'hidden' });
             $(".background").css("opacity",".4");
             return false;
         }
@@ -278,7 +292,7 @@ $( document ).ready(function() {
 
     $("#stimulus-scroll-position").css("height",100*(currentSlice+1)/numSlices+"%");
     $(window).bind('mousewheel DOMMouseScroll', function(event){
-        if(!running || numSlices==1 || arr.config.options.multiple=="first") return;
+        if(!running || numSlices==1 || arr.config.options.multiple=="first" || preparation) return;
         if (event.originalEvent.wheelDelta > 0 || event.originalEvent.detail < 0) {
             // scroll up
             direction=-1;
@@ -423,7 +437,26 @@ $( document ).ready(function() {
 
     $(document).on( 
         'keydown', function(event) { 
-            if(showingFeedback){
+            //$(document).unbind( "keydown" );
+            if(generatingKeys){
+                
+                newKeys=$("#keys").val().split(',');
+                pressedKeyNow=newKeys.indexOf(event.code);
+                if(pressedKeyNow>-1){
+                    newKeys.splice(pressedKeyNow,1);
+                }else{
+                    newKeys.push(event.code);
+                }
+                $("#keys").val(newKeys.join(','));
+                $("#generate-keys").text("Edit...");
+                generatingKeys=false;
+                event.stopPropagation();
+                event.preventDefault();  
+                event.returnValue = false;
+                event.cancelBubble = true;
+                //console.log(event);
+                return false;
+            }else if(showingFeedback){
                 $("#feedback-container").hide();
                 saveTrial(-1);
             }else if(calibrating){
@@ -451,15 +484,15 @@ $( document ).ready(function() {
                 }
             }else if(responding && (event.which==32 || event.key=="Enter")){
 
-                if(event.which==32 && $(".textresponse").is(":focus")) return true;
+                if($(".textresponse").is(":focus")) return true;
 
                 responseDivs=$('.question');
 
                 responses=[];
                 for(r=0;r<responseDivs.length;r++){
                     resp=$(responseDivs[r]).find(".textresponse").val();
-                    //console.log(resp,$(responseDivs[r]).attr("value"));
-                    if((resp && resp=="") || (resp === undefined && $(responseDivs[r]).attr("value")=="-1"))
+                    //console.log(resp,resp=="");
+                    if((resp!=undefined && resp=="") || (resp === undefined && $(responseDivs[r]).attr("value")=="-1"))
                         return false;
                     else if(!resp)
                         resp=$(responseDivs[r]).attr("value");
@@ -470,6 +503,14 @@ $( document ).ready(function() {
             }else if(running){
                 if(preparation){
                     preparation=false;
+                    if(arr.config.options.timeout[currentSlice]>0){
+                        timeout=setTimeout(
+                            showResponse,
+                            arr.config.options.timeout[currentSlice],
+                            arr.config.options.ratings,
+                            arr.continueFrom+1
+                            );
+                    }
                     stimulusOn=Date.now();
                     $("#trial-container .text").hide();
                     $("#stimulus-container").show();
@@ -479,8 +520,12 @@ $( document ).ready(function() {
                         $("#stimulus .stimulus-img")[0].currentTime=0;
                         $("#stimulus .stimulus-img").trigger('play');
                     }
+                    
                     return;
                 }
+
+                if(Date.now()-stimulusOn<200) return; // check for double space
+
                 pressedKeyNow=allowedKeys.indexOf(event.code);
                 
                 if(pressedKeyNow > -1){ //spacebar
@@ -604,7 +649,7 @@ $( document ).ready(function() {
 
     $('body').on('click', '.rating',function(e) { //click on confidence rating
         rating = $(this).attr("num");
-        $(this).parent().attr("value",rating);
+        $(this).parent().parent().attr("value",rating);
         $(this).parent().find(".rating").removeClass("selected");
         $(this).toggleClass("selected");
         return false;
@@ -613,7 +658,7 @@ $( document ).ready(function() {
     $('body').on('mousemove', '.slider',function(e) {
         r=$(this).val();
         $(this).parent().find(".slider-value").html(r);  
-        $(this).parent().parent().attr('value',r);  
+        $(this).parent().parent().parent().attr('value',r);  
     });
 
     $( window ).resize(function() {
@@ -632,6 +677,7 @@ $( document ).ready(function() {
     });
     $(".close").click(function(){
         cancelPopup(animCalibration);
+        $("body").css({ overflow: 'auto' })
         calibrating=false;
     });
     $("#calibration-step1 .button").click(function(){
@@ -725,10 +771,10 @@ $( document ).ready(function() {
         hiddenElement.click();
 
         $("#form-box").html("<h3>Experiment created!</h3><p>Send your participants the following link:</p> \
-            <p><a href='experiment/"+options["id"]+"/' target='_blank'>https://www.psyphy.org/experiment/"+options["id"]+"/</a></p> \
+            <p><a href='experiment/"+options["id"]+"/' target='_blank'>https://psyphy.psych.ucsb.edu/experiment/"+options["id"]+"/</a></p> \
             <p style='margin-bottom:20px'></p>\
             <p>You will find your results in the following URL, <strong>copy this link somewhere!</strong></p> \
-            <p><a href='results/"+options["id"]+"/' target='_blank'>https://www.psyphy.org/results/"+options["id"]+"/</a></p>");
+            <p><a href='results/"+options["id"]+"/' target='_blank'>https://psyphy.psych.ucsb.edu/results/"+options["id"]+"/</a></p>");
           
 
         //document.getElementById('form_container').prepend(document.createElement('br'));
@@ -774,6 +820,99 @@ $( document ).ready(function() {
     $("#delete-experiment").on('click',function(){
         Cookies.remove('psyphy',{path: window.location.pathname});
         location.reload();
+    });
+
+    $("#generate-keys").click(function(){
+        generatingKeys=true;
+        $(this).text("Press a key");
+    });
+
+    $("#advanced-options").click(function(){
+        $("#advanced-options-dialog").show();
+        $("#advanced-options-dialog .close").show();
+        $(".background").css("filter","blur(4px)");
+        $(".background").css("opacity",".4");
+        $("body").css({ overflow: 'hidden' });
+    });
+
+    $('body').on('change', '.advanced-options-new',function(){
+        val=$(this).val();
+        added="<input class='advanced-option-question' type='text' placeholder='Text for the question (optional)' size='30'/> Correct response: <input type='text' class='correct-option' title='Optional. Introduce the correct response (e.g. Car)' />";
+        if(val=="select"){
+            added+="<ol><li><input type='text' placeholder='Option'/></li><li class='advanced-select-add'><i class='fas fa-plus'></i></li></ol>";
+        }else if(val=="ratings"){
+            added+="<ul><li>Maximum rating: <input type='number' value='100' /></li></ul>";
+        }else if(val=="none"){
+            added="";
+        }
+
+        $(this).parent().find(".options").html(added);
+    });
+
+    $(".advanced-option-add").click(function(){
+        num=parseInt($(".advanced-option").last().attr("num"));
+        options=$(".advanced-option").last().find("select").html();
+        added='<div class="advanced-option" num="'+(num+1)+'"><span class="advanced-option-delete"><i class="fas fa-trash-alt"></i></span><select class="advanced-options-new">'+options+'</select><span class="options"></span></div>';
+        $(this).before(added);
+    });
+
+    $('body').on('click', '.advanced-select-add', function(){
+        added="<li><input type='text' placeholder='Option'/> <span class='advanced-select-delete'><i class='fas fa-trash-alt'></i></span></li>";
+        $(this).before(added);
+    });
+    $('body').on('click', '.advanced-select-delete, .advanced-option-delete', function(){
+        $(this).parent().remove();
+    });
+    $("#advanced-options-dialog .button").click(function(){
+        options=$(".advanced-option");
+        downloadOptions={};
+        customResponse=[];
+        correctResponse=[];
+        for(i=0;i<options.length;i++){
+            type=$(options[i]).find("select").val();
+            newOption={question:$(options[i]).find(".advanced-option-question").val()};
+            if(type!="none"){
+                newOption.type=type;
+                newCorrect="";
+                if(type=="ratings"){
+                    newOption.max=$(options[i]).find("input[type='number']").val();
+                    
+                }else if(type=="select"){
+                    newSelect=[];
+                    selectOptions=$(options[i]).find("ol input[type='text']");
+                    for(j=0;j<selectOptions.length;j++){
+                        newSelect.push($(selectOptions[j]).val());
+                    }
+                    newOption.options=newSelect;
+                }
+                customResponse.push(newOption);
+                correctResponse.push($(options[i]).find(".correct-option").val());
+            }
+        }
+        if($(".advanced-options-text").val()!="")
+            downloadOptions.text=$(".advanced-options-text").val();
+        if($(".advanced-options-key").val()!="")
+            downloadOptions.correctKey=$(".advanced-options-key").val();
+        
+        if(customResponse.length>0){
+            downloadOptions.customResponse=customResponse;
+            downloadOptions.correctResponse=correctResponse;
+        }
+
+        if(Object.entries(downloadOptions).length!=0){
+
+            var hiddenElement = document.createElement('a');
+            hiddenElement.href = 'data:attachment/text,' + JSON.stringify(downloadOptions);
+            hiddenElement.target = '_blank';
+            hiddenElement.download = 'info.json';
+            hiddenElement.click();
+        }
+            //
+
+        $(".background").css("filter","none");
+        $(".background").css("opacity","1");
+        $("body").css({ overflow: 'auto' })
+        $("#advanced-options-dialog").hide();
     });
 
 });

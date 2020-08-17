@@ -39,9 +39,25 @@ $client->addScope('https://www.googleapis.com/auth/drive.readonly');
 $service = new Google_Service_Drive($client);
 
 if(isset($_GET['id'])){
-    $fileId=sanitize_participant($_GET['id']);
+    $fileId=sanitize_id($_GET['id']);
 
-    $file=$service->files->get($fileId, array('alt' => 'media'));
+    try{
+        $file=$service->files->get($fileId, array('alt' => 'media'));
+        header('Content-Type: application/octet-stream');
+        header('Content-Type: ' . $file->getHeaders()["Content-Type"][0]);
+        //header('Content-Disposition: attachment; filename='.basename($this->real_file));
+        //header('Content-Disposition: attachment; filename=stimuli');
+        header('Expires: 0');
+        header('Pragma: public');
+        header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+        //header('Content-Length: ' . get_real_size($this->real_file));
+        header("Content-Description: File Transfer");
+        //header('Content-Length: ' . $file->getFileSize());
+
+        echo($file->getBody());
+    }catch(Exception $e) {
+        header("HTTP/1.0 404 Not Found");
+    }
     /*$results = $service->files->get($fileId, array("alt" => "media"));
 
     if($results->getResponseHttpCode() == 200){
@@ -50,18 +66,7 @@ if(isset($_GET['id'])){
     //print_r(get_class_methods($file));
 //print_r($file->getHeaders());
 
-header('Content-Type: application/octet-stream');
-header('Content-Type: ' . $file->getHeaders()["Content-Type"][0]);
-//header('Content-Disposition: attachment; filename='.basename($this->real_file));
-//header('Content-Disposition: attachment; filename=stimuli');
-header('Expires: 0');
-header('Pragma: public');
-header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
-//header('Content-Length: ' . get_real_size($this->real_file));
-header("Content-Description: File Transfer");
-//header('Content-Length: ' . $file->getFileSize());
 
-    echo($file->getBody());
 /*
     $httpRequest = new Google_HttpRequest($file->getDownloadUrl(), 'GET', null, null);
     $httpRequest = $service->getClient()->getAuth()->authenticatedRequest($httpRequest);

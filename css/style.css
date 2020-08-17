@@ -1,5 +1,5 @@
 body{
-    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    font-family: 'Nunito', Verdana, sans-serif;
     /*background-color:rgb(128,128,128);*/
     background-color: #39302a;
     color:white;
@@ -39,7 +39,7 @@ strong{
     margin: auto;
     margin-top: 5%;
     padding:20px;
-    font-size:20px;
+    font-size:18px;
     position: relative;
 }
 .form-box .created {
@@ -47,8 +47,8 @@ strong{
 }
 .created li{
     list-style: none;
-    font-size: 23px;
-    line-height: 34px;
+    font-size: 18px;
+    line-height: 22px;
 }
 .created li a{
     width: 50px;
@@ -80,6 +80,7 @@ a[id=download]:hover, #load-experiment-label:hover, #google-drive-result ul li:h
 }
 
 input[type="text"], input[type="number"], select, input[type="password"], input[type="submit"]{
+    font-family: 'Nunito', Verdana, sans-serif;
 	border: 3px solid rgb(229, 72, 35);
 	background: rgb(57, 48, 42);
 	color:white;
@@ -94,20 +95,38 @@ input[type="text"]:hover, input[type="number"]:hover, select:hover{
     background: rgb(73, 57, 47);
 }
 
+#response-container input[type="text"], #response-container textarea{
+    background: #5f5f5f;
+    color: white;
+    border: 2px solid greenyellow;
+    font-size: 90%;
+    width: 50px;
+    text-transform: uppercase;
+}
+
+#response-container textarea{
+    width:80%;
+    margin:auto;
+}
+#response-container textarea::placeholder{
+    color:lightgray
+}
+/*
 .textresponse{
     display:block;
-}
+}*/
 
 
 .form-box input[type="text"], .form-box select, .form-box input[type="password"], .form-box input[type="number"]{
     border-width: 1px;
 }
-.form-box input[type="button"], .form-box input[type="submit"]{
+.form-box input[type="button"], .form-box input[type="submit"], #advanced-options-dialog input, #advanced-options-dialog select{
     border-width:2px;
     font-size:14px; 
-    height:17px;
+    height:25px;
     line-height: 0px;
-    margin:auto;
+    
+    border-width: 1px;
 }
 
 input[id="name"]{
@@ -117,6 +136,7 @@ input[id="name"]{
 }
 
 input[type="button"], .button, input[type="submit"],button{
+    font-family: 'Nunito', Verdana, sans-serif;
 	border: 3px solid rgb(229, 72, 35);
 	background: rgb(57, 48, 42);
 	color:white;
@@ -353,6 +373,11 @@ input[type="button"].disabled{
     border-top: 1px solid white;
 }
 
+.question .options{
+    margin: auto;
+    display: inline-block;
+}
+
 #confidence-scale{
     width: fit-content;
     width: -moz-fit-content;
@@ -495,9 +520,43 @@ table td{
     text-align: center;
 }
 
+.tooltip{
+    cursor:help;
+}
+.tooltip:hover{
+    color:#cccccc;
+}
+.ui-tooltip, .ui-button {
+    padding: 5px 5px;
+    color: white;
+    box-shadow: 0 0 7px black;
+    background:rgb(57, 48, 42);
+    border:1px solid rgb(229, 72, 35);
+    font-family: 'Nunito', Verdana, sans-serif;
+    font-size:16px;
+}
+
+.ui-button{
+    box-shadow:none;
+    border-radius:0;
+}
+.ui-button:hover, .ui-button.ui-state-active:hover{
+    background:rgb(229, 72, 35);
+    border:1px solid rgb(229, 72, 35);
+    color: white;
+}
+.ui-button .ui-icon{
+    background-color: #ffffff;
+    border-radius:0;
+}
+
+.ui-state-active{
+    background:rgb(229, 72, 35);
+}
 .form-box input, .form-box p{
     margin:0;
-    margin-bottom:2px;
+    margin-bottom:0px;
+    font-size:16px;
 }
 .form-box #create-experiment{
     margin-top:10px;
@@ -509,8 +568,32 @@ table td{
 }
 .form-box #create-toggle{
     display:none;
+    position: relative;
 }
 
+.form-box #advanced-options{
+    position:absolute;
+    right:10px;
+    top:10px;
+}
+.form-box #advanced-options:hover,.advanced-option-add:hover, .advanced-select-add:hover,.advanced-option-delete:hover,.advanced-select-delete:hover{
+    cursor:pointer;
+    color:rgb(229,72,35);
+}
+
+#advanced-options-list{
+    height: inherit;
+    overflow-y: auto;
+    background-color:#251f1b;
+    padding-bottom: 62px;
+}
+
+#advanced-options-dialog{
+    overflow: hidden;
+}
+#advanced-options-dialog ol, #advanced-options-dialog ul{
+    margin: 0;
+}
 .form-box input[type="checkbox"]{
     height: 23px;
     background-color: rgb(57, 48, 42);
@@ -525,6 +608,39 @@ table td{
 input[type="file"] {
     display: none;
 }
+
+.advanced-option {
+    text-align: left;
+    margin: auto;
+    width: 80%;
+}
+
+.advanced-option input[type="number"]{
+    width:75px;
+}
+
+.advanced-option input{
+    margin: 2px 10px;
+}
+
+.advanced-option-add{
+    font-size:30px;
+    margin-top:10px;
+}
+
+.advanced-select-add{
+    padding-left: 110px;
+    list-style: none;
+    font-size: 20px;
+}
+
+.advanced-option-delete{
+    margin-left: -25px;
+    width: 25px;
+    display: inline-block;
+}
+
+
 #load-experiment-label{
     border: 2px solid rgb(229, 72, 35);
     display: inline-block;
@@ -533,8 +649,9 @@ input[type="file"] {
 }
 
 #google-drive-result {
-    overflow-y: scroll;
+    overflow-y: auto;
     height: inherit;
+    background-color:#251f1b;
 }
 
 #google-drive-result ul{
@@ -549,6 +666,7 @@ input[type="file"] {
     padding:10px;
     border: 1px solid rgb(229, 72, 35);
     cursor: pointer;
+    background-color: rgb(57, 48, 42);
 }
 
 #google-drive-result ul li .files-found{
@@ -608,7 +726,8 @@ input[type="file"] {
 .mafc6 .stimulus-img:nth-child(4), 
 .mafc7 .stimulus-img:nth-child(5), 
 .mafc8 .stimulus-img:nth-child(5),
-.mafc9 .stimulus-img:nth-child(4), .mafc9 .stimulus-img:nth-child(7){
+.mafc9 .stimulus-img:nth-child(4), 
+.mafc9 .stimulus-img:nth-child(7), .clear{
     clear:both;
 }
 
@@ -662,6 +781,22 @@ input[type="file"] {
     padding:10px;
 }
 
+#fixation-grid{
+    display:none;
+    /*border: 1px solid black;*/
+}
+
+#fixation-grid .fixation-cell{
+    border: 1px solid black;
+    float:left;
+    box-sizing: border-box;
+    font-size: 200%;
+}
+#fixation-grid .fixation-cell:hover{
+    background:darkgray;
+    cursor: pointer;
+}
+
 #force-reload {
     font-size: 200%;
     width: fit-content;
@@ -691,7 +826,6 @@ hr{
     width:66%;
     padding:20px;
     border:3px solid rgb(229, 72, 35);
-    display:none;
     color: rgb(255, 255, 255);
     background: #8a0505;
     font-weight: bold;

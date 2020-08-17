@@ -1,5 +1,5 @@
 $( document ).ready(function() {
-    $('body').on('click', '.results .delete',function(e) {
+    $('body').on('dblclick', '.results .delete',function(e) {
         id=$(this).parent().attr('name');
         experimentid=$(".results").attr("id");
         payload={"delete":id,"password":Cookies.get('password')};
@@ -40,15 +40,17 @@ function loadParticipantCloud(p,force=0){
             elem="<li><div num='"+num+"' class='loading name' name='"+p+"'><i class='fas fa-hourglass fa-spin'></i></div></li>";
             $(".results").append(elem);
             $("#download-form").hide();
+            $("#delete-form").hide();
         },
         success: function(data){            
             num=$(".results .loading[name='"+p+"']").attr("num");
             name=p.split('-').slice(0, -1).join('-');
-            elem="<div class='name' name='"+p+"'><div class='delete' title='Delete'><i class='fas fa-trash-alt'></i></div><i class='fas fa-user'></i><br> #"+(num)+"</div>"+name+" <div class='date'>"+parseInt(100*data.progress)+"%</div><div class='date'>"+data.mostRecent+"</div>";
+            elem="<div class='name' name='"+p+"'><div class='delete' title='Double click to delete'><i class='fas fa-trash-alt'></i></div><i class='fas fa-user'></i><br> #"+(num)+"</div>"+name+" <div class='date'>"+parseInt(100*data.progress)+"%</div><div class='date'>"+data.mostRecent+"</div>";
             $(".results .loading[name='"+p+"']").replaceWith(elem);
             
             if($(".results li .loading").length==0){
                 $("#download-form").show();
+                $("#delete-form").show();
             }
             $("#force-reload").removeClass("fa-spin");
         },
@@ -56,10 +58,11 @@ function loadParticipantCloud(p,force=0){
             console.log("ERROR");
             num=$(".results .loading[name='"+p+"']").attr("num");
             name=p.split('-').slice(0, -1).join('-');
-            elem="<div class='name' name='"+p+"'><div class='delete' title='Delete'><i class='fas fa-trash-alt'></i></div><i class='fas fa-user'></i></div>Missing participant! Please force reload</div>";
+            elem="<div class='name' name='"+p+"'><div class='delete' title='Double click to delete'><i class='fas fa-trash-alt'></i></div><i class='fas fa-user'></i></div>Missing participant! Please force reload</div>";
             $(".results .loading[name='"+p+"']").replaceWith(elem);
             if($(".results li .loading").length==0){
                 $("#download-form").show();
+                $("#delete-form").show();
             }
             $("#force-reload").removeClass("fa-spin");
         }

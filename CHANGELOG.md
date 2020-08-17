@@ -3,6 +3,22 @@ All notable changes to this project will be documented in this file.
  
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.11.0] - 2020-08-17
+- New: information json file generator
+- New: option for showing a fixation grid and ask participants which code they saw after the trial
+- New: allowed keys selection is now done using the keyboard
+- New: Added option to delete experiment
+- Improved timeout behavior
+- Switched to `textfield` for `text` type responses, the basic `text` input field remains as `code` type responses in the information file
+- When stimuli cannot be loaded, an option to login with Google will show up to avoid bans, feature in testing
+- Changed font type
+- Relocated checkboxes in experiment options
+- Disabled mouse wheel when a popup is showing
+- Improved stimuli gathering screen
+- Centered option responses
+- Fixed bug when loading information json file
+- Fixed bug that allowed scrolling before the trial started
+
 ## [1.10.0] - 2020-07-28
 - New option for sequential images in a trial, replaces first
 - Timeouts for sequential images can be separated by commas in the input field

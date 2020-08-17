@@ -2,7 +2,7 @@
 //HELPER FUNCTIONS
 
 function sanitize_id($string){
-    return substr(preg_replace('/[^[:alnum:]-]/', '', $string),0,100);
+    return substr(preg_replace('/[^[:alnum:]-_]/', '', $string),0,100);
 }
 
 function sanitize_participant($participant){

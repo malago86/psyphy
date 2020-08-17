@@ -9,7 +9,9 @@
 <script src="https://cdn.jsdelivr.net/npm/mobile-detect@1.4.4/mobile-detect.min.js"></script>
 <script src="/js/functions.js"></script>
 <script src="/js/main.js"></script>
+<script src="/js/grid.js"></script>
 <script src="/js/google_drive.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nunito">
 <link rel="stylesheet" type="text/css" href="/css/style.css">
 <link rel="icon" href="/favicon.ico" type="image/x-icon" />
 <link href="/css/fontawesome.css" rel="stylesheet"> 
@@ -19,8 +21,8 @@
         <div id="form-container">
             <img src="/images/psyphy.png" class="logo" width="600">
             
-            <p class="home-instructions"><strong>Try the test experiment: </strong>Enter your name and click on Start. Calibration will start first.</p>
-            <p class="home-instructions"><strong>Load your experiment:</strong> Upload an experiment file to load experiment configuration. <br>Enter your name and click on Start. Calibration will start first.</p>
+            <p class="home-instructions"><strong>Try the test experiment: </strong>Enter your participant ID and click on Start. Calibration will start first.</p>
+            <p class="home-instructions"><strong>Load your experiment:</strong> Upload an experiment file to load experiment configuration. <br>Enter your participant ID and click on Start. Calibration will start first.</p>
             
             <div class="credits">Developed by <a href="javascript:location='mailto:\u006c\u0061\u0067\u006f\u0040\u0070\u0073\u0079\u0063\u0068\u002e\u0075\u0063\u0073\u0062\u002e\u0065\u0064\u0075';void 0">Miguel Lago</a><br>
                 for <a href="https://viu.psych.ucsb.edu" target="_blank">VIU lab at UCSB</a>
@@ -28,14 +30,18 @@
                 version <a id="version" href="https://gitlab.com/malago/psyphy" target="_blank"></a>
             </div> 
             
-            <div class="error"></div>
+            <div class="error" style='display:none'></div>
 
-            <div class="dev hidden">
-
-    <pre id="content" style="white-space: pre-wrap;"></pre>
+            <div class="dev">
+                <pre id="content" style="white-space: pre-wrap;"></pre>
             </div>
             
-            <p><input id="name" type="text" placeholder="Name" value="" /> <input type="button" id="start-experiment" value="Start!" /></p>
+            <p><input id="name" type="text" placeholder="Participant ID" value="" /> <input type="button" id="start-experiment" value="Start!" />
+                <span id="google-login" class="hidden">
+                    <button id="authorize_button" onclick="handleAuthClick();" style="padding:5px" title="Login with Google"><i class="fab fa-google"></i></button>
+                    <button id="signout_button" style="display: none;" onclick="handleSignoutClick();" title="Sign Out from Google"><i class="fas fa-sign-out-alt"></i></button>
+                </span>
+            </p>
             <p>By clicking on Start you accept the experiment conditions and consent form (if given).</p>
             <label id="load-experiment-label" for="load-experiment"><i class="fas fa-file-upload"></i> Upload experiment file</label>
             
@@ -60,11 +66,12 @@
                 margin-bottom: 15px;
                 width: 80%;" id="create-title"><i class="far fa-plus-square icon"></i> Create experiment</p>
                 <div id="create-toggle">
+                    <div title="Generate advanced options" id="advanced-options"><i class="fas fa-external-link-alt"></i></div>
                     <p><h3><a href="https://gitlab.com/malago/psyphy/-/wikis/home" target="_blank">See tutorial</a></h3></p>
                     <table>
                         <tr>
                             <th>Title</th>
-                            <td><input id="title" type="text" style="font-size:20px; width:100%;text-align:center" placeholder="optional"/></td>
+                            <td><input id="title" type="text" style="width:100%;text-align:center" placeholder="optional"/></td>
                         </tr>
                         <tr>
                             <th>Instructions URL</th>
@@ -80,15 +87,11 @@
                             </td>
                         </tr>
                         <tr>
-                            <th><abbr title="Allow double click to mark the stimulus">Marks</abbr></th>
-                            <td><input id="mark" type="checkbox" style="font-size:20px; width:100%;text-align:center"/></td>
+                            <th>Allowed keys <i title="Comma-separated list of allowed keyboard key codes to continue" class="tooltip far fa-question-circle"></i></th>
+                            <td><input id="keys" type="text" value="Space" style="font-size:80%;color:#b7b7b7;width:60%;text-align:center;float: left;line-height: 23px;" disabled="disabled"/><div id="generate-keys" class="button" style="border-width: 1px;height: 100%;margin: 0;display: block;float: right;line-height: 5px;margin-left: 2px;font-size: 80%;"/>Edit...</div>
                         </tr>
                         <tr>
-                            <th><a href="https://keycode.info/" target="_blank" title="Comma-separated list of allowed keyboard key codes to continue">Allowed keys</a></th>
-                            <td><input id="keys" type="text" value="Space" style="width:100%;text-align:center"/></td>
-                        </tr>
-                        <tr>
-                            <th><abbr title="Randomize">Randomize trials</abbr></th>
+                            <th>Randomize trials</th>
                             <td>
                                 <select id="randomize" style="width:100%;font-size:16px;margin-top:0;height:26px;">
                                     <option value="all" title="Randomize all trials regardless of the condition">Randomize all</option>
@@ -100,9 +103,9 @@
                             </td>
                         </tr>
                         <tr>
-                            <th><abbr title="Behavior if several images are found in each stimulus folder">Multiple stimuli</abbr></th>
+                            <th>Multiple stimuli <i title="Behavior if several images are found in each stimulus folder" class="tooltip far fa-question-circle"></i></th>
                             <td>
-                                <select id="multiple" style="margin-top:0;height:26px;font-size:16px;width:100%">
+                                <select id="multiple" style="font-size:16px;margin-top:0;height:26px;width:100%">
                                     <option value="first" title="Trial images will be displayed sequentially">Sequential (default)</option>
                                     <option value="MAFC" title="Trial images will be shown in a 2D grid">MAFC (grid)</option>
                                     <option value="MAFCcircle" title="Trial images will be shown in a circle">MAFC (circle)</option>
@@ -111,12 +114,15 @@
                             </td>
                         </tr>
                         <tr>
-                            <th><abbr title="Recalibration interval in minutes, set to empty or 0 to disable">Calibration interval</abbr></th>
-                            <td><input id="calibration" type="number" placeholder="calibration" style="font-size:20px; width:100%;text-align:center" value="10"/></td>
+                            <th>Calibration interval <i title="Recalibration interval in minutes, set to empty or 0 to disable" class="tooltip far fa-question-circle"></i></th>
+                            <td><input id="calibration" type="number" placeholder="calibration" style="width:100%;text-align:center" value="10"/></td>
                         </tr>
                         <tr>
-                            <th>Trial timeout (<abbr title="milliseconds, set to empty or 0 to disable">ms</abbr>)</th>
-                            <td><input id="timeout" type="text" placeholder="optional" style="font-size:20px; width:100%;text-align:center"/></td>
+                            <th>Trial timeout (ms) <i title="In milliseconds, set to empty or 0 to disable" class="tooltip far fa-question-circle"></i></th>
+                            <td><input id="timeout" type="text" placeholder="optional" style="width:100%;text-align:center"/></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2"><input id="mark" type="checkbox" name="mark" style="width:100%;text-align:center"/><label for="mark">Marks <i title="Allow double click to mark the stimulus" class="tooltip far fa-question-circle"></i></label> <input id="fixationGrid" type="checkbox" style="width:100%;text-align:center" name="fixationGrid"/><label for="fixationGrid">Fixation Grid <i title="Activate to show a fixation grid and ask the participant which code they saw" class="tooltip far fa-question-circle"></i></label></td>
                         </tr>
                     </table>
                     <br><input type="button" id="google-drive-select" value="Find stimuli on Google Drive" /><br>
@@ -147,6 +153,9 @@
                     <div id="stimulus-scroll-bar">
                         <div id="stimulus-scroll-background"></div>
                         <div id="stimulus-scroll-position"></div>
+                    </div>
+                    <div id="fixation-grid">
+                        
                     </div>
                     <!--<div class="instructions" id="trial-spacebar">Press SPACEBAR to continue</div>-->
                 </div>
@@ -237,5 +246,35 @@
         <div class="button">Finish</div>
     </div>
 
+    <div class="popup" id="advanced-options-dialog">
+        <div class="close">&#10060;</div>
+        <h2>Advanced options generator</h2>
+        <table style="width:66%;margin:auto">
+            <tr><td style="width: 30%;text-align: right;">Text before the trial:</td><td><input type="text" style="width:90%;margin: 0;" class="advanced-options-text" title="Optional. Text to be shown before the trial starts" /></td></tr>
+            <tr><td style="width: 30%;text-align: right;">Correct key:</td><td><input type="text" style="width:90%;margin: 0;" class="advanced-options-key" title="Optional. Correct key pressed on the keyboard from the list of allowed keys"/></td></tr>
+        </table>
+        <h3>Custom questions:</h3>
+        <div id="advanced-options-list">
+            <div class="advanced-option" num="0">
+                <select class="advanced-options-new">
+                    <option value="none">None</option>
+                    <option value="text" title="Text input field">Text</option>
+                    <option value="select" title="Selection of options">Options</option>
+                    <option value="ratings" title="Rating scale">Ratings</option>
+                </select><span class="options"></span>
+            </div>
+            <div class="advanced-option-add">
+                <i class="fas fa-folder-plus"></i>
+            </div>
+        </div>
+        <div class="button" title="Place the downloaded file inside the trial folder">Download and close</div>
+    </div>
+
     <div id="cheatcode" class="hidden"><i class='fas fa-bug'></i></div>
+
+    <script async defer src="https://apis.google.com/js/api.js"
+      onload="this.onload=function(){};handleClientLoad()"
+      onreadystatechange="if (this.readyState === 'complete') this.onload()">
+    </script>
+
 </body>

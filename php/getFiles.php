@@ -43,32 +43,44 @@ $client->addScope('https://www.googleapis.com/auth/drive.readonly');
 $service = new Google_Service_Drive($client);
 
 if(isset($_GET['drive-folder-id'])){
-    $driveFolderId=$_GET['drive-folder-id'];
-    $driveFolderId=explode("/",$driveFolderId);
-    $driveFolderId=end($driveFolderId);
+    $url=parse_url($_GET['drive-folder-id']);
+    if(strcmp($url["path"],"/open")==0){
+        $driveFolderId=explode("&",$url["query"])[0];
+        $driveFolderId=explode("=",$driveFolderId);
+        $driveFolderId=end($driveFolderId);
+    }else{
+        $driveFolderId=explode("?",$_GET['drive-folder-id'])[0];
+        $driveFolderId=explode("/",$driveFolderId);
+        $driveFolderId=end($driveFolderId);
+    }
     $optParams = array(
         'pageSize' => 1000,
         'orderBy' => 'name_natural',
         'fields' => 'nextPageToken, files(id, name, mimeType)',
         'q' => "'".$driveFolderId."' in parents",
     );
-    $results = $service->files->listFiles($optParams);
 
-    //echo ("<h2>Select your present folder</h2>");
-    //echo ("<ul class='folder-list'>");
-    $result=Array();
+    try{
+        $results = $service->files->listFiles($optParams);
 
-    if (count($results->getFiles()) == 0) {
-        print "No files found.\n";
-    } else {
-        foreach ($results->getFiles() as $file) {
-            if(isFolder($file))
-                array_push($result,Array("id"=>$file->getId(),"name"=>$file->getName()));
-                //echo("<li class='folder-item' drive-id='".$file->getId()."'>".$file->getName()."</li>");
+        //echo ("<h2>Select your present folder</h2>");
+        //echo ("<ul class='folder-list'>");
+        $result=Array();
+
+        if (count($results->getFiles()) == 0) {
+            print "No files found.\n";
+        } else {
+            foreach ($results->getFiles() as $file) {
+                if(isFolder($file))
+                    array_push($result,Array("id"=>$file->getId(),"name"=>$file->getName()));
+                    //echo("<li class='folder-item' drive-id='".$file->getId()."'>".$file->getName()."</li>");
+            }
         }
+        echo json_encode($result);
+    }catch(Exception $e) {
+        header("HTTP/1.0 404 Not Found");
     }
-
-    echo json_encode($result);
+    
 }elseif(isset($_GET['drive-file-id'])){
     $driveFolderId=$_GET['drive-file-id'];
     $driveFolderId=explode("/",$driveFolderId);
