@@ -6,7 +6,7 @@ deploy:
       stage: deploy
       script:
         - apt-get update -qq && apt-get install -y -qq lftp
-        - lftp sftp://$USERNAME:$PASS@$HOST -e 'set sftp:auto-confirm yes;set ssl:verify-certificate no;mirror -Rvvvpn ./ /home/www/apps/psyphy --exclude-glob .git* --exclude .git/; CHMOD 775 /home/www/apps/psyphy/experiment; CHMOD 775 /home/www/apps/psyphy/results; exit;'
+        - lftp sftp://$USERNAME:$PASS@$HOST -e 'set sftp:auto-confirm yes;set ssl:verify-certificate no;mirror -Rpn ./ /home/www/apps/psyphy --exclude-glob .git* --exclude .git/ --verbose; CHMOD 775 /home/www/apps/psyphy/experiment; CHMOD 775 /home/www/apps/psyphy/results; exit;'
         - echo "deployment complete in $DIR"
       only:
         - master
