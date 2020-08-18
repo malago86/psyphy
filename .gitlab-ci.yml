@@ -19,9 +19,11 @@ variables:
 deploy_all:
   stage: deploy
   script:
-    - git config git-ftp.url "sftp://$HOST/home/www/apps/psyphy"
+    - git config git-ftp.url "sftp://$HOST"
     - git config git-ftp.password "$PASS"
     - git config git-ftp.user "$USERNAME"
+    - git config git-ftp.remote-root "/home/www/apps/psyphy/"
+    - git config git-ftp.insecure
     - git ftp init
     - git ftp push  -m "Add new content"
 
