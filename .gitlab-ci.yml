@@ -4,28 +4,11 @@ variables:
   PASS: $PASSWORD
   DIR: $DIRECTORY
 
-#deploy:
-#      stage: deploy
-#      script:
-#        - apt-get update -qq && apt-get install -y -qq lftp
-#        - lftp sftp://$USERNAME:$PASS@$HOST -e 'set sftp:auto-confirm yes;set ssl:verify-certificate no;mirror -Rpn ./ /home/www/apps/psyphy --exclude-glob .git* --exclude .git/ --verbose; CHMOD 775 /home/www/apps/psyphy/experiment; CHMOD 775 /home/www/apps/psyphy/results; exit;'
-#        - echo "deployment complete in $DIR"
-#      only:
-#        - master
-
-  
-
-
-deploy_all:
-  stage: deploy
-  script:
-    - git config git-ftp.url "sftp://$HOST"
-    - git config git-ftp.password "$PASS"
-    - git config git-ftp.user "$USERNAME"
-    - git config git-ftp.remote-root "home/www/apps/psyphy/"
-    - git config git-ftp.insecure 1
-    - git ftp init
-    - git ftp push  -m "Add new content"
-
-  only:
-    - master
+deploy:
+      stage: deploy
+      script:
+        - apt-get update -qq && apt-get install -y -qq lftp
+        - lftp sftp://$USERNAME:$PASS@$HOST -e 'set sftp:auto-confirm yes;set ssl:verify-certificate no;mirror -Rpn ./ /home/www/apps/psyphy --exclude-glob .git* --exclude .git/ --verbose; CHMOD 775 /home/www/apps/psyphy/experiment; CHMOD 775 /home/www/apps/psyphy/results; exit;'
+        - echo "deployment complete in $DIR"
+      only:
+        - master

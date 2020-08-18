@@ -201,6 +201,7 @@ $( document ).ready(function() {
         if(arr.continueFrom>0){
             resuming=true;
             name=arr.name;
+            arr.continueFrom--;
             trialID=trialSequence[arr.continueFrom];
         }
 
