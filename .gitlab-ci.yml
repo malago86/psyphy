@@ -1,4 +1,4 @@
-image: mwienk/docker-git-ftp
+image: ruby:2.5
 
 variables:
   PASS: $PASSWORD

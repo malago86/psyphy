@@ -242,6 +242,7 @@ $( document ).ready(function() {
                 dataType: "json",
                 success: function(data){
                     arr=data;
+                    arr.continueFrom--;
                     beginExperiment(true);
                 },
                 error: function(data){

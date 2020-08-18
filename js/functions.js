@@ -676,12 +676,12 @@ function saveTrial(responses){
         }
         
         arr.data.push({
-            trialID:arr.trialSequence[arr.continueFrom],
+            trialID:arr.trialSequence[arr.sortIndexes[arr.continueFrom]],
             responses:responses,
             info:stimuli.info,
             stimulusOn:stimulusOn,
             stimulusOff:stimulusOff,
-            condition:arr.conditionSequence[arr.continueFrom],
+            condition:arr.conditionSequence[arr.sortIndexes[arr.continueFrom]],
             marks:marks,
             playPause:playPause,
             pressedKey:pressedKey,
@@ -700,7 +700,7 @@ function saveTrial(responses){
             $("#finished-container").show();
             finishExperiment(arr);
         }else{
-            trialID=arr.trialSequence[arr.continueFrom];
+            trialID=arr.trialSequence[arr.sortIndexes[arr.continueFrom]];
             marks=[];
             pressedKey=[];
             scrolling=[];
@@ -917,7 +917,7 @@ function beginExperiment(resuming){
         uploadParticipant();
     }
 
-    trialID=arr.trialSequence[arr.continueFrom];
+    trialID=arr.trialSequence[arr.sortIndexes[arr.continueFrom]];
 
     if(!arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.feedbackFiles){
         arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.feedbackFiles=[];
