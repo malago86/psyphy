@@ -76,7 +76,7 @@ $defaultBucket = $storage->getBucket();
         }
         if($password && isset($_POST['password'])){
 
-            if(isset($_POST['delete'])){
+            if(isset($_POST['delete-experiment'])){
                 /*if(isset($_COOKIE['experiments'])){
                     $expCookies=explode(",",$_COOKIE['experiments']);
                     $newCookie="";
@@ -373,7 +373,7 @@ $defaultBucket = $storage->getBucket();
                 <form class="form-box" method="POST" action="." style="width:33%" id="delete-form">   
                     <i class="fas fa-bomb" style="position: absolute; top: 20px; left: 20px"></i> 
                     <input id="password-delete" type="password" name="password" placeholder="repeat password"/>
-                    <input type="submit" class='delete-results' value="Delete experiment" name="delete" title="This will delete the experiment and all associated data">
+                    <input type="submit" class='delete-results' value="Delete experiment" name="delete-experiment" title="This will delete the experiment and all associated data">
                 </form>
             <?php } ?>
         </div>
