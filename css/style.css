@@ -833,9 +833,14 @@ hr{
 .results .name{
     font-size:20px;
 }
-.results .date{    
+.results .date, .results .progress{    
     font-size: 11px;
     vertical-align: middle;
+}
+.results .progress{
+    position:absolute;
+    left:2px;
+    top:2px;
 }
 .results abbr{
     text-decoration: none;

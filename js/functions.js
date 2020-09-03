@@ -13,8 +13,12 @@ function moveLoadingBar(loaded, max){
         //console.log("move",loadingInfo);
         if(!loadingInfo)
             $("#stimulus-container").show();
+        
         window.scrollTo(0, 0);
         getDisplayParameters();
+        if($("#stimulus-container").height()>screen.height){ //does not fit in the screen
+            $(".stimulus-img").css("clear","none"); // do not break lines for MAFC
+        }
         stimulusOn=Date.now();
         if(arr.config.options.timeout[currentSlice]>0 && loading && !("text" in stimuli.info)){
             timeout=setTimeout(
@@ -32,7 +36,7 @@ function moveLoadingBar(loaded, max){
 function load_stimuli_drive(list,info,feedback){
     return new Promise((resolve,reject)=>{
         //list.push(...list);
-
+        
         MAFC=false;
         if(arr.config.options.multiple.localeCompare("first")==0){
             //list=[list[0]];
@@ -44,8 +48,9 @@ function load_stimuli_drive(list,info,feedback){
                 $("#stimulus").addClass("circle");
                 $("#stimulus-container").css("width","100%");
                 $("#stimulus-container").css("height","100%");
-            }else
+            }else{
                 $("#stimulus").addClass("mafc"+list.length);
+            }
             MAFC=true;
         }
         
@@ -77,7 +82,7 @@ function load_stimuli_drive(list,info,feedback){
             }).fail(function(data) {
                 loadingInfo=false;
                 $("#stimulus-container").show();
-                reject(stimuli);
+                //reject(stimuli);
             }).always(function(data){
                 loadTrialGoogleDrive(stimuli,list,feedback,MAFC);
                 resolve(stimuli);
@@ -464,10 +469,15 @@ function getDisplayParameters(){
 
         $('#help #distance-required').html("Distance required: "+parseInt(distance)+" cm");
         */
-        arr.config.display.blindSpotDistance=blindSpotDistance;
-        arr.config.display.pixelsPerDegree.push([(mean(arr.config.display.blindSpotDistance)/blindSpotDegrees),Date.now()]);
-        distance=(arr.config.display.pixelsPerDegree.slice(-1)[0][0]*(1/arr.config.display.pixelsPerCM)/Math.tan(1 * Math.PI/180));
-        arr.config.display.distance.push([distance,Date.now()]);
+
+        if(arr.config.options.calibration>0){
+            arr.config.display.blindSpotDistance=blindSpotDistance;
+            arr.config.display.pixelsPerDegree.push([(mean(arr.config.display.blindSpotDistance)/blindSpotDegrees),Date.now()]);
+            distance=(arr.config.display.pixelsPerDegree.slice(-1)[0][0]*(1/arr.config.display.pixelsPerCM)/Math.tan(1 * Math.PI/180));
+            arr.config.display.distance.push([distance,Date.now()]);
+        }else{
+            distance="not measured";
+        }
 
         $('#help #distance-required').html("Distance: "+parseInt(distance)+" cm ("+parseInt(distance/2.54)+" in)");
     }
@@ -725,6 +735,9 @@ function saveTrial(responses){
                             null);
                     }
                 }else{*/
+                    while(arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.stimulusFiles[arr.trialSequence[arr.sortIndexes[arr.continueFrom]]]==null){
+                        arr.continueFrom++;
+                    }
                     if(arr.trialSequence[arr.sortIndexes[arr.continueFrom]] in arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.feedbackFiles){
                         load_stimuli_drive(arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.stimulusFiles[arr.trialSequence[arr.sortIndexes[arr.continueFrom]]],
                             arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.infoFiles[arr.trialSequence[arr.sortIndexes[arr.continueFrom]]],
@@ -919,6 +932,10 @@ function beginExperiment(resuming){
 
     trialID=arr.trialSequence[arr.sortIndexes[arr.continueFrom]];
 
+    while(arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.stimulusFiles[arr.trialSequence[arr.sortIndexes[arr.continueFrom]]]==null){
+        arr.continueFrom++;
+    }
+
     if(!arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.feedbackFiles){
         arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.feedbackFiles=[];
     }
@@ -935,6 +952,7 @@ function beginExperiment(resuming){
         }
     }else{*/
         $("body").css("background-color","rgb(128,128,128)");
+        
         if(arr.trialSequence[arr.sortIndexes[arr.continueFrom]] in arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.feedbackFiles){
             load_stimuli_drive(arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.stimulusFiles[arr.trialSequence[arr.sortIndexes[arr.continueFrom]]],
                 arr.config.conditions[arr.conditionSequence[arr.sortIndexes[arr.continueFrom]]].stimuli.infoFiles[arr.trialSequence[arr.sortIndexes[arr.continueFrom]]],

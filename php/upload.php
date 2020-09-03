@@ -41,6 +41,9 @@ if(isset($_POST['results'])){
 
         $participant->continueFrom=$participant->continueFrom+1;
         $participant->config=$jsondata->config;
+        $participant->sortIndexes=$jsondata->sortIndexes;
+        $participant->conditionSequence=$jsondata->conditionSequence;
+        $participant->trialSequence=$jsondata->trialSequence;
 
         putFileCloud($myFile.$name."/".$name.".pso",json_encode($participant),$defaultBucket);
     }

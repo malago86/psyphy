@@ -45,7 +45,7 @@ function loadParticipantCloud(p,force=0){
         success: function(data){            
             num=$(".results .loading[name='"+p+"']").attr("num");
             name=p.split('-').slice(0, -1).join('-');
-            elem="<div class='name' name='"+p+"'><div class='delete' title='Double click to delete'><i class='fas fa-trash-alt'></i></div><i class='fas fa-user'></i><br> #"+(num)+"</div>"+name+" <div class='date'>"+parseInt(100*data.progress)+"%</div><div class='date'>"+data.mostRecent+"</div>";
+            elem="<div class='name' name='"+p+"'><div class='delete' title='Double click to delete'><i class='fas fa-trash-alt'></i></div><i class='fas fa-user'></i><br> #"+(num)+"</div>"+name+" <div class='progress'>"+parseInt(100*data.progress)+"%</div><div class='date'>"+data.mostRecent+"</div>";
             $(".results .loading[name='"+p+"']").replaceWith(elem);
             
             if($(".results li .loading").length==0){
@@ -55,7 +55,7 @@ function loadParticipantCloud(p,force=0){
             $("#force-reload").removeClass("fa-spin");
         },
         error: function(data){
-            console.log("ERROR");
+            console.log(data);
             num=$(".results .loading[name='"+p+"']").attr("num");
             name=p.split('-').slice(0, -1).join('-');
             elem="<div class='name' name='"+p+"'><div class='delete' title='Double click to delete'><i class='fas fa-trash-alt'></i></div><i class='fas fa-user'></i></div>Missing participant! Please force reload</div>";

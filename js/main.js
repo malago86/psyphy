@@ -1,5 +1,5 @@
 
-var version="1.11.0"; 
+var version="1.11.1"; 
 
 var md = new MobileDetect(window.navigator.userAgent);
 
@@ -242,7 +242,11 @@ $( document ).ready(function() {
                 dataType: "json",
                 success: function(data){
                     arr=data;
-                    arr.continueFrom--;
+                    arr.continueFrom=arr.continueFrom;
+                    if(arr.sortIndexes && arr.continueFrom==arr.sortIndexes.length){
+                        resetExperiment(1, calibrating, animCalibration,"You already finished this experiment");
+                        Cookies.remove('psyphy',{path: window.location.pathname});
+                    }
                     beginExperiment(true);
                 },
                 error: function(data){

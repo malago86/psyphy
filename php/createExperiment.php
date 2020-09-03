@@ -47,6 +47,10 @@ if(isset($_POST['experiment-id']) && isset($_POST['title']) && isset($_POST['exp
     $id=sanitize_id($_POST['load-id']);
     $participant=sanitize_participant($_POST['participant-id']);
     if(strpos($id,".") == false){
+        if(!is_dir("../results/".$id))
+            mkdir("../results/".$id);
+        if(!is_dir("../results/".$id."/".$participant))
+            mkdir("../results/".$id."/".$participant);
         $participant=($_POST['participant-id']);
         echo getFileCloud("results/".$id."/".$participant."/".$participant.".pso",$defaultBucket);
     }

@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
  
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.11.1] - 2020-09-03
+- For MAFC if images do not fit in the screen, only one row is used
+- Estimated distance is not saved as `null` if not activated
+- Fixed bug when restarting experiment
+
 ## [1.11.0] - 2020-08-17
 - New: information json file generator
 - New: option for showing a fixation grid and ask participants which code they saw after the trial

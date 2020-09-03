@@ -151,19 +151,24 @@ function loadTrialGoogleDrive(stimuli,list,feedback,MAFC){
     stimuli.img[i].onerror = function(){
         //alert("Error loading stimuli, please reload the page and contact us");
         //throw new Error("Something went badly wrong!");
-        resetExperiment(1, calibrating, animCalibration,"There was an error loading the trial, please try again. <br>If this keeps happening, try again later. Alternatively, you can also log in with your Google account, a new button will show up next to the Start button.");
-        $("#google-login").removeClass("hidden");
+        //resetExperiment(1, calibrating, animCalibration,"There was an error loading the trial, please try again. <br>If this keeps happening, try again later. Alternatively, you can also log in with your Google account, a new button will show up next to the Start button.");
+        resetExperiment(1, calibrating, animCalibration,"There was an error loading the trial, please try again.");
+        //$("#google-login").removeClass("hidden");
     }
     //stimuli.img[i].src = "https://drive.google.com/uc?export=view&id="+list[i].id;
-    stimuliUrl="https://drive.google.com/uc?export=view&id="+list[i].id;
-    if(gapi.auth2.getAuthInstance().isSignedIn.get()){
-      stimuliUrl="/php/getStimuli.php?file-id="+list[i].id+"&name="+list[i].name+"&token="+gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse().access_token;
-    }
 
     setTimeout(function(i){
         //stimuli.img[i].src="https://www.googleapis.com/drive/v3/files/"+list[i].id+"?key=XXX&alt=media";
-        stimuli.img[i].src=stimuliUrl;
-    }, i*111, i);
+        if(gapi.auth2.getAuthInstance().isSignedIn.get()){
+          stimuli.img[i].src="/php/getStimuli.php?file-id="+list[i].id+"&name="+list[i].name+"&token="+gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse().access_token;
+        }else{
+          /*  r=Math.random();
+          if(r<0.2)*/
+            stimuli.img[i].src="https://drive.google.com/uc?export=view&id="+list[i].id;
+          /*else
+            stimuli.img[i].src="https://error/"+list[i].id;*/
+        }
+    }, i*200, i);
 
     if(MAFC){
         $("#stimulus").append(stimuli.img[i]);
