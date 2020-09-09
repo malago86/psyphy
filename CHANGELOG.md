@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
  
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.12.0]
+- Added the option to edit experiment's configuration
+- Revamped the results section
+
 ## [1.11.1] - 2020-09-03
 - For MAFC if images do not fit in the screen, only one row is used
 - Estimated distance is not saved as `null` if not activated

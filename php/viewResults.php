@@ -33,8 +33,11 @@ $defaultBucket = $storage->getBucket();
         $experiment_id=sanitize_id($_GET['experiment-id']);
         $folder="results/".$experiment_id;
 
-        if(!getFileCloud("experiment/".$experiment_id.".json",$defaultBucket))
+        $experimentData=getFileCloud("experiment/".$experiment_id.".json",$defaultBucket);
+        if(!$experimentData)
             header('Location: /', true, 301);
+
+        $experimentData=json_decode($experimentData);
         
         if(!is_dir("../".$folder))
             mkdir("../".$folder);
@@ -76,7 +79,21 @@ $defaultBucket = $storage->getBucket();
         }
         if($password && isset($_POST['password'])){
 
-            if(isset($_POST['delete-experiment'])){
+            if(isset($_POST['edit-experiment'])){
+                $experimentData->options->title=$_POST['title'];
+                $experimentData->options->instructions=$_POST['instructions'];
+                $experimentData->options->keys=$_POST['keys'];
+                $experimentData->options->ratings=$_POST['ratings'];
+                $experimentData->options->randomize=$_POST['randomize'];
+                $experimentData->options->multiple=$_POST['multiple'];
+                $experimentData->options->calibration=$_POST['calibration'];
+                $experimentData->options->timeout=$_POST['timeout'];
+                $experimentData->options->mark=isset($_POST['mark'])?"true":"false";
+                $experimentData->options->fixationGrid=isset($_POST['fixationGrid'])?"true":"false";
+                putFileCloud("experiment/".$experiment_id.".json",json_encode($experimentData),$defaultBucket);
+                //var_dump($experimentData->options);
+
+            }elseif(isset($_POST['delete-experiment'])){
                 /*if(isset($_COOKIE['experiments'])){
                     $expCookies=explode(",",$_COOKIE['experiments']);
                     $newCookie="";
@@ -170,10 +187,7 @@ $defaultBucket = $storage->getBucket();
                 setcookie("password", $_POST['password'],0,'/results/'.$experiment_id);
 
 
-            try{
-                $title=getFileCloud($folder."/title.txt",$defaultBucket);
-            }catch(Exception $e) {
-            }
+            $title=$experimentData->options->title;
             
             if($title==""){
                 $title="Experiment";
@@ -343,39 +357,132 @@ $defaultBucket = $storage->getBucket();
                 echo($errorstr);
         }
             ?>
+
         
-        <form class="form-box" method="POST">
-            <i class="fas fa-key" style="position: absolute; top: 20px; left: 20px;"></i> 
-            <?php if($password) echo '<p>Change your password</p><input id="old-password" type="password" name="old-password" placeholder="Old password" />'; ?><br>     
-            <input id="password" type="password" name="password" placeholder="Password"/><br>
-            <input type="submit" class='download-results' id="create-password" value="Submit">
-        </form>
         
         <?php
 
-        if(!$password){
-            echo "<h2 class='error'><i class='fas fa-lock'></i> Set a password to download your data <i class='fas fa-lock'></i></h2>";
-        }else{
-                if(count($participants)>0){ 
-                echo("<hr><h1>Participants in experiment <strong><a href='/experiment/".$experiment_id."/'>".$title."</a></strong></h1>");
+        if(!$password){ ?>
+            <form class="form-box" method="POST">
+                <i class="fas fa-key" style="position: absolute; top: 20px; left: 20px;"></i>  
+                <input id="password" type="password" name="password" placeholder="password"/><br>
+                <input type="submit" class='download-results' id="create-password" value="Submit">
+            </form>
+            <?php echo "<h2 class='error'><i class='fas fa-lock'></i> Set a password to download your data <i class='fas fa-lock'></i></h2>";
+        }else{ 
+            echo("<h1>Experiment <strong><a href='/experiment/".$experiment_id."/'>".$title."</a></strong></h1>");
+            ?>
+
+            <div class="tab active" id="tab-participants" title="Participants"><i class="fas fa-user"></i></div>
+            <?php if(count($participants)>0){ ?>
+            <div class="tab" id="tab-download" title="Download results"><i class="fas fa-download"></i> </div>
+            <?php } ?>
+            <div class="tab" id="tab-edit" title="Edit options"><i class="fas fa-edit"></i> </div>
+            <div class="tab" id="tab-password" title="Change password"><i class="fas fa-key"></i> </div>
+            <div class="tab" id="tab-delete" title="Delete experiment"><i class="fas fa-bomb"></i> </div>
+
+            <div class="tab-container" id="tab-password-container" style="display:none">
+                <h3>Change password</h3>
+                <form class="form-box" method="POST" style="width:33%; border:none; margin-top:0;">
+                    <input id="old-password" type="password" name="old-password" placeholder="old password" /><br>     
+                    <input id="password" type="password" name="password" placeholder="new password"/><br>
+                    <input type="submit" class='download-results' id="create-password" value="Submit">
+                </form>
+            </div>
+            <div class="tab-container" id="tab-participants-container">
+            <h3>Participants</h3>
+        <?php
+            if(count($participants)>0){ 
                 echo("<p id='force-reload'><i class='fas fa-sync-alt' title='Force reload'></i></p>");
                 echo("<ul class='results' id='".$experiment_id."'></ul>");
+                echo("</div>")
                 ?>
-                <form class="form-box" method="POST" action=<?php echo "../".$experiment_id.".zip" ?> style="width:33%" id="download-form">   
-                    <i class="fas fa-download" style="position: absolute; top: 20px; left: 20px"></i> 
+                <div class="tab-container" id="tab-download-container" style="display:none">
+                <h3>Download data</h3>
+                <form class="form-box" method="POST" action=<?php echo "../".$experiment_id.".zip" ?> style="width:33%; border:none; margin-top:0;" id="download-form">   
                     <input id="password-download" type="password" name="password" placeholder="repeat password"/>
-                    <div>Download results: <input type="submit" class='download-results json' value="JSON" name="JSON" >
+                    <div>Choose format: <input type="submit" class='download-results json' value="JSON" name="JSON" >
                     <input type="submit" class='download-results csv' value="CSV" name="CSV"></div>
                 </form>
             <?php }else{
                 echo("<hr><h1>There is no participants yet!</h1>");
             } ?>
-                <form class="form-box" method="POST" action="." style="width:33%" id="delete-form">   
-                    <i class="fas fa-bomb" style="position: absolute; top: 20px; left: 20px"></i> 
+            </div>
+            <div class="tab-container" id="tab-delete-container" style="display:none">
+                <h3>Delete experiment</h3>
+                <form class="form-box" method="POST" action="." style="width:33%; border:none; margin-top:0;" id="delete-form">   
                     <input id="password-delete" type="password" name="password" placeholder="repeat password"/>
-                    <input type="submit" class='delete-results' value="Delete experiment" name="delete-experiment" title="This will delete the experiment and all associated data">
+                    <input type="submit" class="delete-results" value="Delete experiment" name="delete-experiment" title="This will delete the experiment and all associated data">
                 </form>
-            <?php } ?>
+            </div>
+
+            <div class="tab-container" id="tab-edit-container" style="display:none">
+                <h3>Edit experiment options</h3>
+                <form class="form-box" id="form-box" style="border:0;margin:auto;padding:0" action="." method="POST">
+                    <table style="max-width: 500px;margin:auto">
+                        <tr>
+                            <th>Title</th>
+                            <td><input id="title" type="text" style="width:100%;text-align:center" name="title" placeholder="optional" value="<?php echo($experimentData->options->title); ?>"/></td>
+                        </tr>
+                        <tr>
+                            <th>Instructions URL</th>
+                            <td><input id="instructions" type="text" placeholder="optional" style="width:100%;text-align:center" name="instructions" value="<?php echo($experimentData->options->instructions); ?>"/></td>
+                        </tr>
+                        <tr>
+                            <th># ratings</th>
+                            <td>
+                                <div id="slider-value"><?php echo $experimentData->options->ratings==1?"disabled":$experimentData->options->ratings; ?></div>
+                                <div class="slidecontainer">
+                                    <input type="range" min="1" max="12" value="<?php echo($experimentData->options->ratings); ?>" class="slider" id="ratings" name="ratings">
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Allowed keys <i title="Comma-separated list of allowed keyboard key codes to continue" class="tooltip far fa-question-circle"></i></th>
+                            <td><input id="keys" type="text" value="<?php echo($experimentData->options->keys); ?>" style="font-size:80%;color:#b7b7b7;width:60%;text-align:center;float: left;line-height: 23px;" name="keys"/><div id="generate-keys" class="button" style="border-width: 1px;height: 100%;margin: 0;display: block;float: right;line-height: 5px;margin-left: 2px;font-size: 80%;"/>Edit...</div>
+                        </tr>
+                        <tr>
+                            <th>Randomize trials</th>
+                            <td>
+                                <select id="randomize" name="randomize" style="width:100%;font-size:16px;margin-top:0;height:26px;">
+                                    <option value="all" title="Randomize all trials regardless of the condition" <?php echo strcmp($experimentData->options->randomize,"all")==0?"selected":""; ?>>Randomize all</option>
+                                    <option value="randomrandom" title="Block conditions and randomize their order, randomize trials inside the conditions" <?php echo strcmp($experimentData->options->randomize,"randomrandom")==0?"selected":""; ?>>Random blocks, random trials</option>
+                                    <option value="keeprandom" title="Block conditions and keep their order, randomize trials inside the conditions" <?php echo strcmp($experimentData->options->randomize,"keeprandom")==0?"selected":""; ?>>Ordered blocks, random trials</option>
+                                    <option value="randomkeep" title="Block conditions and randomize their order, keep trial order inside the conditions" <?php echo strcmp($experimentData->options->randomize,"randomkeep")==0?"selected":""; ?>>Random blocks, ordered trials</option>
+                                    <option value="keepkeep" title="Keep order for conditions and trials inside the conditions" <?php echo strcmp($experimentData->options->randomize,"keepkeep")==0?"selected":""; ?>>Do not randomize</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Multiple stimuli <i title="Behavior if several images are found in each stimulus folder" class="tooltip far fa-question-circle"></i></th>
+                            <td>
+                                <select id="multiple" name="multiple" style="font-size:16px;margin-top:0;height:26px;width:100%">
+                                    <option value="first" title="Trial images will be displayed sequentially" <?php echo strcmp($experimentData->options->multiple,"first")==0?"selected":""; ?>>Sequential (default)</option>
+                                    <option value="MAFC" title="Trial images will be shown in a 2D grid" <?php echo strcmp($experimentData->options->multiple,"MAFC")==0?"selected":""; ?>>MAFC (grid)</option>
+                                    <option value="MAFCcircle" title="Trial images will be shown in a circle" <?php echo strcmp($experimentData->options->multiple,"MAFCcircle")==0?"selected":""; ?>>MAFC (circle)</option>
+                                    <option value="3D" title="Trial images will be shown as a stack of 2D images" <?php echo strcmp($experimentData->options->multiple,"3D")==0?"selected":""; ?>>3D scroll</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Calibration interval <i title="Recalibration interval in minutes, set to empty or 0 to disable" class="tooltip far fa-question-circle"></i></th>
+                            <td><input id="calibration" name="calibration" type="number" placeholder="calibration" style="width:100%;text-align:center" value="<?php echo($experimentData->options->calibration); ?>"/></td>
+                        </tr>
+                        <tr>
+                            <th>Trial timeout (ms) <i title="In milliseconds, set to empty or 0 to disable" class="tooltip far fa-question-circle"></i></th>
+                            <td><input id="timeout" name="timeout" type="text" placeholder="optional" style="width:100%;text-align:center" value="<?php echo($experimentData->options->timeout); ?>"/></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2"><input id="mark" type="checkbox" name="mark" style="width:100%;text-align:center" <?php echo strcmp($experimentData->options->mark,"true")==0?"checked":""; ?>/><label for="mark">Marks <i title="Allow double click to mark the stimulus" class="tooltip far fa-question-circle"></i></label> <input id="fixationGrid" name="fixationGrid" type="checkbox" style="width:100%;text-align:center" <?php echo strcmp($experimentData->options->fixationGrid,"true")==0?"checked":""; ?>/><label for="fixationGrid">Fixation Grid <i title="Activate to show a fixation grid and ask the participant which code they saw" class="tooltip far fa-question-circle"></i></label></td>
+                        </tr>
+                    </table>
+                    <input id="password-download" type="password" name="password" placeholder="repeat password"/><br>
+                    <input type="submit" class="edit-experiment" value="Update" name="edit-experiment" title="Participants that already started will keep old options.">
+                </form>
+            </div>
+
+            <?php } //if password is given (below)?>
+            
         </div>
     </div>
 </body>

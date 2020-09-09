@@ -23,6 +23,14 @@ $( document ).ready(function() {
             }
         })
     });
+
+    $(".tab").click(function(){
+        $(".tab").removeClass("active");
+        $(this).addClass("active");
+        $(".tab-container").hide();
+        var id = $(this).attr('id');
+        $("#"+id+"-container").show();
+    });
 });
 
 function loadParticipantCloud(p,force=0){
