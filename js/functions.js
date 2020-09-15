@@ -245,7 +245,6 @@ function showResponse(ratings, trialNumber, afterFixation=false){
     
     if(arr.config.options.multiple=="first" && numSlices-1>currentSlice && stimulusOn!=-1){
         //show the next image (if any)
-        console.log("A",loading,running);
         if (stimulusOn!=-1){
             currentSlice=Math.max(0,Math.min(numSlices-1,currentSlice+1));
             scrolling.push(Array(1, Date.now()));
@@ -309,7 +308,7 @@ function showResponse(ratings, trialNumber, afterFixation=false){
     stimulusOff=Date.now();
     if(!running) return;
     
-    responding=true;
+    responding=true; running=false;
     $("#trial-container").hide();
     $("#confidence-scale").text("");
     if(!stimuli.info.customResponse && arr.config.options.ratings>1){
@@ -879,6 +878,22 @@ function beginExperiment(resuming){
                     newT=Array.from({length:arr.config.conditions[conditionOrder[i]].stimuli.stimulusFiles.length},(v,k)=>k);
                     trialSequence=trialSequence.concat(newT.sort(function(a, b) {return 0.5 - Math.random()}));
                     conditionSequence=conditionSequence.concat(Array.from({length:arr.config.conditions[conditionOrder[i]].stimuli.stimulusFiles.length},(v,k)=>conditionOrder[i]));
+                }
+                sortIndexes=Array.from({length:conditionSequence.length},(v,k)=>k);
+            }else if(arr.config.options.randomize.localeCompare("consecutiverandom")==0){
+                conditionOrder=Array.from({length:numConditions},(v,k)=>k);
+                //conditionOrder.sort(function(a, b) {return 0.5 - Math.random()});
+                //console.log(conditionOrder);
+                trialConditions=Array(numConditions);
+                for(i=0;i<numConditions;i++){
+                    trialConditions[i]=Array.from({length:arr.config.conditions[conditionOrder[i]].stimuli.stimulusFiles.length},(v,k)=>k);
+                    trialConditions[i]=trialConditions[i].sort(function(a, b) {return 0.5 - Math.random()});
+                }
+                for(i=0;i<arr.config.conditions[conditionOrder[0]].stimuli.stimulusFiles.length;i++){
+                    for(c=0;c<numConditions;c++){
+                        trialSequence=trialSequence.concat(trialConditions[c][i]);
+                        conditionSequence=conditionSequence.concat(conditionOrder[c]);
+                    }
                 }
                 sortIndexes=Array.from({length:conditionSequence.length},(v,k)=>k);
             }else if(arr.config.options.randomize.localeCompare("randomkeep")==0){

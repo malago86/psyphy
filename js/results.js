@@ -24,12 +24,15 @@ $( document ).ready(function() {
         })
     });
 
-    $(".tab").click(function(){
-        $(".tab").removeClass("active");
-        $(this).addClass("active");
-        $(".tab-container").hide();
-        var id = $(this).attr('id');
-        $("#"+id+"-container").show();
+    $("input[name=password]").keyup(function(){
+        password=$(this).val();
+        button=$(this).parent().find("input[type=submit]");
+        for(i=0;i<button.length;i++)
+            if(password!=""){
+                button[i].disabled=false;
+            }else{
+                button[i].disabled=true;
+            }
     });
 });
 
@@ -63,7 +66,7 @@ function loadParticipantCloud(p,force=0){
             $("#force-reload").removeClass("fa-spin");
         },
         error: function(data){
-            console.log(data);
+            //console.log(data);
             num=$(".results .loading[name='"+p+"']").attr("num");
             name=p.split('-').slice(0, -1).join('-');
             elem="<div class='name' name='"+p+"'><div class='delete' title='Double click to delete'><i class='fas fa-trash-alt'></i></div><i class='fas fa-user'></i></div>Missing participant! Please force reload</div>";

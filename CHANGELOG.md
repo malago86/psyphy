@@ -5,6 +5,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ## [1.12.0]
 - Added the option to edit experiment's configuration
+- Added option for consecutive conditions and randomized trials
 - Revamped the results section
 
 ## [1.11.1] - 2020-09-03

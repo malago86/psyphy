@@ -489,7 +489,6 @@ $( document ).ready(function() {
                     calibrating=false;
                 }
             }else if(responding && (event.which==32 || event.key=="Enter")){
-
                 if($(".textresponse").is(":focus")) return true;
 
                 responseDivs=$('.question');
@@ -497,7 +496,7 @@ $( document ).ready(function() {
                 responses=[];
                 for(r=0;r<responseDivs.length;r++){
                     resp=$(responseDivs[r]).find(".textresponse").val();
-                    //console.log(resp,resp=="");
+                    //console.log($(responseDivs[r]));
                     if((resp!=undefined && resp=="") || (resp === undefined && $(responseDivs[r]).attr("value")=="-1"))
                         return false;
                     else if(!resp)
@@ -824,7 +823,7 @@ $( document ).ready(function() {
     });
 
     $(".form-box #create-title").click(function(){
-        $("#create-toggle").toggle();
+        $("#create-toggle").toggleClass("show-inline-block");
         $("#create-title").children(".icon").toggleClass("fas fa-plus-square");
         $("#create-title").children(".icon").toggleClass("far fa-minus-square");
     });
@@ -925,6 +924,14 @@ $( document ).ready(function() {
         $(".background").css("opacity","1");
         $("body").css({ overflow: 'auto' })
         $("#advanced-options-dialog").hide();
+    });
+
+    $(".tab").click(function(){
+        $(".tab").removeClass("active");
+        $(this).addClass("active");
+        $(".tab-container").hide();
+        var id = $(this).attr('id');
+        $("#"+id+"-container").show();
     });
 
 });

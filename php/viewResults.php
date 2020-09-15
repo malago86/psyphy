@@ -295,7 +295,7 @@ $defaultBucket = $storage->getBucket();
 
 ?>
 <head>
-<title>Results - <?php echo($title); ?> - PSY&#9898;PHY</title>
+<title>Results - <?php echo($title); ?> - Simple Phy</title>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
@@ -341,7 +341,7 @@ $defaultBucket = $storage->getBucket();
     <div class="background">
         <div id="trial-container"></div>
         <div id="form-data">
-            <a href='../../'><img src="../../images/psyphy.png" class="logo" width="300"></a>
+            <a href='../../'><img src="../../images/simple_phy.svg" class="logo" width="400" title="Back to the homepage"></a>
             <div class="credits">Developed by <a href="mailto:lago@psych.ucsb.edu">Miguel Lago</a><br>
                 for <a href="https://viu.psych.ucsb.edu" target="_blank">VIU lab at UCSB</a>
                 <br>
@@ -386,7 +386,7 @@ $defaultBucket = $storage->getBucket();
                 <form class="form-box" method="POST" style="width:33%; border:none; margin-top:0;">
                     <input id="old-password" type="password" name="old-password" placeholder="old password" /><br>     
                     <input id="password" type="password" name="password" placeholder="new password"/><br>
-                    <input type="submit" class='download-results' id="create-password" value="Submit">
+                    <input type="submit" class='change-password' id="create-password" value="Submit" disabled="disabled">
                 </form>
             </div>
             <div class="tab-container" id="tab-participants-container">
@@ -401,8 +401,8 @@ $defaultBucket = $storage->getBucket();
                 <h3>Download data</h3>
                 <form class="form-box" method="POST" action=<?php echo "../".$experiment_id.".zip" ?> style="width:33%; border:none; margin-top:0;" id="download-form">   
                     <input id="password-download" type="password" name="password" placeholder="repeat password"/>
-                    <div>Choose format: <input type="submit" class='download-results json' value="JSON" name="JSON" >
-                    <input type="submit" class='download-results csv' value="CSV" name="CSV"></div>
+                    <div>Choose format: <input type="submit" class='download-results json' value="JSON" name="JSON" disabled="disabled">
+                    <input type="submit" class='download-results csv' value="CSV" name="CSV" disabled="disabled"></div>
                 </form>
             <?php }else{
                 echo("<hr><h1>There is no participants yet!</h1>");
@@ -412,7 +412,7 @@ $defaultBucket = $storage->getBucket();
                 <h3>Delete experiment</h3>
                 <form class="form-box" method="POST" action="." style="width:33%; border:none; margin-top:0;" id="delete-form">   
                     <input id="password-delete" type="password" name="password" placeholder="repeat password"/>
-                    <input type="submit" class="delete-results" value="Delete experiment" name="delete-experiment" title="This will delete the experiment and all associated data">
+                    <input type="submit" class="delete-results" value="Delete experiment" name="delete-experiment" title="This will delete the experiment and all associated data" disabled="disabled">
                 </form>
             </div>
 
@@ -446,6 +446,7 @@ $defaultBucket = $storage->getBucket();
                             <td>
                                 <select id="randomize" name="randomize" style="width:100%;font-size:16px;margin-top:0;height:26px;">
                                     <option value="all" title="Randomize all trials regardless of the condition" <?php echo strcmp($experimentData->options->randomize,"all")==0?"selected":""; ?>>Randomize all</option>
+                                    <option value="consecutiverandom" title="Consecutive conditions, randomize trial order for each condition (only for conditions with same number of trials)" <?php echo strcmp($experimentData->options->randomize,"consecutiverandom")==0?"selected":""; ?>>Consecutive conditions, random trials</option>
                                     <option value="randomrandom" title="Block conditions and randomize their order, randomize trials inside the conditions" <?php echo strcmp($experimentData->options->randomize,"randomrandom")==0?"selected":""; ?>>Random blocks, random trials</option>
                                     <option value="keeprandom" title="Block conditions and keep their order, randomize trials inside the conditions" <?php echo strcmp($experimentData->options->randomize,"keeprandom")==0?"selected":""; ?>>Ordered blocks, random trials</option>
                                     <option value="randomkeep" title="Block conditions and randomize their order, keep trial order inside the conditions" <?php echo strcmp($experimentData->options->randomize,"randomkeep")==0?"selected":""; ?>>Random blocks, ordered trials</option>
@@ -476,8 +477,8 @@ $defaultBucket = $storage->getBucket();
                             <td colspan="2"><input id="mark" type="checkbox" name="mark" style="width:100%;text-align:center" <?php echo strcmp($experimentData->options->mark,"true")==0?"checked":""; ?>/><label for="mark">Marks <i title="Allow double click to mark the stimulus" class="tooltip far fa-question-circle"></i></label> <input id="fixationGrid" name="fixationGrid" type="checkbox" style="width:100%;text-align:center" <?php echo strcmp($experimentData->options->fixationGrid,"true")==0?"checked":""; ?>/><label for="fixationGrid">Fixation Grid <i title="Activate to show a fixation grid and ask the participant which code they saw" class="tooltip far fa-question-circle"></i></label></td>
                         </tr>
                     </table>
-                    <input id="password-download" type="password" name="password" placeholder="repeat password"/><br>
-                    <input type="submit" class="edit-experiment" value="Update" name="edit-experiment" title="Participants that already started will keep old options.">
+                    <input id="password-edit" type="password" name="password" placeholder="repeat password"/><br>
+                    <input type="submit" class="edit-experiment" value="Update" name="edit-experiment" title="Participants that already started will keep old options." disabled="disabled">
                 </form>
             </div>
 

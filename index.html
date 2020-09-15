@@ -1,6 +1,6 @@
 <head>
 <meta charset="UTF-8">
-<title>PSY&#9898;PHY - Online psychophysics experiments for all</title>
+<title>Simple Phy - Quick online psychophysics experiments for all</title>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
 <script src="/js/jquery.key.js"></script>
@@ -19,10 +19,9 @@
 <body>
     <div class="background">
         <div id="form-container">
-            <img src="/images/psyphy.png" class="logo" width="600">
+            <img src="/images/simple_phy.svg" class="logo" width="600">
             
             <p class="home-instructions"><strong>Try the test experiment: </strong>Enter your participant ID and click on Start. Calibration will start first.</p>
-            <p class="home-instructions"><strong>Load your experiment:</strong> Upload an experiment file to load experiment configuration. <br>Enter your participant ID and click on Start. Calibration will start first.</p>
             
             <div class="credits">Developed by <a href="javascript:location='mailto:\u006c\u0061\u0067\u006f\u0040\u0070\u0073\u0079\u0063\u0068\u002e\u0075\u0063\u0073\u0062\u002e\u0065\u0064\u0075';void 0">Miguel Lago</a><br>
                 for <a href="https://viu.psych.ucsb.edu" target="_blank">VIU lab at UCSB</a>
@@ -42,11 +41,7 @@
                     <button id="signout_button" style="display: none;" onclick="handleSignoutClick();" title="Sign Out from Google"><i class="fas fa-sign-out-alt"></i></button>
                 </span>
             </p>
-            <p>By clicking on Start you accept the experiment conditions and consent form (if given).</p>
-            <label id="load-experiment-label" for="load-experiment"><i class="fas fa-file-upload"></i> Upload experiment file</label>
-            
-            <input type="file" accept=".pso" id="load-experiment" value="Upload experiment file" style="font-size:14px; height:17px;line-height: 0px;"/>
-            
+            <p>By clicking on Start you accept the experiment conditions and consent form (if given).</p>            
             
             
             <form class="form-box" id="form-box">
@@ -68,6 +63,7 @@
                 <div id="create-toggle">
                     <div title="Generate advanced options" id="advanced-options"><i class="fas fa-external-link-alt"></i></div>
                     <p><h3><a href="https://gitlab.com/malago/psyphy/-/wikis/home" target="_blank">See tutorial</a></h3></p>
+                    
                     <table>
                         <tr>
                             <th>Title</th>
@@ -95,6 +91,7 @@
                             <td>
                                 <select id="randomize" style="width:100%;font-size:16px;margin-top:0;height:26px;">
                                     <option value="all" title="Randomize all trials regardless of the condition">Randomize all</option>
+                                    <option value="consecutiverandom" title="Consecutive conditions, randomize trial order for each condition (only for conditions with same number of trials)">Consecutive conditions, random trials</option>
                                     <option value="randomrandom" title="Block conditions and randomize their order, randomize trials inside the conditions">Random blocks, random trials</option>
                                     <option value="keeprandom" title="Block conditions and keep their order, randomize trials inside the conditions">Ordered blocks, random trials</option>
                                     <option value="randomkeep" title="Block conditions and randomize their order, keep trial order inside the conditions">Random blocks, ordered trials</option>
@@ -114,7 +111,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <th>Calibration interval <i title="Recalibration interval in minutes, set to empty or 0 to disable" class="tooltip far fa-question-circle"></i></th>
+                            <th>Calibration interval <i title="Activate estimation of reading distance. Recalibration interval in minutes, set to empty or 0 to disable" class="tooltip far fa-question-circle"></i></th>
                             <td><input id="calibration" type="number" placeholder="calibration" style="width:100%;text-align:center" value="10"/></td>
                         </tr>
                         <tr>
@@ -122,11 +119,11 @@
                             <td><input id="timeout" type="text" placeholder="optional" style="width:100%;text-align:center"/></td>
                         </tr>
                         <tr>
-                            <td colspan="2"><input id="mark" type="checkbox" name="mark" style="width:100%;text-align:center"/><label for="mark">Marks <i title="Allow double click to mark the stimulus" class="tooltip far fa-question-circle"></i></label> <input id="fixationGrid" type="checkbox" style="width:100%;text-align:center" name="fixationGrid"/><label for="fixationGrid">Fixation Grid <i title="Activate to show a fixation grid and ask the participant which code they saw" class="tooltip far fa-question-circle"></i></label></td>
+                            <td colspan="2"><input id="mark" type="checkbox" name="mark" style="width:100%;text-align:center"/><label for="mark">Marks <i title="Allow double click to create marks" class="tooltip far fa-question-circle"></i></label> <input id="fixationGrid" type="checkbox" style="width:100%;text-align:center" name="fixationGrid"/><label for="fixationGrid">Fixation Grid <i title="Activate to show a fixation grid and ask the participant which code they saw" class="tooltip far fa-question-circle"></i></label></td>
                         </tr>
                     </table>
                     <br><input type="button" id="google-drive-select" value="Find stimuli on Google Drive" /><br>
-                    <input type="button" id="create-experiment" value="Download experiment config" class="disabled"/>
+                    <input type="button" id="create-experiment" value="Create experiment" class="disabled"/>
                 </div>
             </form>
                 

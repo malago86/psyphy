@@ -15,12 +15,24 @@ a:hover{
 strong{
     color:#ff8a6e;
 }
+
+.logo{
+    display:block;
+    margin:auto;
+    margin-top:50px;
+    margin-bottom:50px;
+}
+
 .background{
     text-align: center;
 }
 
 .hidden{
     display:none !important;
+}
+
+.show-inline-block{
+    display:inline-block !important;
 }
 
 #form-container, #form-data{
@@ -134,6 +146,11 @@ input[type="text"]:hover, input[type="number"]:hover, select:hover{
     border-width: 1px;
 }
 
+input[type="submit"]:disabled,input[type="submit"]:disabled:hover{
+    color:gray;
+    background:#5f5f5f;
+}
+
 input[id="name"]{
     padding: 10px;
     font-size: 1.5em;
@@ -159,6 +176,7 @@ input[type="button"].disabled{
     cursor:unset;
     background:inherit;
 }
+
 
 #delete-experiment {
     clear: both;
@@ -851,6 +869,10 @@ hr{
 }
 .results abbr{
     text-decoration: none;
+}
+
+.delete-results,.edit-experiment,.change-password,.download-results{
+    margin:10px !important;
 }
 
 #cheatcode{
